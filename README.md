@@ -25,6 +25,7 @@ specloom の答え：
 - **UI** は描画するだけ
 
 ## How it works
+
 ```
 TypeSpec (定義)
     ↓
@@ -37,35 +38,55 @@ UI (描画するだけ)
 
 ## Quick Example
 
-### spec（定義）
+### TypeSpec で定義
+
 ```typespec
+import "@specloom/typespec";
+
+using Specloom;
+
 @resource
 @label("投稿")
 model Post {
-  @kind("text")
+  @readonly
+  id: string;
+
   @label("タイトル")
+  @kind("text")
   @required
   title: string;
 
-  @kind("status")
   @label("状態")
-  @hint("badge")
-  status: "draft" | "published";
+  @kind("status")
+  @ui(#{ hint: "badge", inputHint: "select" })
+  @options(#[
+    #{ value: "draft", label: "下書き" },
+    #{ value: "published", label: "公開中" }
+  ])
+  status: string;
 }
 
-@action("delete")
-@placement("row")
-@allowedWhen("role == 'admin'")
-model DeletePost {}
+@view(Post, "list")
+@columns(["title", "status"])
+model PostList {
+  @action("delete")
+  @label("削除")
+  @placement("row")
+  @allowedWhen("role == 'admin'")
+  @confirm("本当に削除しますか？")
+  @ui(#{ icon: "trash", variant: "danger" })
+  delete: never;
+}
 ```
 
 ### ViewModel（API が返す）
+
 ```json
 {
   "resource": "Post",
   "fields": [
     { "name": "title", "kind": "text", "label": "タイトル" },
-    { "name": "status", "kind": "status", "label": "状態", "hint": "badge" }
+    { "name": "status", "kind": "status", "label": "状態", "ui": { "hint": "badge" } }
   ],
   "rows": [
     {
@@ -80,6 +101,7 @@ model DeletePost {}
 ```
 
 ### UI（描画するだけ）
+
 ```tsx
 <For each={vm.rows}>
   {(row) => (
@@ -100,23 +122,25 @@ model DeletePost {}
 
 **UI に権限ロジックがない。`allowed` を見るだけ。**
 
-## Packages (coming soon)
+## Documentation
+
+- [TypeSpec Guide](./docs/typespec/README.md) - TypeSpec での定義方法
+- [Spec v0.1](./docs/spec/v0.1.md) - JSON 仕様（参考）
+
+## Packages
 
 | Package | Description |
 |---------|-------------|
-| @specloom/core | spec + VM 型定義 |
-| @specloom/typespec | TypeSpec デコレータ |
-| @specloom/builder | VM ビルダー |
-| @specloom/loader | spec ローダー |
+| specloom | spec + VM + builder + loader |
+| @specloom/typespec | TypeSpec デコレータ + emitter |
 
 ## Status
 
 🚧 **Under Development**
 
-- [ ] spec v0.1
-- [ ] @specloom/core
-- [ ] @specloom/typespec
-- [ ] @specloom/builder
+- [x] TypeSpec ドキュメント
+- [ ] specloom パッケージ実装
+- [ ] @specloom/typespec 実装
 - [ ] Examples
 
 ## License
