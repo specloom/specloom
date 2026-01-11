@@ -145,7 +145,7 @@ model Post {
   body: string;
 
   @label("状態")
-  @kind("status")
+  @kind("enum")
   @hint("badge")
   @options(#[
     #{ value: "draft", label: "下書き" },

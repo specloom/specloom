@@ -27,35 +27,49 @@ title: string;
 @kind("longText")
 body: string;
 
-@kind("status")
+@kind("enum")
 status: string;
 ```
 
 ### 種類一覧
 
-| kind | 説明 | TypeSpec 型 |
-|------|------|------------|
-| text | 短いテキスト | string |
-| longText | 長いテキスト | string |
-| number | 数値 | int32, float64 など |
-| boolean | 真偽値 | boolean |
-| status | 状態 | string |
-| date | 日付 | plainDate |
-| datetime | 日時 | utcDateTime |
-| relation | リレーション | Model |
-| email | メールアドレス | string |
-| url | URL | string |
-| image | 画像 | string |
-| file | ファイル | string |
+| kind | 説明 | 備考 |
+|------|------|------|
+| text | 短いテキスト | |
+| longText | 長いテキスト | |
+| number | 数値 | |
+| boolean | 真偽値 | |
+| date | 日付 | |
+| datetime | 日時 | |
+| enum | 列挙型 | `@options` と一緒に使う |
+| relation | リレーション | `@relation` と一緒に使う |
+| file | ファイル | |
+| email | メールアドレス | 自動で pattern + inputHint |
+| tel | 電話番号 | 自動で pattern + inputHint |
+| url | URL | 自動で pattern + inputHint |
 
 省略時は TypeSpec の型から推論します。
+
+### 自動設定される kind
+
+`email`, `tel`, `url` は自動的に適切な `pattern` と `inputHint` が設定されます。
+
+```typespec
+// これだけで OK
+@kind("email")
+email: string;
+
+// 内部的にはこうなる
+// pattern: "email"
+// inputHint: "email"
+```
 
 ## @ui
 
 表示と入力のヒントを `@ui` でまとめて指定します。
 
 ```typespec
-@kind("status")
+@kind("enum")
 @ui(#{ hint: "badge", inputHint: "select" })
 status: string;
 
@@ -81,7 +95,7 @@ author: User;
 @ui(#{ format: "currency" })
 price: int32;
 
-@kind("status")
+@kind("enum")
 @ui(#{ hint: "badge" })
 status: string;
 
@@ -143,10 +157,10 @@ delete: never;
 
 ## @options
 
-選択肢を定義します。status 用です。
+選択肢を定義します。`@kind("enum")` と一緒に使います。
 
 ```typespec
-@kind("status")
+@kind("enum")
 @ui(#{ hint: "badge", inputHint: "select" })
 @options(#[
   #{ value: "draft", label: "下書き" },
@@ -249,7 +263,7 @@ model Post {
   body: string;
 
   @label("状態")
-  @kind("status")
+  @kind("enum")
   @ui(#{ hint: "badge", inputHint: "select" })
   @options(#[
     #{ value: "draft", label: "下書き" },

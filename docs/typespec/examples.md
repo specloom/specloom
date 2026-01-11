@@ -35,7 +35,7 @@ model Post {
   body: string;
 
   @label("状態")
-  @kind("status")
+  @kind("enum")
   @ui(#{ hint: "badge", inputHint: "select" })
   @options(#[
     #{ value: "draft", label: "下書き" },
@@ -226,7 +226,7 @@ model User {
   phone?: string;
 
   @label("ロール")
-  @kind("status")
+  @kind("enum")
   @ui(#{ hint: "badge", inputHint: "select" })
   @options(#[
     #{ value: "admin", label: "管理者" },
@@ -337,7 +337,7 @@ model Order {
   total: int32;
 
   @label("状態")
-  @kind("status")
+  @kind("enum")
   @ui(#{ hint: "badge", inputHint: "select" })
   @options(#[
     #{ value: "pending", label: "保留中" },

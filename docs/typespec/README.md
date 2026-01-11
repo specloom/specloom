@@ -43,7 +43,7 @@ model Post {
   title: string;
 
   @label("状態")
-  @kind("status")
+  @kind("enum")
   @ui(#{ hint: "badge", inputHint: "select" })
   @options(#[
     #{ value: "draft", label: "下書き" },
