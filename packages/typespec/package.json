@@ -1,0 +1,29 @@
+{
+  "name": "@specloom/typespec",
+  "version": "0.1.0",
+  "description": "TypeSpec decorators and emitter for specloom",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "main.tsp", "decorators.tsp"],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": ["typespec", "specloom", "admin"],
+  "license": "MIT",
+  "peerDependencies": {
+    "@typespec/compiler": ">=0.60.0"
+  },
+  "devDependencies": {
+    "@typespec/compiler": "^0.64.0",
+    "typescript": "^5.7.0"
+  }
+}
