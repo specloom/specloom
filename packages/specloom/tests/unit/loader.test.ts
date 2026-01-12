@@ -49,6 +49,109 @@ describe("loader", () => {
       expect(spec.views).toHaveLength(1);
     });
 
+    it("リレーションフィールドを含む Spec を検証できる", () => {
+      const data = {
+        version: "0.1",
+        resources: [
+          {
+            name: "Post",
+            label: "投稿",
+            fields: [
+              { name: "id", type: "string", readonly: true },
+              {
+                name: "title",
+                type: "string",
+                label: "タイトル",
+                kind: "text",
+              },
+              {
+                name: "author",
+                type: "User",
+                label: "著者",
+                kind: "relation",
+                required: true,
+                relation: {
+                  resource: "User",
+                  labelField: "name",
+                },
+                ui: {
+                  hint: "avatar",
+                  inputHint: "autocomplete",
+                },
+              },
+              {
+                name: "tags",
+                type: "Tag[]",
+                label: "タグ",
+                kind: "relation",
+                relation: {
+                  resource: "Tag",
+                  labelField: "name",
+                },
+                validation: {
+                  maxItems: 5,
+                },
+              },
+            ],
+          },
+          {
+            name: "User",
+            label: "ユーザー",
+            fields: [
+              { name: "id", type: "string", readonly: true },
+              { name: "name", type: "string", label: "名前" },
+            ],
+          },
+          {
+            name: "Tag",
+            label: "タグ",
+            fields: [
+              { name: "id", type: "string", readonly: true },
+              { name: "name", type: "string", label: "名前" },
+            ],
+          },
+        ],
+        views: [
+          {
+            resource: "Post",
+            type: "list",
+            columns: ["title", "author", "tags"],
+            actions: [],
+          },
+        ],
+      };
+
+      const spec = validateSpec(data);
+
+      expect(spec.resources).toHaveLength(3);
+
+      const postResource = spec.resources.find((r) => r.name === "Post");
+      expect(postResource).toBeDefined();
+
+      // 単一リレーション (User)
+      const authorField = postResource?.fields.find((f) => f.name === "author");
+      expect(authorField?.type).toBe("User");
+      expect(authorField?.kind).toBe("relation");
+      expect(authorField?.relation).toEqual({
+        resource: "User",
+        labelField: "name",
+      });
+      expect(authorField?.ui).toMatchObject({
+        hint: "avatar",
+        inputHint: "autocomplete",
+      });
+
+      // 複数リレーション (Tag[])
+      const tagsField = postResource?.fields.find((f) => f.name === "tags");
+      expect(tagsField?.type).toBe("Tag[]");
+      expect(tagsField?.kind).toBe("relation");
+      expect(tagsField?.relation).toEqual({
+        resource: "Tag",
+        labelField: "name",
+      });
+      expect(tagsField?.validation).toMatchObject({ maxItems: 5 });
+    });
+
     it("version がない場合エラーになる", () => {
       const data = {
         resources: [],

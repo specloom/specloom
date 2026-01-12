@@ -23,6 +23,7 @@ import type {
   NamedFilterVM,
   Selection,
   Search,
+  SortVM,
 } from "../vm/index.js";
 import { validateField, type ValidationErrors } from "../validation/index.js";
 
@@ -76,11 +77,16 @@ export function evaluateListView(options: EvaluateListOptions): ListViewModel {
     .filter((a) => a.placement === "header")
     .map((a) => toActionVM(a, context, {}));
 
+  const bulkActions = view.actions
+    .filter((a) => a.placement === "bulk")
+    .map((a) => toActionVM(a, context, {}));
+
   const rows = data.map((row) => toRowVM(row, view, resource, context));
 
   const filters = toFilters(view, activeFilter);
   const selection = toSelection(view, selected);
   const search = toSearch(view, searchQuery);
+  const defaultSort = toDefaultSort(view);
 
   return {
     type: "list",
@@ -88,10 +94,13 @@ export function evaluateListView(options: EvaluateListOptions): ListViewModel {
     label: resource.label ?? resource.name,
     fields,
     headerActions,
+    bulkActions,
     rows,
     filters,
     selection,
     search,
+    defaultSort,
+    clickAction: view.clickAction,
   };
 }
 
@@ -170,6 +179,7 @@ function toListFieldVM(field: Field, view: ListView): ListFieldVM {
     sortable: view.sortable?.includes(field.name),
     ui: field.ui,
     options: field.options,
+    relation: field.relation,
   };
 }
 
@@ -181,6 +191,7 @@ function toShowFieldVM(field: Field, value: unknown): ShowFieldVM {
     value,
     ui: field.ui,
     options: field.options,
+    relation: field.relation,
   };
 }
 
@@ -200,6 +211,7 @@ function toFormFieldVM(
     errors,
     ui: field.ui,
     options: field.options,
+    relation: field.relation,
   };
 }
 
@@ -266,6 +278,14 @@ function toSearch(view: ListView, query?: string): Search {
   return {
     fields: view.searchable ?? [],
     query: query ?? "",
+  };
+}
+
+function toDefaultSort(view: ListView): SortVM | undefined {
+  if (!view.defaultSort) return undefined;
+  return {
+    field: view.defaultSort.field,
+    order: view.defaultSort.order,
   };
 }
 

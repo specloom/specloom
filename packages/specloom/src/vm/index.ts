@@ -9,6 +9,7 @@ import type {
   Option,
   FieldValidation,
   FilterExpression,
+  Relation,
 } from "../spec/index.js";
 
 // Re-export shared types
@@ -40,10 +41,18 @@ export interface ListViewModel {
   label: string;
   fields: ListFieldVM[];
   headerActions: ActionVM[];
+  bulkActions: ActionVM[];
   rows: RowVM[];
   filters: Filters;
   selection: Selection;
   search: Search;
+  defaultSort?: SortVM;
+  clickAction?: string;
+}
+
+export interface SortVM {
+  field: string;
+  order: "asc" | "desc";
 }
 
 export interface ListFieldVM {
@@ -53,6 +62,7 @@ export interface ListFieldVM {
   sortable?: boolean;
   ui?: FieldUI;
   options?: Option[];
+  relation?: Relation;
 }
 
 export interface RowVM {
@@ -103,6 +113,7 @@ export interface ShowFieldVM {
   value: unknown;
   ui?: FieldUI;
   options?: Option[];
+  relation?: Relation;
 }
 
 // ============================================================
@@ -132,6 +143,7 @@ export interface FormFieldVM {
   errors: string[];
   ui?: FieldUI;
   options?: Option[];
+  relation?: Relation;
 }
 
 // ============================================================

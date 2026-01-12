@@ -404,7 +404,7 @@ describe("filter", () => {
   describe("isFilterExpression", () => {
     it("有効な FilterCondition を検出する", () => {
       expect(
-        isFilterExpression({ field: "status", op: "eq", value: "published" })
+        isFilterExpression({ field: "status", op: "eq", value: "published" }),
       ).toBe(true);
     });
 
@@ -415,7 +415,7 @@ describe("filter", () => {
             { field: "status", op: "eq", value: "published" },
             { field: "price", op: "gte", value: 100 },
           ],
-        })
+        }),
       ).toBe(true);
     });
 
@@ -426,7 +426,7 @@ describe("filter", () => {
             { field: "status", op: "eq", value: "draft" },
             { field: "status", op: "eq", value: "published" },
           ],
-        })
+        }),
       ).toBe(true);
     });
 
@@ -434,7 +434,7 @@ describe("filter", () => {
       expect(
         isFilterExpression({
           not: { field: "status", op: "eq", value: "archived" },
-        })
+        }),
       ).toBe(true);
     });
 
@@ -460,15 +460,101 @@ describe("filter", () => {
               ],
             },
           ],
-        })
+        }),
       ).toBe(true);
 
       // 不正なネスト
       expect(
         isFilterExpression({
           and: [{ field: "status", op: "eq", value: "published" }, "invalid"],
-        })
+        }),
       ).toBe(false);
+    });
+  });
+
+  describe("エッジケース", () => {
+    const data = {
+      status: "published",
+      title: "Hello World",
+      nested: {
+        deep: {
+          value: 42,
+        },
+      },
+      items: [],
+    };
+
+    it("matches: 不正な正規表現は false を返す", () => {
+      const filter: FilterExpression = {
+        field: "title",
+        op: "matches",
+        value: "[invalid(",
+      };
+      expect(evaluateFilter(filter, data)).toBe(false);
+    });
+
+    it("matches: 非文字列フィールドは false を返す", () => {
+      const filter: FilterExpression = {
+        field: "nested",
+        op: "matches",
+        value: ".*",
+      };
+      expect(evaluateFilter(filter, data)).toBe(false);
+    });
+
+    it("matches: 非文字列パターンは false を返す", () => {
+      const filter: FilterExpression = {
+        field: "title",
+        op: "matches",
+        value: 123 as unknown as string,
+      };
+      expect(evaluateFilter(filter, data)).toBe(false);
+    });
+
+    it("深くネストしたパスを解決できる", () => {
+      const filter: FilterExpression = {
+        field: "nested.deep.value",
+        op: "eq",
+        value: 42,
+      };
+      expect(evaluateFilter(filter, data)).toBe(true);
+    });
+
+    it("配列インデックスを含むパスも解決できる", () => {
+      const dataWithArray = {
+        items: [{ name: "first" }, { name: "second" }],
+      };
+      const filter: FilterExpression = {
+        field: "items.0.name",
+        op: "eq",
+        value: "first",
+      };
+      expect(evaluateFilter(filter, dataWithArray)).toBe(true);
+
+      const filter2: FilterExpression = {
+        field: "items.1.name",
+        op: "eq",
+        value: "second",
+      };
+      expect(evaluateFilter(filter2, dataWithArray)).toBe(true);
+    });
+
+    it("未知の演算子は false を返す", () => {
+      const filter = {
+        field: "status",
+        op: "unknown" as FilterExpression extends { op: infer O } ? O : never,
+        value: "published",
+      } as FilterExpression;
+      expect(evaluateFilter(filter, data)).toBe(false);
+    });
+
+    it("プリミティブ値の途中でネストアクセスすると undefined を返す", () => {
+      const filter: FilterExpression = {
+        field: "status.nested.value",
+        op: "eq",
+        value: "something",
+      };
+      expect(evaluateFilter(filter, data)).toBe(false);
     });
   });
 });
