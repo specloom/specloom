@@ -64,15 +64,25 @@ model Post {
   @Specloom.ui(#{ inputHint: "richtext" })
   body: string;
 
-  // パターン1: TypeSpec enum 型（options 自動生成）
+  // パターン1: TypeSpec enum + @options でラベルを日本語化
   @Specloom.label("状態")
   @Specloom.kind("enum")
+  @Specloom.options(#[
+    #{ value: "draft", label: "下書き" },
+    #{ value: "published", label: "公開中" },
+    #{ value: "archived", label: "アーカイブ" }
+  ])
   @Specloom.ui(#{ hint: "badge", inputHint: "select" })
   status: PostStatus;
 
-  // パターン2: TypeSpec enum 型（options 自動生成）
+  // パターン2: TypeSpec enum + @options でラベルを日本語化
   @Specloom.label("優先度")
   @Specloom.kind("enum")
+  @Specloom.options(#[
+    #{ value: "low", label: "低" },
+    #{ value: "medium", label: "中" },
+    #{ value: "high", label: "高" }
+  ])
   priority: Priority;
 
   // パターン3: TypeSpec enum + @options でラベルをカスタマイズ
