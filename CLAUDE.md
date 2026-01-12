@@ -78,6 +78,14 @@ The `@specloom/typespec` package provides decorators:
 
 - `docs/typespec/` - TypeSpec usage guide with decorator references
 - `docs/spec/v0.1.md` - JSON spec format reference
+- `docs/spec/view_model.md` - ViewModel spec reference
+- `docs/spec/api.md` - API spec reference
+
+## Git ワークフロー
+
+- コミット前に必ず確認を求める
+- コミットメッセージは日本語で記述
+- conventional commit 形式を使用（feat:, fix:, refactor:, docs: など）
 
 ## Development Status
 
