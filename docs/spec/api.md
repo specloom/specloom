@@ -18,11 +18,11 @@ HTTP API のリクエスト/レスポンス仕様です。
 | 変数 | デフォルト | 説明 |
 |------|-----------|------|
 | baseUrl | `http://localhost:3000` | サーバーのベース URL |
-| prefix | `api` | API のプレフィックス |
+| prefix | `vm` | API のプレフィックス |
 
 例：
-- `/api/posts` - デフォルト
-- `/vm/posts` - ViewModel 用
+- `/vm/posts` - デフォルト（ViewModel 用）
+- `/api/posts` - REST API 用
 - `/admin/posts` - 管理画面用
 
 OpenAPI の `servers` セクションで定義されています。
