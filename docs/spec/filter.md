@@ -236,67 +236,29 @@ model PostList {}
 | `@context.role` | 現在のロール |
 | `@context.custom.*` | カスタムコンテキスト |
 
-## JSON Schema
+## TypeScript 型定義
 
-```json
-{
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "definitions": {
-    "FilterExpression": {
-      "oneOf": [
-        { "$ref": "#/definitions/FilterCondition" },
-        { "$ref": "#/definitions/AndExpression" },
-        { "$ref": "#/definitions/OrExpression" },
-        { "$ref": "#/definitions/NotExpression" }
-      ]
-    },
-    "FilterCondition": {
-      "type": "object",
-      "required": ["field", "op", "value"],
-      "properties": {
-        "field": { "type": "string" },
-        "op": {
-          "type": "string",
-          "enum": [
-            "eq", "ne", "gt", "gte", "lt", "lte",
-            "contains", "startsWith", "endsWith", "matches",
-            "in", "notIn",
-            "isNull", "isEmpty",
-            "hasAny", "hasAll", "hasNone"
-          ]
-        },
-        "value": {}
-      }
-    },
-    "AndExpression": {
-      "type": "object",
-      "required": ["and"],
-      "properties": {
-        "and": {
-          "type": "array",
-          "items": { "$ref": "#/definitions/FilterExpression" }
-        }
-      }
-    },
-    "OrExpression": {
-      "type": "object",
-      "required": ["or"],
-      "properties": {
-        "or": {
-          "type": "array",
-          "items": { "$ref": "#/definitions/FilterExpression" }
-        }
-      }
-    },
-    "NotExpression": {
-      "type": "object",
-      "required": ["not"],
-      "properties": {
-        "not": { "$ref": "#/definitions/FilterExpression" }
-      }
-    }
-  }
+型定義は `packages/specloom/src/spec/index.ts` を参照：
+
+```typescript
+type FilterExpression =
+  | FilterCondition
+  | { and: FilterExpression[] }
+  | { or: FilterExpression[] }
+  | { not: FilterExpression };
+
+interface FilterCondition {
+  field: string;
+  op: FilterOperator;
+  value: unknown;
 }
+
+type FilterOperator =
+  | "eq" | "ne" | "gt" | "gte" | "lt" | "lte"
+  | "contains" | "startsWith" | "endsWith" | "matches"
+  | "in" | "notIn"
+  | "isNull" | "isEmpty"
+  | "hasAny" | "hasAll" | "hasNone";
 ```
 
 ## API でのクエリ
