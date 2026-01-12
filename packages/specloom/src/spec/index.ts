@@ -134,8 +134,81 @@ export interface Sort {
 export interface NamedFilter {
   id: string;
   label: string;
-  filter: Record<string, unknown>;
+  filter: FilterExpression | Record<string, unknown>;
 }
+
+// ============================================================
+// Filter Expression (Advanced Query)
+// ============================================================
+
+/**
+ * フィルター式（AND/OR/NOT と条件の組み合わせ）
+ */
+export type FilterExpression =
+  | FilterCondition
+  | AndExpression
+  | OrExpression
+  | NotExpression;
+
+/**
+ * AND 結合
+ */
+export interface AndExpression {
+  and: FilterExpression[];
+}
+
+/**
+ * OR 結合
+ */
+export interface OrExpression {
+  or: FilterExpression[];
+}
+
+/**
+ * NOT（否定）
+ */
+export interface NotExpression {
+  not: FilterExpression;
+}
+
+/**
+ * 単一フィルター条件
+ */
+export interface FilterCondition {
+  /** フィールドパス（例: "status", "author.name"） */
+  field: string;
+  /** 演算子 */
+  op: FilterOperator;
+  /** 比較値 */
+  value: unknown;
+}
+
+/**
+ * フィルター演算子
+ */
+export type FilterOperator =
+  // 比較
+  | "eq"
+  | "ne"
+  | "gt"
+  | "gte"
+  | "lt"
+  | "lte"
+  // 文字列
+  | "contains"
+  | "startsWith"
+  | "endsWith"
+  | "matches"
+  // 集合
+  | "in"
+  | "notIn"
+  // 存在
+  | "isNull"
+  | "isEmpty"
+  // 配列
+  | "hasAny"
+  | "hasAll"
+  | "hasNone";
 
 // ============================================================
 // Form View

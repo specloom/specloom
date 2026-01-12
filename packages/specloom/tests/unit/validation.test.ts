@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { validateField, validateForm } from "../src/validation/index.js";
-import type { Field } from "../src/spec/index.js";
+import { validateField, validateForm } from "../../src/validation/index.js";
+import type { Field } from "../../src/spec/index.js";
 
 describe("validation", () => {
   describe("validateField", () => {

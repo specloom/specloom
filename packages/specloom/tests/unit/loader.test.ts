@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseSpec, validateSpec, SpecError } from "../src/loader/index.js";
+import { parseSpec, validateSpec, SpecError } from "../../src/loader/index.js";
 
 describe("loader", () => {
   describe("parseSpec", () => {

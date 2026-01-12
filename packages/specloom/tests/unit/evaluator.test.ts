@@ -5,21 +5,44 @@ import {
   evaluateFormView,
   evaluateExpression,
   EvaluateError,
-} from "../src/evaluator/index.js";
-import type { Resource, ListView, ShowView, FormView } from "../src/spec/index.js";
-import type { Context } from "../src/vm/index.js";
+} from "../../src/evaluator/index.js";
+import type {
+  Resource,
+  ListView,
+  ShowView,
+  FormView,
+} from "../../src/spec/index.js";
+import type { Context } from "../../src/vm/index.js";
 
 const createResource = (): Resource => ({
   name: "Post",
   label: "投稿",
   fields: [
     { name: "id", type: "string", readonly: true },
-    { name: "title", type: "string", label: "タイトル", kind: "text", required: true },
-    { name: "status", type: "string", label: "状態", kind: "enum", options: [
-      { value: "draft", label: "下書き" },
-      { value: "published", label: "公開中" },
-    ]},
-    { name: "createdAt", type: "datetime", label: "作成日時", kind: "datetime", readonly: true },
+    {
+      name: "title",
+      type: "string",
+      label: "タイトル",
+      kind: "text",
+      required: true,
+    },
+    {
+      name: "status",
+      type: "string",
+      label: "状態",
+      kind: "enum",
+      options: [
+        { value: "draft", label: "下書き" },
+        { value: "published", label: "公開中" },
+      ],
+    },
+    {
+      name: "createdAt",
+      type: "datetime",
+      label: "作成日時",
+      kind: "datetime",
+      readonly: true,
+    },
   ],
 });
 
@@ -48,20 +71,38 @@ describe("evaluator", () => {
       const context = createContext("admin");
       const data = { status: "draft" };
       expect(evaluateExpression("status == 'draft'", context, data)).toBe(true);
-      expect(evaluateExpression("status == 'published'", context, data)).toBe(false);
+      expect(evaluateExpression("status == 'published'", context, data)).toBe(
+        false,
+      );
     });
 
     it("OR 演算子を評価できる", () => {
       const context = createContext("editor");
-      expect(evaluateExpression("role == 'admin' || role == 'editor'", context, {})).toBe(true);
-      expect(evaluateExpression("role == 'admin' || role == 'guest'", context, {})).toBe(false);
+      expect(
+        evaluateExpression("role == 'admin' || role == 'editor'", context, {}),
+      ).toBe(true);
+      expect(
+        evaluateExpression("role == 'admin' || role == 'guest'", context, {}),
+      ).toBe(false);
     });
 
     it("AND 演算子を評価できる", () => {
       const context = createContext("admin");
       const data = { status: "draft" };
-      expect(evaluateExpression("role == 'admin' && status == 'draft'", context, data)).toBe(true);
-      expect(evaluateExpression("role == 'admin' && status == 'published'", context, data)).toBe(false);
+      expect(
+        evaluateExpression(
+          "role == 'admin' && status == 'draft'",
+          context,
+          data,
+        ),
+      ).toBe(true);
+      expect(
+        evaluateExpression(
+          "role == 'admin' && status == 'published'",
+          context,
+          data,
+        ),
+      ).toBe(false);
     });
 
     it("不正な式は false を返す", () => {
@@ -83,9 +124,20 @@ describe("evaluator", () => {
         { id: "draft", label: "下書き", filter: { status: "draft" } },
       ],
       actions: [
-        { id: "create", label: "新規作成", placement: "header", allowedWhen: "role == 'admin'" },
+        {
+          id: "create",
+          label: "新規作成",
+          placement: "header",
+          allowedWhen: "role == 'admin'",
+        },
         { id: "edit", label: "編集", placement: "row" },
-        { id: "delete", label: "削除", placement: "row", allowedWhen: "role == 'admin'", confirm: "削除しますか？" },
+        {
+          id: "delete",
+          label: "削除",
+          placement: "row",
+          allowedWhen: "role == 'admin'",
+          confirm: "削除しますか？",
+        },
       ],
     };
 
@@ -159,9 +211,11 @@ describe("evaluator", () => {
 
       const row = vm.rows[0];
       expect(row.actions).toHaveLength(2); // edit, delete
-      expect(row.actions.find(a => a.id === "edit")?.allowed).toBe(true);
-      expect(row.actions.find(a => a.id === "delete")?.allowed).toBe(false);
-      expect(row.actions.find(a => a.id === "delete")?.confirm).toBe("削除しますか？");
+      expect(row.actions.find((a) => a.id === "edit")?.allowed).toBe(true);
+      expect(row.actions.find((a) => a.id === "delete")?.allowed).toBe(false);
+      expect(row.actions.find((a) => a.id === "delete")?.confirm).toBe(
+        "削除しますか？",
+      );
     });
 
     it("フィルターを正しく変換する", () => {
@@ -169,7 +223,13 @@ describe("evaluator", () => {
       const context = createContext("admin");
       const data: Record<string, unknown>[] = [];
 
-      const vm = evaluateListView({ view: listView, resource, context, data, activeFilter: "draft" });
+      const vm = evaluateListView({
+        view: listView,
+        resource,
+        context,
+        data,
+        activeFilter: "draft",
+      });
 
       expect(vm.filters.named).toHaveLength(2);
       expect(vm.filters.named[0].active).toBe(false);
@@ -205,7 +265,7 @@ describe("evaluator", () => {
       };
 
       expect(() =>
-        evaluateListView({ view: invalidView, resource, context, data: [] })
+        evaluateListView({ view: invalidView, resource, context, data: [] }),
       ).toThrow(EvaluateError);
     });
   });
@@ -216,14 +276,24 @@ describe("evaluator", () => {
       type: "show",
       fields: ["title", "status", "createdAt"],
       actions: [
-        { id: "edit", label: "編集", placement: "header", allowedWhen: "role == 'admin'" },
+        {
+          id: "edit",
+          label: "編集",
+          placement: "header",
+          allowedWhen: "role == 'admin'",
+        },
       ],
     };
 
     it("ShowViewModel を生成できる", () => {
       const resource = createResource();
       const context = createContext("admin");
-      const data = { id: "1", title: "Hello", status: "published", createdAt: "2024-01-01" };
+      const data = {
+        id: "1",
+        title: "Hello",
+        status: "published",
+        createdAt: "2024-01-01",
+      };
 
       const vm = evaluateShowView({ view: showView, resource, context, data });
 

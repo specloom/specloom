@@ -8,10 +8,11 @@ import type {
   ActionUI,
   Option,
   FieldValidation,
+  FilterExpression,
 } from "../spec/index.js";
 
 // Re-export shared types
-export type { FieldUI, ActionUI, Option, FieldValidation };
+export type { FieldUI, ActionUI, Option, FieldValidation, FilterExpression };
 
 /**
  * 評価コンテキスト
@@ -62,6 +63,8 @@ export interface RowVM {
 
 export interface Filters {
   named: NamedFilterVM[];
+  /** カスタムフィルター（ユーザーが動的に指定） */
+  custom?: FilterExpression;
 }
 
 export interface NamedFilterVM {
