@@ -11,13 +11,21 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist", "main.tsp", "decorators.tsp"],
+  "files": [
+    "dist",
+    "lib"
+  ],
+  "typespec": "./lib/main.tsp",
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": ["typespec", "specloom", "admin"],
+  "keywords": [
+    "typespec",
+    "specloom",
+    "admin"
+  ],
   "license": "MIT",
   "peerDependencies": {
     "@typespec/compiler": ">=0.60.0"

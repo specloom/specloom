@@ -214,6 +214,10 @@ describe("evaluator", () => {
         label: "状態",
         kind: "enum",
         sortable: false,
+        options: [
+          { value: "draft", label: "下書き" },
+          { value: "published", label: "公開中" },
+        ],
       });
       expect(vm.fields[2]).toMatchObject({
         name: "author",
