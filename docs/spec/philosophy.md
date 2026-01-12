@@ -2,27 +2,44 @@
 
 specloom の設計原則と責務の境界を明確にします。
 
+## 全体像
+
+```
+TypeSpec (ユーザーまたは AI が書く)
+    ↓ コンパイル
+Definition Spec (JSON)
+    ↓ 評価 (Context: user, role, data)
+ViewModel (評価済み)
+    ↓
+UI (描画するだけ)
+```
+
 ## コアコンセプト: ViewModel = 評価済み結果
 
 specloom の最も重要な原則は **「UIは判断しない」** ことです。
 
-```
-Definition Spec + Context → ViewModel（評価済み）→ UI（描画するだけ）
-```
-
 ### allowedWhen → allowed: boolean
 
+TypeSpec:
+```typespec
+@action("delete")
+@allowedWhen("role == 'admin'")
+delete: never;
+```
+
+Definition Spec (コンパイル結果):
 ```json
-// Definition Spec（静的定義）
 {
   "id": "delete",
   "allowedWhen": "role == 'admin'"
 }
+```
 
-// ViewModel（評価済み）
+ViewModel (評価結果):
+```json
 {
   "id": "delete",
-  "allowed": true  // ← 評価結果
+  "allowed": true
 }
 ```
 
@@ -32,11 +49,11 @@ UI は `allowed` を見て `disabled` にするだけ。条件式の評価ロジ
 
 ### 1. Domain Truth（ドメインの真実）
 
-**誰が定義**: TypeSpec / Definition Spec  
+**誰が定義**: TypeSpec（ユーザーまたは AI）  
 **何を定義**: データ構造、フィールド、型、リレーション
 
 ```typespec
-@resource("Post")
+@resource
 model Post {
   id: string;
   title: string;
@@ -59,7 +76,7 @@ model Post {
 
 ### 3. View Truth（画面の真実）
 
-**誰が定義**: View Spec  
+**誰が定義**: TypeSpec（ユーザーまたは AI）  
 **何を定義**: どのフィールドを、どの順序で、どのアクションと共に
 
 ```typespec
@@ -176,6 +193,18 @@ namedFilter と自由検索は共存する：
 
 ### specloom
 
+TypeSpec で定義:
+```typespec
+@view(Post, "list")
+@columns(["title", "createdAt"])
+model PostList {
+  @action("create")
+  @allowedWhen("role == 'admin'")
+  create: never;
+}
+```
+
+ViewModel (評価結果):
 ```json
 {
   "type": "list",
@@ -183,14 +212,13 @@ namedFilter と自由検索は共存する：
     { "name": "title", "kind": "text" },
     { "name": "createdAt", "kind": "datetime" }
   ],
-  "rows": [...],
   "headerActions": [
     { "id": "create", "allowed": true }
   ]
 }
 ```
 
-- JSON/TypeSpec でスキーマを定義
+- TypeSpec でスキーマを定義
 - フレームワーク非依存
 - 権限は評価済みの boolean
 

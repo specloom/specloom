@@ -43,14 +43,12 @@ API レスポンスはすべて snake_case を使用します。
 ### 責務の分離
 
 ```
-Definition Spec (静的定義)
-        ↓
-   specloom 評価
-        ↓
+TypeSpec (ユーザーまたは AI が書く)
+        ↓ コンパイル
+Definition Spec (JSON)
+        ↓ 評価
 ViewModel (評価結果)
-        ↓
-   API 層で wrap
-        ↓
+        ↓ API 層で wrap
 API Response (pagination, meta を追加)
 ```
 
@@ -423,6 +421,7 @@ POST /api/posts/bulk-actions/delete
 
 ## 関連ドキュメント
 
-- [ViewModel Spec](./viewmodel.md) - specloom が出力する ViewModel の仕様
-- [Definition Spec](./v0.1.md) - Resource, View, Action の定義仕様
-- [TypeSpec 定義](../../packages/api/) - OpenAPI 生成元の TypeSpec
+- [TypeSpec Guide](../typespec/README.md) - TypeSpec での定義方法
+- [ViewModel Spec](./view_model.md) - specloom が出力する ViewModel の仕様
+- [Definition Spec](./v0.1.md) - コンパイルされた JSON の仕様
+- [OpenAPI 定義](../../packages/api/) - API の TypeSpec 定義

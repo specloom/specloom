@@ -2,181 +2,19 @@
 
 高度なフィルタリング/検索クエリの仕様です。
 
-> **Note**: namedFilter の `filter` プロパティや API クエリパラメータで使用します。
+## 概要
 
-## 設計思想
+specloom では TypeSpec でフィルターを定義します：
 
-### specloom が定義するもの
+1. **@filter** - フィールドをフィルター可能にする
+2. **@namedFilter** - 定義済みフィルターを作成する
 
-- **フィルター可能なフィールド**: `@filterable` デコレーター
-- **演算子**: フィールドタイプに応じた使用可能な演算子
-- **namedFilter**: 定義済みフィルター（UIで「タブ」や「プリセット」として表示）
-
-### specloom が定義しないもの
-
-- **実際のクエリ実行**: バックエンド/データベースの責務
-- **クエリ構文の実装**: ORM/Query Builder の責務
-- **UI での表現**: UI フレームワークの責務
-
-## 基本構造
-
-```json
-{
-  "and": [
-    { "field": "status", "op": "eq", "value": "published" },
-    { "field": "createdAt", "op": "gte", "value": "2024-01-01" }
-  ]
-}
-```
-
-### FilterExpression
-
-```typescript
-type FilterExpression =
-  | FilterCondition       // 単一条件
-  | { and: FilterExpression[] }  // AND 結合
-  | { or: FilterExpression[] }   // OR 結合
-  | { not: FilterExpression };   // NOT（否定）
-```
-
-### FilterCondition
-
-```typescript
-interface FilterCondition {
-  field: string;      // フィールドパス（例: "status", "author.name"）
-  op: FilterOperator; // 演算子
-  value: unknown;     // 比較値
-}
-```
-
-## 演算子一覧
-
-### 比較演算子
-
-| 演算子 | 説明 | 使用可能な型 |
-|--------|------|-------------|
-| `eq` | 等しい | すべて |
-| `ne` | 等しくない | すべて |
-| `gt` | より大きい | number, date, datetime |
-| `gte` | 以上 | number, date, datetime |
-| `lt` | より小さい | number, date, datetime |
-| `lte` | 以下 | number, date, datetime |
-
-### 文字列演算子
-
-| 演算子 | 説明 | 使用可能な型 |
-|--------|------|-------------|
-| `contains` | 部分一致 | string |
-| `startsWith` | 前方一致 | string |
-| `endsWith` | 後方一致 | string |
-| `matches` | 正規表現マッチ | string |
-
-### 集合演算子
-
-| 演算子 | 説明 | 使用可能な型 |
-|--------|------|-------------|
-| `in` | いずれかに一致 | すべて（value は配列） |
-| `notIn` | いずれにも一致しない | すべて（value は配列） |
-
-### 存在演算子
-
-| 演算子 | 説明 | 使用可能な型 |
-|--------|------|-------------|
-| `isNull` | null である | すべて（value は true/false） |
-| `isEmpty` | 空である | string, array |
-
-### 配列演算子
-
-| 演算子 | 説明 | 使用可能な型 |
-|--------|------|-------------|
-| `hasAny` | いずれかを含む | array |
-| `hasAll` | すべてを含む | array |
-| `hasNone` | いずれも含まない | array |
-
-## 使用例
-
-### 単純なフィルター
-
-```json
-{ "field": "status", "op": "eq", "value": "published" }
-```
-
-### AND 条件
-
-```json
-{
-  "and": [
-    { "field": "status", "op": "eq", "value": "published" },
-    { "field": "createdAt", "op": "gte", "value": "2024-01-01" }
-  ]
-}
-```
-
-### OR 条件
-
-```json
-{
-  "or": [
-    { "field": "status", "op": "eq", "value": "draft" },
-    { "field": "status", "op": "eq", "value": "review" }
-  ]
-}
-```
-
-### NOT 条件
-
-```json
-{
-  "not": { "field": "status", "op": "eq", "value": "archived" }
-}
-```
-
-### 複合条件
-
-「公開中」かつ（「カテゴリがニュース」または「注目記事」）
-
-```json
-{
-  "and": [
-    { "field": "status", "op": "eq", "value": "published" },
-    {
-      "or": [
-        { "field": "category", "op": "eq", "value": "news" },
-        { "field": "featured", "op": "eq", "value": true }
-      ]
-    }
-  ]
-}
-```
-
-### IN 演算子
-
-```json
-{ "field": "status", "op": "in", "value": ["draft", "review", "published"] }
-```
-
-### リレーションフィルター
-
-```json
-{ "field": "author.role", "op": "eq", "value": "admin" }
-```
-
-ドット記法でリレーション先のフィールドを参照します。
-
-### 配列フィールドのフィルター
-
-```json
-{ "field": "tags", "op": "hasAny", "value": ["tech", "news"] }
-```
-
-## TypeSpec での定義
-
-### @filter
+## @filter
 
 フィールドをフィルター可能にします。
 
 ```typespec
-@resource("Post")
+@resource
 model Post {
   @filter
   status: Status;
@@ -192,30 +30,135 @@ model Post {
 }
 ```
 
-詳細は [Field - @filter](../typespec/field.md#filter) を参照。
+### 演算子を制限
 
-### namedFilter の高度な定義
+```typespec
+// すべての演算子を許可（デフォルト）
+@filter
+status: string;
+
+// 特定の演算子のみ許可
+@filter(["eq", "ne", "in"])
+status: string;
+```
+
+## @namedFilter
+
+定義済みフィルターを作成します。UI では「タブ」「ドロップダウン」など自由に表現できます。
+
+### 基本
 
 ```typespec
 @view(Post, "list")
+@namedFilter("all", "すべて", #{})
+@namedFilter("published", "公開中", #{ field: "status", op: "eq", value: "published" })
+@namedFilter("draft", "下書き", #{ field: "status", op: "eq", value: "draft" })
+model PostList {}
+```
+
+### AND 条件
+
+```typespec
 @namedFilter("recent_published", "最近の公開記事", #{
   and: [
     { field: "status", op: "eq", value: "published" },
     { field: "createdAt", op: "gte", value: "@relative(-7d)" }
   ]
 })
+```
+
+### OR 条件
+
+```typespec
+@namedFilter("unpublished", "未公開", #{
+  or: [
+    { field: "status", op: "eq", value: "draft" },
+    { field: "status", op: "eq", value: "review" }
+  ]
+})
+```
+
+### NOT 条件
+
+```typespec
+@namedFilter("active", "アクティブ", #{
+  not: { field: "status", op: "eq", value: "archived" }
+})
+```
+
+### 複合条件
+
+```typespec
+// 公開中 かつ (ニュース または 注目記事)
+@namedFilter("featured_news", "注目ニュース", #{
+  and: [
+    { field: "status", op: "eq", value: "published" },
+    {
+      or: [
+        { field: "category", op: "eq", value: "news" },
+        { field: "featured", op: "eq", value: true }
+      ]
+    }
+  ]
+})
+```
+
+### コンテキスト参照
+
+```typespec
+// 自分の記事
+@namedFilter("my_posts", "自分の記事", #{
+  field: "author.id", op: "eq", value: "@context.user.id"
+})
+
+// 自分の下書き
 @namedFilter("my_drafts", "自分の下書き", #{
   and: [
     { field: "status", op: "eq", value: "draft" },
     { field: "author.id", op: "eq", value: "@context.user.id" }
   ]
 })
-model PostList {}
 ```
+
+### リレーションフィルター
+
+ドット記法でリレーション先のフィールドを参照：
+
+```typespec
+@namedFilter("admin_posts", "管理者の記事", #{
+  field: "author.role", op: "eq", value: "admin"
+})
+```
+
+## 演算子一覧
+
+| 演算子 | 説明 | 適した型 |
+|--------|------|----------|
+| `eq` | 等しい | すべて |
+| `ne` | 等しくない | すべて |
+| `gt`, `gte` | より大きい、以上 | number, date |
+| `lt`, `lte` | より小さい、以下 | number, date |
+| `in` | いずれかに一致 | すべて |
+| `notIn` | いずれにも一致しない | すべて |
+| `contains` | 部分一致 | string |
+| `startsWith` | 前方一致 | string |
+| `endsWith` | 後方一致 | string |
+| `matches` | 正規表現 | string |
+| `isNull` | null 判定 | すべて |
+| `isEmpty` | 空判定 | string, array |
+| `hasAny` | いずれかを含む | array |
+| `hasAll` | すべてを含む | array |
+| `hasNone` | いずれも含まない | array |
+
+## 特殊な値
 
 ### 相対日付
 
-`@relative()` 関数で相対的な日付を指定できます。
+```typespec
+@namedFilter("recent", "最近", #{
+  field: "createdAt", op: "gte", value: "@relative(-7d)"
+})
+```
 
 | 式 | 説明 |
 |----|------|
@@ -228,104 +171,49 @@ model PostList {}
 
 ### コンテキスト参照
 
-`@context.*` でランタイムコンテキストを参照できます。
-
 | 式 | 説明 |
 |----|------|
 | `@context.user.id` | 現在のユーザー ID |
 | `@context.role` | 現在のロール |
 | `@context.custom.*` | カスタムコンテキスト |
 
-## TypeScript 型定義
+## コンパイル結果
 
-型定義は `packages/specloom/src/spec/index.ts` を参照：
+TypeSpec からコンパイルされる JSON 形式：
 
-```typescript
-type FilterExpression =
-  | FilterCondition
-  | { and: FilterExpression[] }
-  | { or: FilterExpression[] }
-  | { not: FilterExpression };
-
-interface FilterCondition {
-  field: string;
-  op: FilterOperator;
-  value: unknown;
-}
-
-type FilterOperator =
-  | "eq" | "ne" | "gt" | "gte" | "lt" | "lte"
-  | "contains" | "startsWith" | "endsWith" | "matches"
-  | "in" | "notIn"
-  | "isNull" | "isEmpty"
-  | "hasAny" | "hasAll" | "hasNone";
-```
-
-## API でのクエリ
-
-### クエリパラメータ形式
-
-```
-GET /api/posts?filter={"and":[{"field":"status","op":"eq","value":"published"}]}
-```
-
-URL エンコードが必要です。
-
-### POST ボディ形式
-
-複雑なクエリは POST で送信できます。
-
-```
-POST /api/posts/query
-Content-Type: application/json
-
+```json
 {
-  "filter": {
-    "and": [
-      { "field": "status", "op": "eq", "value": "published" },
-      { "field": "createdAt", "op": "gte", "value": "2024-01-01" }
-    ]
-  },
-  "sort": { "field": "createdAt", "order": "desc" },
-  "page": 1,
-  "perPage": 20
+  "namedFilters": [
+    {
+      "id": "recent_published",
+      "label": "最近の公開記事",
+      "filter": {
+        "and": [
+          { "field": "status", "op": "eq", "value": "published" },
+          { "field": "createdAt", "op": "gte", "value": "@relative(-7d)" }
+        ]
+      }
+    }
+  ]
 }
 ```
 
-## 実装ガイド
+この JSON を扱う TypeScript 型は `packages/specloom/src/spec/index.ts` で定義されています。
 
-### バックエンド実装例
+## 設計方針
 
-```typescript
-// フィルター式を ORM クエリに変換
-function buildQuery(filter: FilterExpression, qb: QueryBuilder): QueryBuilder {
-  if ('and' in filter) {
-    return filter.and.reduce((q, expr) => buildQuery(expr, q), qb);
-  }
-  if ('or' in filter) {
-    return qb.where(orBuilder => {
-      filter.or.forEach(expr => orBuilder.orWhere(/* ... */));
-    });
-  }
-  if ('not' in filter) {
-    return qb.whereNot(/* ... */);
-  }
-  
-  // FilterCondition
-  const { field, op, value } = filter;
-  switch (op) {
-    case 'eq': return qb.where(field, '=', value);
-    case 'ne': return qb.where(field, '!=', value);
-    case 'gt': return qb.where(field, '>', value);
-    case 'contains': return qb.where(field, 'like', `%${value}%`);
-    case 'in': return qb.whereIn(field, value);
-    // ...
-  }
-}
-```
+### specloom が定義するもの
+
+- フィルター可能なフィールド（`@filter`）
+- 定義済みフィルター（`@namedFilter`）
+- 演算子とフィルター式の構造
+
+### specloom が定義しないもの
+
+- 実際のクエリ実行（バックエンド/DB の責務）
+- UI での表現（フレームワークの責務）
 
 ## 関連ドキュメント
 
-- [List View](../typespec/list.md) - namedFilter の定義
-- [API Spec](./api.md) - API でのフィルター使用
-- [ViewModel Spec](./view_model.md) - フィルター状態の ViewModel 表現
+- [Field - @filter](../typespec/field.md#filter) - フィールドのフィルター設定
+- [List View - @namedFilter](../typespec/list.md#namedfilter) - 一覧画面でのフィルター定義

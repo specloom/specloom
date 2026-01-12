@@ -2,20 +2,25 @@
 
 specloom が出力する評価済みの ViewModel 仕様です。
 
-> **Note**: Definition Spec（v0.1.md）は静的な定義。ViewModel は runtime context で評価された結果です。
-> API レスポンス形式は [api.md](./api.md) を参照してください。
-
 ## 概要
 
 ```
-Definition Spec + Context (user, role, data) → ViewModel
+TypeSpec → Definition Spec (JSON) → 評価 → ViewModel
 ```
 
+| 段階 | 内容 | 例 |
+|------|------|-----|
+| TypeSpec | ユーザーが書く定義 | `@allowedWhen("role == 'admin'")` |
+| Definition Spec | コンパイル結果 | `"allowedWhen": "role == 'admin'"` |
+| ViewModel | 評価結果 | `"allowed": true` |
+
 ViewModel の特徴：
-- `allowedWhen` は評価済みの `allowed: boolean` になる
+- `allowedWhen` 式は評価済みの `allowed: boolean` になる
 - 実データ（rows, values）を含む
 - UI はロジックなしで描画するだけ
-- **pagination, sort は API 層の責務**（ViewModel には含まない）
+- pagination, sort は API 層の責務（ViewModel には含まない）
+
+> **Note**: API レスポンス形式は [api.md](./api.md) を参照してください。
 
 ## Context
 
