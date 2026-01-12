@@ -150,14 +150,21 @@ specloom の spec は 3 つの要素で構成されます。
 | ドキュメント | 内容 |
 |-------------|------|
 | [Resource](./resource.md) | Resource の定義方法 |
-| [Field](./field.md) | フィールドの種類と @ui |
+| [Field](./field.md) | フィールドの種類、@ui、@filter |
 | [Validation](./validation.md) | バリデーション |
 | [Relation](./relation.md) | リレーション |
-| [List View](./list.md) | 一覧画面 |
+| [List View](./list.md) | 一覧画面、namedFilter |
 | [Form View](./form.md) | 作成・編集画面 |
 | [Show View](./show.md) | 詳細画面 |
 | [Action](./action.md) | アクション |
 | [Examples](./examples.md) | 完全な例 |
+
+### Spec ドキュメント
+
+| ドキュメント | 内容 |
+|-------------|------|
+| [Filter Spec](../spec/filter.md) | 高度なフィルター式（AND/OR/演算子） |
+| [Philosophy](../spec/philosophy.md) | 設計思想、責務の分離 |
 
 ## TypeSpec を使わない場合
 

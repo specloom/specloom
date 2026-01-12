@@ -171,28 +171,28 @@ interface FilterCondition {
 
 ## TypeSpec での定義
 
-### @filterable
+### @filter
 
 フィールドをフィルター可能にします。
 
 ```typespec
 @resource("Post")
 model Post {
-  @filterable
+  @filter
   status: Status;
   
-  @filterable
-  @filterable.operators(["eq", "contains", "startsWith"])
+  @filter(["eq", "contains", "startsWith"])
   title: string;
   
-  @filterable
-  @filterable.operators(["gte", "lte", "eq"])
+  @filter(["gte", "lte", "eq"])
   createdAt: utcDateTime;
   
-  @filterable
+  @filter
   author: User;
 }
 ```
+
+詳細は [Field - @filter](../typespec/field.md#filter) を参照。
 
 ### namedFilter の高度な定義
 

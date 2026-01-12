@@ -244,6 +244,73 @@ title: string;
 
 省略するとフィールド名がそのまま使われます。
 
+## @filter
+
+フィールドをフィルター可能にします。
+
+```typespec
+@filter
+status: string;
+
+@filter
+createdAt: utcDateTime;
+
+@filter
+author: User;
+```
+
+### 使用可能な演算子を制限
+
+```typespec
+// すべての演算子を許可（デフォルト）
+@filter
+status: string;
+
+// 特定の演算子のみ許可
+@filter(["eq", "ne", "in"])
+status: string;
+
+// 文字列検索を許可
+@filter(["eq", "contains", "startsWith"])
+title: string;
+
+// 範囲検索を許可
+@filter(["eq", "gte", "lte"])
+createdAt: utcDateTime;
+```
+
+### 演算子一覧
+
+| 演算子 | 説明 | 適した型 |
+|--------|------|----------|
+| `eq` | 等しい | すべて |
+| `ne` | 等しくない | すべて |
+| `gt`, `gte` | より大きい、以上 | number, date |
+| `lt`, `lte` | より小さい、以下 | number, date |
+| `in`, `notIn` | いずれかに一致 | すべて |
+| `contains` | 部分一致 | string |
+| `startsWith` | 前方一致 | string |
+| `endsWith` | 後方一致 | string |
+| `isNull` | null 判定 | すべて |
+| `hasAny`, `hasAll` | 配列に含む | array |
+
+詳細は [Filter Spec](../spec/filter.md) を参照。
+
+### リレーションのフィルター
+
+リレーションフィールドに `@filter` を付けると、関連先のフィールドでフィルターできます。
+
+```typespec
+@filter
+author: User;
+```
+
+使用例（namedFilter や API クエリで）:
+```json
+{ "field": "author.id", "op": "eq", "value": "user-1" }
+{ "field": "author.role", "op": "eq", "value": "admin" }
+```
+
 ## 例
 
 ```typespec
