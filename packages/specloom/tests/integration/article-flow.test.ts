@@ -147,7 +147,12 @@ describe("統合テスト: 記事管理", () => {
   describe("一覧画面 (ListView)", () => {
     it("管理者は新規作成ボタンが表示される", () => {
       const { resource, view } = getResourceAndView<ListView>(spec, "list");
-      const context: Context = { role: "admin" };
+      const context: Context = {
+        user: {},
+        role: "admin",
+        permissions: [],
+        custom: {},
+      };
       const vm = evaluateListView({
         view,
         resource,
@@ -166,7 +171,12 @@ describe("統合テスト: 記事管理", () => {
 
     it("一般ユーザーは新規作成ボタンが非表示", () => {
       const { resource, view } = getResourceAndView<ListView>(spec, "list");
-      const context: Context = { role: "user" };
+      const context: Context = {
+        user: {},
+        role: "user",
+        permissions: [],
+        custom: {},
+      };
       const vm = evaluateListView({
         view,
         resource,
@@ -191,7 +201,12 @@ describe("統合テスト: 記事管理", () => {
 
     it("管理者は全アクションが許可される", () => {
       const { resource, view } = getResourceAndView<ShowView>(spec, "show");
-      const context: Context = { role: "admin" };
+      const context: Context = {
+        user: {},
+        role: "admin",
+        permissions: [],
+        custom: {},
+      };
       const vm = evaluateShowView({
         view,
         resource,
@@ -209,7 +224,12 @@ describe("統合テスト: 記事管理", () => {
 
     it("一般ユーザーは編集も削除も不可", () => {
       const { resource, view } = getResourceAndView<ShowView>(spec, "show");
-      const context: Context = { role: "user" };
+      const context: Context = {
+        user: {},
+        role: "user",
+        permissions: [],
+        custom: {},
+      };
       const vm = evaluateShowView({
         view,
         resource,
@@ -223,7 +243,12 @@ describe("統合テスト: 記事管理", () => {
 
     it("公開済み記事は publish アクションが非表示", () => {
       const { resource, view } = getResourceAndView<ShowView>(spec, "show");
-      const context: Context = { role: "admin" };
+      const context: Context = {
+        user: {},
+        role: "admin",
+        permissions: [],
+        custom: {},
+      };
       const publishedArticle = { ...articleData, status: "published" };
       const vm = evaluateShowView({
         view,
@@ -239,7 +264,12 @@ describe("統合テスト: 記事管理", () => {
   describe("編集フォーム (FormView)", () => {
     it("フォームフィールドが正しく取得できる", () => {
       const { resource, view } = getResourceAndView<FormView>(spec, "form");
-      const context: Context = { role: "admin" };
+      const context: Context = {
+        user: {},
+        role: "admin",
+        permissions: [],
+        custom: {},
+      };
       const vm = evaluateFormView({
         view,
         resource,
@@ -318,7 +348,12 @@ describe("統合テスト: 記事管理", () => {
 
   describe("フルフロー: 記事作成", () => {
     it("一覧 → フォーム → バリデーション → 保存の流れ", () => {
-      const context: Context = { role: "admin" };
+      const context: Context = {
+        user: {},
+        role: "admin",
+        permissions: [],
+        custom: {},
+      };
 
       // 1. 一覧画面で新規作成ボタンが有効か確認
       const { resource, view: listView } = getResourceAndView<ListView>(
