@@ -1,6 +1,11 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { ShowVM } from "../../src/ui/show.js";
 import type { ShowViewModel } from "../../src/ui/types.js";
+import { i18n } from "../../src/i18n/index.js";
+
+beforeEach(() => {
+  i18n.setLocale("ja");
+});
 
 const createShowVM = (overrides?: Partial<ShowViewModel>): ShowViewModel => ({
   type: "show",
@@ -116,8 +121,9 @@ describe("ShowVM", () => {
     it("formatValue で boolean をラベルに変換できる", () => {
       const vm = createShowVM();
       const isPublicField = ShowVM.field(vm, "isPublic")!;
-      expect(ShowVM.formatValue(isPublicField, true)).toBe("Yes");
-      expect(ShowVM.formatValue(isPublicField, false)).toBe("No");
+      // デフォルト日本語
+      expect(ShowVM.formatValue(isPublicField, true)).toBe("はい");
+      expect(ShowVM.formatValue(isPublicField, false)).toBe("いいえ");
     });
 
     it("formatValue で null/undefined は - を返す", () => {

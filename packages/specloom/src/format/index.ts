@@ -3,6 +3,7 @@
 // ============================================================
 
 import type { FieldKind } from "../spec/index.js";
+import { i18n } from "../i18n/index.js";
 
 /**
  * フォーマットオプション
@@ -15,13 +16,6 @@ export interface FormatOptions {
   maximumFractionDigits?: number;
   minimumFractionDigits?: number;
 }
-
-const defaultOptions: FormatOptions = {
-  locale: "ja-JP",
-  currency: "JPY",
-  dateStyle: "medium",
-  timeStyle: "short",
-};
 
 /**
  * フォーマット関数
@@ -38,8 +32,9 @@ export const Format = {
     try {
       const date = value instanceof Date ? value : new Date(value);
       if (isNaN(date.getTime())) return String(value);
-      return date.toLocaleDateString(options?.locale ?? defaultOptions.locale, {
-        dateStyle: options?.dateStyle ?? defaultOptions.dateStyle,
+      const t = i18n.t();
+      return date.toLocaleDateString(options?.locale ?? t.intlLocale, {
+        dateStyle: options?.dateStyle ?? "medium",
       });
     } catch {
       return String(value);
@@ -57,8 +52,9 @@ export const Format = {
     try {
       const date = value instanceof Date ? value : new Date(value);
       if (isNaN(date.getTime())) return String(value);
-      return date.toLocaleTimeString(options?.locale ?? defaultOptions.locale, {
-        timeStyle: options?.timeStyle ?? defaultOptions.timeStyle,
+      const t = i18n.t();
+      return date.toLocaleTimeString(options?.locale ?? t.intlLocale, {
+        timeStyle: options?.timeStyle ?? "short",
       });
     } catch {
       return String(value);
@@ -76,9 +72,10 @@ export const Format = {
     try {
       const date = value instanceof Date ? value : new Date(value);
       if (isNaN(date.getTime())) return String(value);
-      return date.toLocaleString(options?.locale ?? defaultOptions.locale, {
-        dateStyle: options?.dateStyle ?? defaultOptions.dateStyle,
-        timeStyle: options?.timeStyle ?? defaultOptions.timeStyle,
+      const t = i18n.t();
+      return date.toLocaleString(options?.locale ?? t.intlLocale, {
+        dateStyle: options?.dateStyle ?? "medium",
+        timeStyle: options?.timeStyle ?? "short",
       });
     } catch {
       return String(value);
@@ -98,7 +95,8 @@ export const Format = {
     if (value == null) return "";
     const num = typeof value === "string" ? parseFloat(value) : value;
     if (isNaN(num)) return String(value);
-    return num.toLocaleString(options?.locale ?? defaultOptions.locale, {
+    const t = i18n.t();
+    return num.toLocaleString(options?.locale ?? t.intlLocale, {
       maximumFractionDigits: options?.maximumFractionDigits,
       minimumFractionDigits: options?.minimumFractionDigits,
     });
@@ -114,9 +112,10 @@ export const Format = {
     if (value == null) return "";
     const num = typeof value === "string" ? parseFloat(value) : value;
     if (isNaN(num)) return String(value);
-    return num.toLocaleString(options?.locale ?? defaultOptions.locale, {
+    const t = i18n.t();
+    return num.toLocaleString(options?.locale ?? t.intlLocale, {
       style: "currency",
-      currency: options?.currency ?? defaultOptions.currency,
+      currency: options?.currency ?? t.defaultCurrency,
     });
   },
 
@@ -130,7 +129,8 @@ export const Format = {
     if (value == null) return "";
     const num = typeof value === "string" ? parseFloat(value) : value;
     if (isNaN(num)) return String(value);
-    return num.toLocaleString(options?.locale ?? defaultOptions.locale, {
+    const t = i18n.t();
+    return num.toLocaleString(options?.locale ?? t.intlLocale, {
       style: "percent",
       maximumFractionDigits: options?.maximumFractionDigits ?? 0,
     });
@@ -144,7 +144,10 @@ export const Format = {
     labels?: { true?: string; false?: string },
   ): string => {
     if (value == null) return "";
-    return value ? (labels?.true ?? "はい") : (labels?.false ?? "いいえ");
+    const t = i18n.t();
+    return value
+      ? (labels?.true ?? t.format.booleanTrue)
+      : (labels?.false ?? t.format.booleanFalse);
   },
 
   /**
@@ -199,10 +202,10 @@ export const Format = {
       const diffHour = Math.floor(diffMin / 60);
       const diffDay = Math.floor(diffHour / 24);
 
-      const rtf = new Intl.RelativeTimeFormat(
-        options?.locale ?? defaultOptions.locale,
-        { numeric: "auto" },
-      );
+      const t = i18n.t();
+      const rtf = new Intl.RelativeTimeFormat(options?.locale ?? t.intlLocale, {
+        numeric: "auto",
+      });
 
       if (diffDay > 30) return Format.date(value, options);
       if (diffDay > 0) return rtf.format(-diffDay, "day");
@@ -253,23 +256,23 @@ export const Format = {
     },
     options?: FormatOptions,
   ): string => {
-    if (value == null) return "-";
+    const t = i18n.t();
+    if (value == null) return t.format.empty;
 
     switch (field.kind) {
       case "boolean":
-        return Format.boolean(value as boolean, {
-          true: options?.locale?.startsWith("ja") ? "はい" : "Yes",
-          false: options?.locale?.startsWith("ja") ? "いいえ" : "No",
-        });
+        return Format.boolean(value as boolean);
       case "date":
-        return Format.date(value as Date | string, options) || "-";
+        return Format.date(value as Date | string, options) || t.format.empty;
       case "datetime":
-        return Format.datetime(value as Date | string, options) || "-";
+        return (
+          Format.datetime(value as Date | string, options) || t.format.empty
+        );
       case "number":
       case "integer":
-        return Format.number(value as number, options) || "-";
+        return Format.number(value as number, options) || t.format.empty;
       case "currency":
-        return Format.currency(value as number, options) || "-";
+        return Format.currency(value as number, options) || t.format.empty;
       case "enum":
       case "status":
         return (
@@ -279,11 +282,11 @@ export const Format = {
         if (typeof value !== "object" || value === null) return String(value);
         const rel = value as Record<string, unknown>;
         const labelField = field.relation?.labelField ?? "name";
-        return String(rel[labelField] ?? rel.id ?? "-");
+        return String(rel[labelField] ?? rel.id ?? t.format.empty);
       }
       case "multiselect":
       case "tags":
-        return Format.list(value as unknown[]) || "-";
+        return Format.list(value as unknown[]) || t.format.empty;
       default:
         return String(value);
     }

@@ -1,4 +1,5 @@
-import type { Field, FieldValidation } from "../spec/index.js";
+import type { Field } from "../spec/index.js";
+import { i18n } from "../i18n/index.js";
 
 /**
  * フィールドごとのエラーメッセージ
@@ -31,11 +32,12 @@ export function validateForm(
 export function validateField(field: Field, value: unknown): string[] {
   const errors: string[] = [];
   const validation = field.validation ?? {};
+  const t = i18n.t();
 
   // required
   if (field.required || validation.required) {
     if (isEmpty(value)) {
-      errors.push(`${field.label ?? field.name}は必須です`);
+      errors.push(t.validation.required(field.label ?? field.name));
       return errors; // 必須エラーの場合、他のバリデーションはスキップ
     }
   }
@@ -48,13 +50,13 @@ export function validateField(field: Field, value: unknown): string[] {
   // 文字列バリデーション
   if (typeof value === "string") {
     if (validation.minLength != null && value.length < validation.minLength) {
-      errors.push(`${validation.minLength}文字以上で入力してください`);
+      errors.push(t.validation.minLength(validation.minLength));
     }
     if (validation.maxLength != null && value.length > validation.maxLength) {
-      errors.push(`${validation.maxLength}文字以内で入力してください`);
+      errors.push(t.validation.maxLength(validation.maxLength));
     }
     if (validation.pattern != null) {
-      const patternError = validatePattern(value, validation.pattern);
+      const patternError = validatePattern(value, validation.pattern, t);
       if (patternError) {
         errors.push(patternError);
       }
@@ -64,20 +66,20 @@ export function validateField(field: Field, value: unknown): string[] {
   // 数値バリデーション
   if (typeof value === "number") {
     if (validation.min != null && value < validation.min) {
-      errors.push(`${validation.min}以上の値を入力してください`);
+      errors.push(t.validation.min(validation.min));
     }
     if (validation.max != null && value > validation.max) {
-      errors.push(`${validation.max}以下の値を入力してください`);
+      errors.push(t.validation.max(validation.max));
     }
   }
 
   // 配列バリデーション
   if (Array.isArray(value)) {
     if (validation.minItems != null && value.length < validation.minItems) {
-      errors.push(`${validation.minItems}件以上選択してください`);
+      errors.push(t.validation.minItems(validation.minItems));
     }
     if (validation.maxItems != null && value.length > validation.maxItems) {
-      errors.push(`${validation.maxItems}件以内で選択してください`);
+      errors.push(t.validation.maxItems(validation.maxItems));
     }
   }
 
@@ -87,12 +89,16 @@ export function validateField(field: Field, value: unknown): string[] {
 /**
  * パターンバリデーション
  */
-function validatePattern(value: string, pattern: string): string | null {
+function validatePattern(
+  value: string,
+  pattern: string,
+  t: ReturnType<typeof i18n.t>,
+): string | null {
   switch (pattern) {
     case "email": {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(value)) {
-        return "有効なメールアドレスを入力してください";
+        return t.validation.email;
       }
       break;
     }
@@ -100,14 +106,14 @@ function validatePattern(value: string, pattern: string): string | null {
       try {
         new URL(value);
       } catch {
-        return "有効なURLを入力してください";
+        return t.validation.url;
       }
       break;
     }
     case "tel": {
       const telRegex = /^[\d\-+()]+$/;
       if (!telRegex.test(value)) {
-        return "有効な電話番号を入力してください";
+        return t.validation.tel;
       }
       break;
     }
@@ -116,7 +122,7 @@ function validatePattern(value: string, pattern: string): string | null {
       try {
         const regex = new RegExp(pattern);
         if (!regex.test(value)) {
-          return "入力形式が正しくありません";
+          return t.validation.pattern;
         }
       } catch {
         // 無効な正規表現は無視

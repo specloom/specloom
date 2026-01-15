@@ -24,3 +24,6 @@ export * from "./serialize/index.js";
 
 // Filter
 export * from "./filter/index.js";
+
+// i18n
+export * from "./i18n/index.js";

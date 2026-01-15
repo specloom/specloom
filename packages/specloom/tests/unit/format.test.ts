@@ -1,5 +1,11 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { Format } from "../../src/format/index.js";
+import { i18n } from "../../src/i18n/index.js";
+
+// テスト前にロケールをリセット
+beforeEach(() => {
+  i18n.setLocale("ja");
+});
 
 describe("Format", () => {
   describe("date", () => {
@@ -81,13 +87,19 @@ describe("Format", () => {
 
   describe("currency", () => {
     it("通貨形式でフォーマットできる", () => {
-      const result = Format.currency(1234, { locale: "ja-JP", currency: "JPY" });
+      const result = Format.currency(1234, {
+        locale: "ja-JP",
+        currency: "JPY",
+      });
       expect(result).toContain("1,234");
       expect(result).toMatch(/¥|￥|円/);
     });
 
     it("USDでフォーマットできる", () => {
-      const result = Format.currency(1234.56, { locale: "en-US", currency: "USD" });
+      const result = Format.currency(1234.56, {
+        locale: "en-US",
+        currency: "USD",
+      });
       expect(result).toContain("$");
       expect(result).toContain("1,234.56");
     });
@@ -153,11 +165,15 @@ describe("Format", () => {
 
   describe("truncate", () => {
     it("文字列を省略できる", () => {
-      expect(Format.truncate("これは長いテキストです", 5)).toBe("これは長い...");
+      expect(Format.truncate("これは長いテキストです", 5)).toBe(
+        "これは長い...",
+      );
     });
 
     it("省略記号をカスタマイズできる", () => {
-      expect(Format.truncate("これは長いテキストです", 5, "…")).toBe("これは長い…");
+      expect(Format.truncate("これは長いテキストです", 5, "…")).toBe(
+        "これは長い…",
+      );
     });
 
     it("指定長以下なら省略しない", () => {
@@ -273,8 +289,13 @@ describe("Format", () => {
 
     it("boolean フィールドを locale に応じて変換できる", () => {
       const field = { kind: "boolean" as const };
-      expect(Format.field(true, field, { locale: "ja-JP" })).toBe("はい");
-      expect(Format.field(false, field, { locale: "en-US" })).toBe("No");
+      // デフォルト（日本語）
+      expect(Format.field(true, field)).toBe("はい");
+      expect(Format.field(false, field)).toBe("いいえ");
+      // 英語に切り替え
+      i18n.setLocale("en");
+      expect(Format.field(true, field)).toBe("Yes");
+      expect(Format.field(false, field)).toBe("No");
     });
 
     it("null/undefined は - を返す", () => {
