@@ -1,8 +1,8 @@
 import { For, Show } from "solid-js";
 import { ShowVM, type ShowViewModel } from "specloom";
 import { css } from "../../styled-system/css";
-import { ActionButton } from "./ActionButton.js";
-import { FieldDisplay } from "./FieldDisplay.js";
+import { ActionButton } from "./ActionButton.jsx";
+import { FieldDisplay } from "./FieldDisplay.jsx";
 
 export interface ShowViewProps {
   vm: ShowViewModel;
@@ -23,17 +23,23 @@ export function ShowView(props: ShowViewProps) {
           justifyContent: "space-between",
         })}
       >
-        <h1 class={css({ fontSize: "2xl", fontWeight: "bold" })}>{ShowVM.label(props.vm)}</h1>
+        <h1 class={css({ fontSize: "2xl", fontWeight: "bold" })}>
+          {ShowVM.label(props.vm)}
+        </h1>
         <div class={css({ display: "flex", gap: 2 })}>
           <For each={ShowVM.allowedActions(props.vm)}>
-            {(action) => <ActionButton action={action} onExecute={props.onAction} />}
+            {(action) => (
+              <ActionButton action={action} onExecute={props.onAction} />
+            )}
           </For>
         </div>
       </div>
 
       {/* Loading */}
       <Show when={ShowVM.loading(props.vm)}>
-        <div class={css({ textAlign: "center", py: 8, color: "gray.500" })}>読み込み中...</div>
+        <div class={css({ textAlign: "center", py: 8, color: "gray.500" })}>
+          読み込み中...
+        </div>
       </Show>
 
       {/* Error */}
@@ -117,7 +123,9 @@ function FieldList(props: { fields: ReturnType<typeof ShowVM.fields> }) {
               _last: { borderBottomWidth: 0 },
             })}
           >
-            <dt class={css({ color: "gray.600", fontWeight: "medium" })}>{field.label}</dt>
+            <dt class={css({ color: "gray.600", fontWeight: "medium" })}>
+              {field.label}
+            </dt>
             <dd>
               <FieldDisplay field={field} value={field.value} />
             </dd>

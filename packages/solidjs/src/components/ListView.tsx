@@ -1,8 +1,8 @@
 import { For, Show } from "solid-js";
 import { ListVM, type ListViewModel } from "specloom";
 import { css } from "../../styled-system/css";
-import { ActionButton } from "./ActionButton.js";
-import { FieldDisplay } from "./FieldDisplay.js";
+import { ActionButton } from "./ActionButton.jsx";
+import { FieldDisplay } from "./FieldDisplay.jsx";
 
 export interface ListViewProps {
   vm: ListViewModel;

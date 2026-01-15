@@ -1,8 +1,8 @@
 import { For, Show } from "solid-js";
 import { FormVM, type FormViewModel } from "specloom";
 import { css } from "../../styled-system/css";
-import { ActionButton } from "./ActionButton.js";
-import { FieldInput } from "./FieldInput.js";
+import { ActionButton } from "./ActionButton.jsx";
+import { FieldInput } from "./FieldInput.jsx";
 
 export interface FormViewProps {
   vm: FormViewModel;
@@ -35,17 +35,23 @@ export function FormView(props: FormViewProps) {
           justifyContent: "space-between",
         })}
       >
-        <h1 class={css({ fontSize: "2xl", fontWeight: "bold" })}>{FormVM.label(props.vm)}</h1>
+        <h1 class={css({ fontSize: "2xl", fontWeight: "bold" })}>
+          {FormVM.label(props.vm)}
+        </h1>
         <div class={css({ display: "flex", gap: 2 })}>
           <For each={FormVM.allowedActions(props.vm)}>
-            {(action) => <ActionButton action={action} onExecute={props.onAction} />}
+            {(action) => (
+              <ActionButton action={action} onExecute={props.onAction} />
+            )}
           </For>
         </div>
       </div>
 
       {/* Loading */}
       <Show when={FormVM.loading(props.vm)}>
-        <div class={css({ textAlign: "center", py: 8, color: "gray.500" })}>読み込み中...</div>
+        <div class={css({ textAlign: "center", py: 8, color: "gray.500" })}>
+          読み込み中...
+        </div>
       </Show>
 
       {/* Error */}
@@ -120,7 +126,9 @@ export function FormView(props: FormViewProps) {
         </Show>
 
         {/* Submit Button */}
-        <div class={css({ display: "flex", justifyContent: "flex-end", gap: 3 })}>
+        <div
+          class={css({ display: "flex", justifyContent: "flex-end", gap: 3 })}
+        >
           <button
             type="submit"
             disabled={!FormVM.canSubmit(props.vm)}
@@ -155,7 +163,9 @@ function FieldGroup(props: {
     <div class={css({ display: "flex", flexDirection: "column", gap: 5 })}>
       <For each={props.fields}>
         {(field) => (
-          <div class={css({ display: "flex", flexDirection: "column", gap: 1.5 })}>
+          <div
+            class={css({ display: "flex", flexDirection: "column", gap: 1.5 })}
+          >
             {/* Label */}
             <label
               for={field.name}
@@ -183,13 +193,19 @@ function FieldGroup(props: {
 
             {/* Hint */}
             <Show when={field.hint}>
-              <p class={css({ fontSize: "sm", color: "gray.500" })}>{field.hint}</p>
+              <p class={css({ fontSize: "sm", color: "gray.500" })}>
+                {field.hint}
+              </p>
             </Show>
 
             {/* Errors */}
             <Show when={FormVM.hasError(props.vm, field.name)}>
               <For each={FormVM.fieldErrors(props.vm, field.name)}>
-                {(error) => <p class={css({ fontSize: "sm", color: "red.500" })}>{error}</p>}
+                {(error) => (
+                  <p class={css({ fontSize: "sm", color: "red.500" })}>
+                    {error}
+                  </p>
+                )}
               </For>
             </Show>
           </div>

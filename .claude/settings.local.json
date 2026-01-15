@@ -10,7 +10,9 @@
       "mcp__ark-ui__get_example",
       "mcp__acp__Edit",
       "Skill(codex-review)",
-      "Skill(codex-review:*)"
+      "Skill(codex-review:*)",
+      "Bash(pnpm typecheck:*)",
+      "Bash(codex exec -c model_reasoning_effort=\"medium\" --sandbox read-only \"以下の変更をレビューせよ。出力はJSON1つのみ。スキーマは末尾参照。\n\nこれはレビューゲートとして実行されている。blocking が1件でもあれば ok: false とし、修正→再レビューで収束させる前提で指摘せよ。\n\ndiff_range: HEAD\n観点: 依存関係、責務分割、破壊的変更、セキュリティ設計、correctness\n\n前回メモ: FieldRenderer互換の有無と、FormFieldVMの全kindが新FieldInputで扱えているかを重点的に再確認する。\n\n## 前回の修正内容\n1. index.ts に FieldRenderer 互換エクスポートを追加（deprecated として FieldDisplay を re-export）\n2. FieldInput.tsx に FieldKind 全バリアント対応を追加\n   - longText, json → textarea\n   - tel → type=\"\"tel\"\"\n   - time → type=\"\"time\"\"\n   - percent → NumberInput\n   - status → EnumInput\n   - relation → RelationInput\n   - file, image → FileInput\n3. FieldDisplay.tsx に URL スキーム検証を追加（http/https のみ許可）\n\n## 変更ファイル\n- packages/solidjs/src/index.ts \\(互換エクスポート追加\\)\n- packages/solidjs/src/components/FieldInput.tsx \\(FieldKind全対応\\)\n- packages/solidjs/src/components/FieldDisplay.tsx \\(URLスキーム検証\\)\n\n出力スキーマ:\n{\n  \"\"ok\"\": boolean,\n  \"\"phase\"\": \"\"diff\"\",\n  \"\"summary\"\": \"\"レビューの要約\"\",\n  \"\"issues\"\": [\n    {\n      \"\"severity\"\": \"\"blocking\"\" | \"\"advisory\"\",\n      \"\"category\"\": \"\"correctness\"\" | \"\"security\"\" | \"\"perf\"\" | \"\"maintainability\"\" | \"\"testing\"\" | \"\"style\"\",\n      \"\"file\"\": \"\"ファイルパス\"\",\n      \"\"lines\"\": \"\"行番号範囲\"\",\n      \"\"problem\"\": \"\"問題の説明\"\",\n      \"\"recommendation\"\": \"\"修正案\"\"\n    }\n  ],\n  \"\"notes_for_next_review\"\": \"\"メモ\"\"\n}\n\nフィールド説明:\n- ok: blockingなissueが0件ならtrue、1件以上ならfalse\n- severity: blocking（修正必須）/ advisory（推奨・警告）\n- category: correctness / security / perf / maintainability / testing / style\")"
     ]
   }
 }

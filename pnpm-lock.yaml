@@ -21,11 +21,8 @@ importers:
         specifier: 4.0.17
         version: 4.0.17(lightningcss@1.25.1)(yaml@2.5.1)
 
-  examples/solidjs-app:
+  examples/solid-ui:
     dependencies:
-      '@ark-ui/solid':
-        specifier: ^5.0.0
-        version: 5.30.0(solid-js@1.9.10)
       '@specloom/solidjs':
         specifier: workspace:*
         version: link:../../packages/solidjs
@@ -36,12 +33,6 @@ importers:
         specifier: workspace:*
         version: link:../../packages/specloom
     devDependencies:
-      '@pandacss/dev':
-        specifier: ^0.52.0
-        version: 0.52.0(typescript@5.9.3)
-      '@park-ui/panda-preset':
-        specifier: ^0.43.0
-        version: 0.43.1(@internationalized/date@3.5.5)(@pandacss/dev@0.52.0(typescript@5.9.3))
       typescript:
         specifier: ^5.7.0
         version: 5.9.3
@@ -74,7 +65,7 @@ importers:
         version: 5.30.0(solid-js@1.9.10)
       '@park-ui/panda-preset':
         specifier: ^0.43.0
-        version: 0.43.1(@internationalized/date@3.10.0)(@pandacss/dev@0.52.0(typescript@5.9.3))
+        version: 0.43.1(@internationalized/date@3.5.5)(@pandacss/dev@0.52.0(typescript@5.9.3))
       specloom:
         specifier: workspace:*
         version: link:../specloom
@@ -2609,49 +2600,6 @@ snapshots:
 
   '@apidevtools/swagger-methods@3.0.2': {}
 
-  '@ark-ui/anatomy@3.5.0(@internationalized/date@3.10.0)':
-    dependencies:
-      '@zag-js/accordion': 0.62.1
-      '@zag-js/anatomy': 0.62.1
-      '@zag-js/avatar': 0.62.1
-      '@zag-js/carousel': 0.62.1
-      '@zag-js/checkbox': 0.62.1
-      '@zag-js/clipboard': 0.62.1
-      '@zag-js/collapsible': 0.62.1
-      '@zag-js/color-picker': 0.62.1
-      '@zag-js/color-utils': 0.62.1
-      '@zag-js/combobox': 0.62.1
-      '@zag-js/date-picker': 0.62.1
-      '@zag-js/date-utils': 0.62.1(@internationalized/date@3.10.0)
-      '@zag-js/dialog': 0.62.1
-      '@zag-js/editable': 0.62.1
-      '@zag-js/file-upload': 0.62.1
-      '@zag-js/hover-card': 0.62.1
-      '@zag-js/menu': 0.62.1
-      '@zag-js/number-input': 0.62.1
-      '@zag-js/pagination': 0.62.1
-      '@zag-js/pin-input': 0.62.1
-      '@zag-js/popover': 0.62.1
-      '@zag-js/presence': 0.62.1
-      '@zag-js/progress': 0.62.1
-      '@zag-js/qr-code': 0.62.1
-      '@zag-js/radio-group': 0.62.1
-      '@zag-js/rating-group': 0.62.1
-      '@zag-js/select': 0.62.1
-      '@zag-js/signature-pad': 0.62.1
-      '@zag-js/slider': 0.62.1
-      '@zag-js/splitter': 0.62.1
-      '@zag-js/switch': 0.62.1
-      '@zag-js/tabs': 0.62.1
-      '@zag-js/tags-input': 0.62.1
-      '@zag-js/time-picker': 0.62.1
-      '@zag-js/toast': 0.62.1
-      '@zag-js/toggle-group': 0.62.1
-      '@zag-js/tooltip': 0.62.1
-      '@zag-js/tree-view': 0.62.1
-    transitivePeerDependencies:
-      - '@internationalized/date'
-
   '@ark-ui/anatomy@3.5.0(@internationalized/date@3.5.5)':
     dependencies:
       '@zag-js/accordion': 0.62.1
@@ -2822,7 +2770,7 @@ snapshots:
 
   '@babel/helper-module-imports@7.18.6':
     dependencies:
-      '@babel/types': 7.28.5
+      '@babel/types': 7.28.6
 
   '@babel/helper-module-imports@7.28.6':
     dependencies:
@@ -3386,14 +3334,6 @@ snapshots:
 
   '@pandacss/types@0.52.0': {}
 
-  '@park-ui/panda-preset@0.43.1(@internationalized/date@3.10.0)(@pandacss/dev@0.52.0(typescript@5.9.3))':
-    dependencies:
-      '@ark-ui/anatomy': 3.5.0(@internationalized/date@3.10.0)
-      '@pandacss/dev': 0.52.0(typescript@5.9.3)
-      effect: 3.10.15
-    transitivePeerDependencies:
-      - '@internationalized/date'
-
   '@park-ui/panda-preset@0.43.1(@internationalized/date@3.5.5)(@pandacss/dev@0.52.0(typescript@5.9.3))':
     dependencies:
       '@ark-ui/anatomy': 3.5.0(@internationalized/date@3.5.5)
@@ -3529,24 +3469,24 @@ snapshots:
 
   '@types/babel__core@7.20.5':
     dependencies:
-      '@babel/parser': 7.28.5
-      '@babel/types': 7.28.5
+      '@babel/parser': 7.28.6
+      '@babel/types': 7.28.6
       '@types/babel__generator': 7.27.0
       '@types/babel__template': 7.4.4
       '@types/babel__traverse': 7.28.0
 
   '@types/babel__generator@7.27.0':
     dependencies:
-      '@babel/types': 7.28.5
+      '@babel/types': 7.28.6
 
   '@types/babel__template@7.4.4':
     dependencies:
-      '@babel/parser': 7.28.5
-      '@babel/types': 7.28.5
+      '@babel/parser': 7.28.6
+      '@babel/types': 7.28.6
 
   '@types/babel__traverse@7.28.0':
     dependencies:
-      '@babel/types': 7.28.5
+      '@babel/types': 7.28.6
 
   '@types/chai@5.2.3':
     dependencies:
@@ -3937,10 +3877,6 @@ snapshots:
       '@zag-js/popper': 1.31.1
       '@zag-js/types': 1.31.1
       '@zag-js/utils': 1.31.1
-
-  '@zag-js/date-utils@0.62.1(@internationalized/date@3.10.0)':
-    dependencies:
-      '@internationalized/date': 3.10.0
 
   '@zag-js/date-utils@0.62.1(@internationalized/date@3.5.5)':
     dependencies:
@@ -4729,7 +4665,7 @@ snapshots:
       '@babel/core': 7.28.6
       '@babel/helper-module-imports': 7.18.6
       '@babel/plugin-syntax-jsx': 7.28.6(@babel/core@7.28.6)
-      '@babel/types': 7.28.5
+      '@babel/types': 7.28.6
       html-entities: 2.3.3
       parse5: 7.3.0
 
@@ -5408,7 +5344,7 @@ snapshots:
     dependencies:
       '@babel/generator': 7.28.6
       '@babel/helper-module-imports': 7.28.6
-      '@babel/types': 7.28.5
+      '@babel/types': 7.28.6
       solid-js: 1.9.10
     transitivePeerDependencies:
       - supports-color
