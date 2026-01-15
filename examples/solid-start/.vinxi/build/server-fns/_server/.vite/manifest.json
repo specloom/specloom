@@ -1,0 +1,120 @@
+{
+  "_Show-CkBOW0P5.js": {
+    "file": "assets/Show-CkBOW0P5.js",
+    "name": "Show"
+  },
+  "_components-DCP2DDCJ.js": {
+    "file": "assets/components-DCP2DDCJ.js",
+    "name": "components",
+    "imports": [
+      "_routing-vMheQ2Vk.js"
+    ]
+  },
+  "_routing-vMheQ2Vk.js": {
+    "file": "assets/routing-vMheQ2Vk.js",
+    "name": "routing"
+  },
+  "_server-fns-BEqAC-Go.js": {
+    "file": "assets/server-fns-BEqAC-Go.js",
+    "name": "server-fns",
+    "dynamicImports": [
+      "src/routes/(admin)/orders.tsx?pick=default&pick=$css",
+      "src/routes/(admin)/orders.tsx?pick=default&pick=$css",
+      "src/routes/(admin)/posts.tsx?pick=default&pick=$css",
+      "src/routes/(admin)/posts.tsx?pick=default&pick=$css",
+      "src/routes/(admin)/products.tsx?pick=default&pick=$css",
+      "src/routes/(admin)/products.tsx?pick=default&pick=$css",
+      "src/routes/(admin)/users.tsx?pick=default&pick=$css",
+      "src/routes/(admin)/users.tsx?pick=default&pick=$css",
+      "src/routes/(admin).tsx?pick=default&pick=$css",
+      "src/routes/(admin).tsx?pick=default&pick=$css",
+      "src/routes/index.tsx?pick=default&pick=$css",
+      "src/routes/index.tsx?pick=default&pick=$css",
+      "src/app.tsx"
+    ]
+  },
+  "src/app.tsx": {
+    "file": "assets/app-qbLpREiu.js",
+    "name": "app",
+    "src": "src/app.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_server-fns-BEqAC-Go.js",
+      "_routing-vMheQ2Vk.js"
+    ],
+    "css": [
+      "assets/app-DUogfIl5.css"
+    ]
+  },
+  "src/routes/(admin).tsx?pick=default&pick=$css": {
+    "file": "(admin).js",
+    "name": "(admin)",
+    "src": "src/routes/(admin).tsx?pick=default&pick=$css",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_routing-vMheQ2Vk.js",
+      "_components-DCP2DDCJ.js"
+    ]
+  },
+  "src/routes/(admin)/orders.tsx?pick=default&pick=$css": {
+    "file": "orders.js",
+    "name": "orders",
+    "src": "src/routes/(admin)/orders.tsx?pick=default&pick=$css",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_Show-CkBOW0P5.js"
+    ]
+  },
+  "src/routes/(admin)/posts.tsx?pick=default&pick=$css": {
+    "file": "posts.js",
+    "name": "posts",
+    "src": "src/routes/(admin)/posts.tsx?pick=default&pick=$css",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_Show-CkBOW0P5.js"
+    ]
+  },
+  "src/routes/(admin)/products.tsx?pick=default&pick=$css": {
+    "file": "products.js",
+    "name": "products",
+    "src": "src/routes/(admin)/products.tsx?pick=default&pick=$css",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_Show-CkBOW0P5.js"
+    ]
+  },
+  "src/routes/(admin)/users.tsx?pick=default&pick=$css": {
+    "file": "users.js",
+    "name": "users",
+    "src": "src/routes/(admin)/users.tsx?pick=default&pick=$css",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_Show-CkBOW0P5.js"
+    ]
+  },
+  "src/routes/index.tsx?pick=default&pick=$css": {
+    "file": "index.js",
+    "name": "index",
+    "src": "src/routes/index.tsx?pick=default&pick=$css",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_components-DCP2DDCJ.js",
+      "_routing-vMheQ2Vk.js"
+    ]
+  },
+  "virtual:$vinxi/handler/server-fns": {
+    "file": "server-fns.js",
+    "name": "server-fns",
+    "src": "virtual:$vinxi/handler/server-fns",
+    "isEntry": true,
+    "imports": [
+      "_server-fns-BEqAC-Go.js"
+    ]
+  }
+}

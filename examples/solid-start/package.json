@@ -1,0 +1,27 @@
+{
+  "name": "solid-start-example",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vinxi dev",
+    "build": "vinxi build",
+    "start": "vinxi start"
+  },
+  "dependencies": {
+    "lucide-solid": "latest",
+    "@solidjs/router": "^0.15.3",
+    "@solidjs/start": "^1.1.0",
+    "@specloom/solidjs2": "workspace:*",
+    "lucide-solid": "^0.562.0",
+    "solid-js": "^1.9.5",
+    "specloom": "workspace:*",
+    "vinxi": "^0.5.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.18",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.18"
+  }
+}
