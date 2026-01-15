@@ -12,7 +12,10 @@ export default defineConfig({
       radius: "md",
     }),
   ],
-  include: ["./src/**/*.{js,jsx,ts,tsx}"],
+  include: [
+    "./src/**/*.{js,jsx,ts,tsx}",
+    "../../packages/solidjs/src/**/*.{js,jsx,ts,tsx}",
+  ],
   jsxFramework: "solid",
   outdir: "styled-system",
 });

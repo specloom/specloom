@@ -23,6 +23,9 @@ importers:
 
   examples/solidjs-app:
     dependencies:
+      '@ark-ui/solid':
+        specifier: ^5.0.0
+        version: 5.30.0(solid-js@1.9.10)
       '@specloom/solidjs':
         specifier: workspace:*
         version: link:../../packages/solidjs
@@ -38,7 +41,7 @@ importers:
         version: 0.52.0(typescript@5.9.3)
       '@park-ui/panda-preset':
         specifier: ^0.43.0
-        version: 0.43.1(@internationalized/date@3.10.0)(@pandacss/dev@0.52.0(typescript@5.9.3))
+        version: 0.43.1(@internationalized/date@3.5.5)(@pandacss/dev@0.52.0(typescript@5.9.3))
       typescript:
         specifier: ^5.7.0
         version: 5.9.3
@@ -71,7 +74,7 @@ importers:
         version: 5.30.0(solid-js@1.9.10)
       '@park-ui/panda-preset':
         specifier: ^0.43.0
-        version: 0.43.1(@internationalized/date@3.5.5)(@pandacss/dev@0.52.0(typescript@5.9.3))
+        version: 0.43.1(@internationalized/date@3.10.0)(@pandacss/dev@0.52.0(typescript@5.9.3))
       specloom:
         specifier: workspace:*
         version: link:../specloom

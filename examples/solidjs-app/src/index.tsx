@@ -1,7 +1,12 @@
 /* @refresh reload */
 import { render } from "solid-js/web";
 import App from "./App.tsx";
-import "./index.css";
+// Use CSS bundled from @specloom/solidjs package
+import "@specloom/solidjs/styles.css";
+// App-specific styles (sidebar, layout)
+import "../styled-system/styles.css";
+// Custom theme overrides
+import "./custom-theme.css";
 
 const root = document.getElementById("app");
 

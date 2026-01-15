@@ -1,0 +1,201 @@
+/*
+ * Custom Theme Example
+ * body.custom-theme がある時だけ適用される
+ * data-specloom 属性を使ったカスタマイズ例
+ */
+
+/* ============================================================
+   ListView カスタマイズ
+   ============================================================ */
+
+/* テーブル全体 */
+.custom-theme [data-specloom="list-table"] {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* テーブルヘッダー */
+.custom-theme [data-specloom="list-table"] thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.custom-theme [data-specloom="list-table"] th {
+  color: white !important;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+/* ソートボタン */
+.custom-theme [data-specloom="list-table"] th button {
+  color: white !important;
+}
+
+/* 行のホバー効果 */
+.custom-theme [data-specloom="list-row"]:hover {
+  background: #f0f4ff !important;
+  transition: background 0.2s ease;
+}
+
+/* 選択された行 */
+.custom-theme [data-specloom="list-row"][data-selected="true"] {
+  background: #e0e7ff !important;
+  border-left: 3px solid #667eea;
+}
+
+/* 空状態 */
+.custom-theme [data-specloom="list-empty"] {
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%) !important;
+  border: 2px dashed #cbd5e1;
+  color: #64748b !important;
+}
+
+/* ============================================================
+   FormView カスタマイズ
+   ============================================================ */
+
+/* フォームカード */
+.custom-theme [data-specloom="form-card"] {
+  border: none !important;
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.15);
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+
+/* フォームタイトル */
+.custom-theme [data-specloom="form-title"] {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* フィールドグリッド */
+.custom-theme [data-specloom="form-fields"] {
+  padding: 1.5rem;
+}
+
+/* 個別フィールド */
+.custom-theme [data-specloom="form-field-wrapper"] {
+  padding: 0.75rem;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.custom-theme [data-specloom="form-field-wrapper"]:hover {
+  background: #f8fafc;
+}
+
+/* アクションフッター */
+.custom-theme [data-specloom="form-actions"] {
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%) !important;
+  border-top: 1px solid #e2e8f0 !important;
+}
+
+/* バリデーションサマリー */
+.custom-theme [data-specloom="form-validation-summary"] {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%) !important;
+  border: none !important;
+  border-left: 4px solid #ef4444 !important;
+  border-radius: 0 8px 8px 0 !important;
+}
+
+/* 未保存インジケーター */
+.custom-theme [data-specloom="form-dirty-indicator"] {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important;
+  border: none !important;
+  border-left: 4px solid #f59e0b !important;
+  color: #92400e !important;
+}
+
+/* ============================================================
+   ShowView カスタマイズ
+   ============================================================ */
+
+/* 詳細カード */
+.custom-theme [data-specloom="show-card"] {
+  border: none !important;
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.15);
+  border-radius: 12px !important;
+}
+
+/* フィールド行 */
+.custom-theme [data-specloom="show-field"] {
+  padding: 1rem;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.custom-theme [data-specloom="show-field"]:hover {
+  background: #f8fafc;
+}
+
+/* ============================================================
+   ActionButton カスタマイズ
+   ============================================================ */
+
+/* プライマリボタン */
+.custom-theme [data-specloom="action-button"][data-variant="primary"] {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border: none !important;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  transition: all 0.2s ease;
+}
+
+.custom-theme [data-specloom="action-button"][data-variant="primary"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+/* デンジャーボタン */
+.custom-theme [data-specloom="action-button"][data-variant="danger"] {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+}
+
+.custom-theme [data-specloom="action-button"][data-variant="danger"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+}
+
+/* 確認ダイアログ */
+.custom-theme [data-specloom="confirm-dialog"] {
+  border-radius: 16px !important;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25) !important;
+}
+
+.custom-theme [data-specloom="confirm-title"] {
+  font-size: 1.25rem !important;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ============================================================
+   共通カスタマイズ
+   ============================================================ */
+
+/* タイトル共通 */
+.custom-theme [data-specloom="list-title"],
+.custom-theme [data-specloom="show-title"] {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ヘッダーアクション */
+.custom-theme [data-specloom="list-header-actions"],
+.custom-theme [data-specloom="show-actions"] {
+  gap: 0.75rem;
+}
+
+/* ツールバー */
+.custom-theme [data-specloom="list-toolbar"] {
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+}

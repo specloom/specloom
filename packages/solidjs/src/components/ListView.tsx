@@ -1,6 +1,20 @@
 import { For, Show, createSignal } from "solid-js";
 import type { ListViewModel, ListFieldVM, RowVM, ActionVM } from "specloom";
+import { styled } from "../../styled-system/jsx";
+import { css } from "../../styled-system/css";
+import { table } from "../../styled-system/recipes";
+import { input } from "../../styled-system/recipes";
+import { button } from "../../styled-system/recipes";
+import { badge } from "../../styled-system/recipes";
 import { ActionButton } from "./ActionButton.tsx";
+
+// ============================================================
+// Styled Components
+// ============================================================
+
+const StyledInput = styled("input", input);
+const StyledButton = styled("button", button);
+const StyledBadge = styled("span", badge);
 
 // ============================================================
 // Types
@@ -26,6 +40,8 @@ export function ListView(props: ListViewProps) {
     props.vm.selection.selected,
   );
   const [currentSort, setCurrentSort] = createSignal(props.vm.defaultSort);
+
+  const tableStyles = table();
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -67,18 +83,35 @@ export function ListView(props: ListViewProps) {
   };
 
   const handleBulkAction = (actionId: string) => {
-    // Bulk action uses selected rows
     props.onAction(actionId);
   };
 
   return (
-    <div data-component="list-view">
+    <div
+      data-specloom="list-view"
+      class={css({ display: "flex", flexDirection: "column", gap: "4" })}
+    >
       {/* Header */}
-      <header>
-        <h1>{props.vm.label}</h1>
+      <header
+        data-specloom="list-header"
+        class={css({
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        })}
+      >
+        <h1
+          data-specloom="list-title"
+          class={css({ fontSize: "2xl", fontWeight: "semibold" })}
+        >
+          {props.vm.label}
+        </h1>
 
         {/* Header Actions */}
-        <div data-slot="header-actions">
+        <div
+          data-specloom="list-header-actions"
+          class={css({ display: "flex", gap: "2" })}
+        >
           <For each={props.vm.headerActions}>
             {(action) => (
               <ActionButton action={action} onExecute={handleHeaderAction} />
@@ -88,31 +121,42 @@ export function ListView(props: ListViewProps) {
       </header>
 
       {/* Search & Filters */}
-      <div data-slot="toolbar">
+      <div
+        data-specloom="list-toolbar"
+        class={css({
+          display: "flex",
+          gap: "3",
+          alignItems: "center",
+          flexWrap: "wrap",
+        })}
+      >
         {/* Search */}
         <Show when={props.vm.search.fields.length > 0}>
-          <input
+          <StyledInput
             type="search"
             placeholder="検索..."
             value={searchQuery()}
             onInput={(e) => handleSearch(e.currentTarget.value)}
+            size="sm"
+            class={css({ minWidth: "200px" })}
           />
         </Show>
 
         {/* Named Filters */}
         <Show when={props.vm.filters.named.length > 0}>
-          <div data-slot="filters">
+          <div class={css({ display: "flex", gap: "2" })}>
             <For each={props.vm.filters.named}>
               {(filter) => (
-                <button
+                <StyledButton
                   type="button"
-                  data-active={filter.active}
+                  variant={filter.active ? "solid" : "outline"}
+                  size="xs"
                   onClick={() =>
                     props.onFilterChange?.(filter.id, !filter.active)
                   }
                 >
                   {filter.label}
-                </button>
+                </StyledButton>
               )}
             </For>
           </div>
@@ -122,8 +166,17 @@ export function ListView(props: ListViewProps) {
         <Show
           when={selectedIds().length > 0 && props.vm.bulkActions.length > 0}
         >
-          <div data-slot="bulk-actions">
-            <span>{selectedIds().length}件選択中</span>
+          <div
+            class={css({
+              display: "flex",
+              gap: "2",
+              alignItems: "center",
+              ml: "auto",
+            })}
+          >
+            <StyledBadge variant="solid">
+              {selectedIds().length}件選択中
+            </StyledBadge>
             <For each={props.vm.bulkActions}>
               {(action) => (
                 <ActionButton action={action} onExecute={handleBulkAction} />
@@ -134,75 +187,102 @@ export function ListView(props: ListViewProps) {
       </div>
 
       {/* Table */}
-      <table>
-        <thead>
-          <tr>
-            {/* Selection checkbox */}
-            <Show when={props.vm.selection.mode !== "none"}>
-              <th>
-                <Show when={props.vm.selection.mode === "multi"}>
-                  <input
-                    type="checkbox"
-                    checked={isAllSelected()}
-                    onChange={(e) => handleSelectAll(e.currentTarget.checked)}
-                  />
-                </Show>
-              </th>
-            </Show>
-
-            {/* Column headers */}
-            <For each={props.vm.fields}>
-              {(field) => (
-                <th>
-                  <Show
-                    when={field.sortable}
-                    fallback={<span>{field.label}</span>}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => handleSort(field.name)}
-                      data-sorted={currentSort()?.field === field.name}
-                      data-order={currentSort()?.order}
-                    >
-                      {field.label}
-                      <SortIndicator
-                        field={field.name}
-                        currentSort={currentSort()}
-                      />
-                    </button>
+      <div
+        data-specloom="list-table-wrapper"
+        class={css({ overflowX: "auto" })}
+      >
+        <table data-specloom="list-table" class={tableStyles.root}>
+          <thead class={tableStyles.head}>
+            <tr class={tableStyles.row}>
+              {/* Selection checkbox */}
+              <Show when={props.vm.selection.mode !== "none"}>
+                <th class={tableStyles.header} style={{ width: "40px" }}>
+                  <Show when={props.vm.selection.mode === "multi"}>
+                    <input
+                      type="checkbox"
+                      checked={isAllSelected()}
+                      onChange={(e) => handleSelectAll(e.currentTarget.checked)}
+                      class={css({ cursor: "pointer" })}
+                    />
                   </Show>
                 </th>
+              </Show>
+
+              {/* Column headers */}
+              <For each={props.vm.fields}>
+                {(field) => (
+                  <th class={tableStyles.header}>
+                    <Show
+                      when={field.sortable}
+                      fallback={<span>{field.label}</span>}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => handleSort(field.name)}
+                        class={css({
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "1",
+                          cursor: "pointer",
+                          bg: "transparent",
+                          border: "none",
+                          fontWeight: "inherit",
+                          color: "inherit",
+                          _hover: { color: "accent.11" },
+                        })}
+                      >
+                        {field.label}
+                        <SortIndicator
+                          field={field.name}
+                          currentSort={currentSort()}
+                        />
+                      </button>
+                    </Show>
+                  </th>
+                )}
+              </For>
+
+              {/* Actions column */}
+              <Show when={props.vm.rows.some((r) => r.actions.length > 0)}>
+                <th class={tableStyles.header}>操作</th>
+              </Show>
+            </tr>
+          </thead>
+
+          <tbody class={tableStyles.body}>
+            <For each={props.vm.rows}>
+              {(row) => (
+                <ListRow
+                  row={row}
+                  fields={props.vm.fields}
+                  selectionMode={props.vm.selection.mode}
+                  isSelected={selectedIds().includes(row.id)}
+                  onSelect={handleRowSelect}
+                  onAction={handleRowAction}
+                  onRowClick={props.onRowClick}
+                  clickAction={props.vm.clickAction}
+                  tableStyles={tableStyles}
+                />
               )}
             </For>
-
-            {/* Actions column */}
-            <Show when={props.vm.rows.some((r) => r.actions.length > 0)}>
-              <th>操作</th>
-            </Show>
-          </tr>
-        </thead>
-
-        <tbody>
-          <For each={props.vm.rows}>
-            {(row) => (
-              <ListRow
-                row={row}
-                fields={props.vm.fields}
-                selectionMode={props.vm.selection.mode}
-                isSelected={selectedIds().includes(row.id)}
-                onSelect={handleRowSelect}
-                onAction={handleRowAction}
-                onRowClick={props.onRowClick}
-                clickAction={props.vm.clickAction}
-              />
-            )}
-          </For>
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
 
       {/* Empty state */}
       <Show when={props.vm.rows.length === 0}>
-        <div data-slot="empty">データがありません</div>
+        <div
+          data-specloom="list-empty"
+          class={css({
+            textAlign: "center",
+            py: "8",
+            color: "fg.muted",
+            bg: "bg.muted",
+            borderRadius: "md",
+          })}
+        >
+          データがありません
+        </div>
       </Show>
     </div>
   );
@@ -221,6 +301,7 @@ interface ListRowProps {
   onAction: (actionId: string, rowId: string) => void;
   onRowClick?: (rowId: string) => void;
   clickAction?: string;
+  tableStyles: ReturnType<typeof table>;
 }
 
 function ListRow(props: ListRowProps) {
@@ -234,21 +315,25 @@ function ListRow(props: ListRowProps) {
 
   return (
     <tr
-      data-selected={props.isSelected}
-      onClick={handleRowClick}
-      style={{
+      data-specloom="list-row"
+      data-selected={props.isSelected || undefined}
+      class={css({
         cursor: props.clickAction || props.onRowClick ? "pointer" : "default",
-      }}
+        _hover: props.clickAction || props.onRowClick ? { bg: "bg.muted" } : {},
+        bg: props.isSelected ? "accent.a3" : undefined,
+      })}
+      onClick={handleRowClick}
     >
       {/* Selection checkbox */}
       <Show when={props.selectionMode !== "none"}>
-        <td onClick={(e) => e.stopPropagation()}>
+        <td class={props.tableStyles.cell} onClick={(e) => e.stopPropagation()}>
           <input
             type={props.selectionMode === "single" ? "radio" : "checkbox"}
             checked={props.isSelected}
             onChange={(e) =>
               props.onSelect(props.row.id, e.currentTarget.checked)
             }
+            class={css({ cursor: "pointer" })}
           />
         </td>
       </Show>
@@ -256,7 +341,7 @@ function ListRow(props: ListRowProps) {
       {/* Cell values */}
       <For each={props.fields}>
         {(field) => (
-          <td>
+          <td class={props.tableStyles.cell}>
             <CellValue field={field} value={props.row.values[field.name]} />
           </td>
         )}
@@ -264,8 +349,8 @@ function ListRow(props: ListRowProps) {
 
       {/* Row actions */}
       <Show when={props.row.actions.length > 0}>
-        <td onClick={(e) => e.stopPropagation()}>
-          <div data-slot="row-actions">
+        <td class={props.tableStyles.cell} onClick={(e) => e.stopPropagation()}>
+          <div class={css({ display: "flex", gap: "1" })}>
             <For each={props.row.actions}>
               {(action) => (
                 <ActionButton
@@ -291,6 +376,8 @@ interface CellValueProps {
   field: ListFieldVM;
   value: unknown;
 }
+
+const StatusBadge = styled("span", badge);
 
 function CellValue(props: CellValueProps) {
   const displayValue = () => {
@@ -332,6 +419,15 @@ function CellValue(props: CellValueProps) {
     }
   };
 
+  // Status fields get special badge styling
+  if (props.field.kind === "status") {
+    return (
+      <StatusBadge size="sm" variant="outline">
+        {displayValue()}
+      </StatusBadge>
+    );
+  }
+
   return <span>{displayValue()}</span>;
 }
 
@@ -349,7 +445,7 @@ function SortIndicator(props: SortIndicatorProps) {
   const order = () => props.currentSort?.order;
 
   return (
-    <span data-sort-indicator>
+    <span class={css({ opacity: isActive() ? 1 : 0.4, fontSize: "sm" })}>
       <Show when={isActive()} fallback={<span>⇅</span>}>
         <span>{order() === "asc" ? "↑" : "↓"}</span>
       </Show>

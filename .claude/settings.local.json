@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__acp__Bash",
+      "mcp__context7__resolve-library-id",
+      "mcp__ark-ui__list_components",
+      "mcp__context7__query-docs",
+      "mcp__acp__Write",
+      "mcp__ark-ui__list_examples",
+      "mcp__ark-ui__get_example",
+      "mcp__acp__Edit"
+    ]
+  }
+}

@@ -10,6 +10,10 @@
     "jsxImportSource": "solid-js",
     "allowImportingTsExtensions": true,
     "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["./src/*"],
+    },
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "styled-system/**/*"],
 }

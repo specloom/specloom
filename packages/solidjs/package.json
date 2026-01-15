@@ -10,10 +10,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./styles.css": "./dist/styles.css",
     "./styled-system/*": "./styled-system/*"
   },
   "scripts": {
-    "build": "panda codegen && tsc",
+    "build": "panda codegen && panda cssgen --outfile dist/styles.css && tsc",
     "dev": "tsc --watch",
     "prepare": "panda codegen"
   },
