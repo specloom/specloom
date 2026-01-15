@@ -136,3 +136,63 @@ function isEmpty(value: unknown): boolean {
   if (Array.isArray(value) && value.length === 0) return true;
   return false;
 }
+
+// ============================================================
+// Validate - バリデーション操作関数
+// ============================================================
+
+/**
+ * バリデーション操作関数
+ * UIモジュールと連携して使用する
+ */
+export const Validate = {
+  /**
+   * フォーム全体をバリデーション
+   */
+  form: validateForm,
+
+  /**
+   * 単一フィールドをバリデーション
+   */
+  field: validateField,
+
+  /**
+   * バリデーション結果が有効かどうか
+   */
+  valid: (errors: ValidationErrors): boolean => {
+    return Object.keys(errors).length === 0;
+  },
+
+  /**
+   * 特定フィールドのエラーを取得
+   */
+  errors: (errors: ValidationErrors, fieldName: string): string[] => {
+    return errors[fieldName] ?? [];
+  },
+
+  /**
+   * 特定フィールドにエラーがあるか
+   */
+  hasError: (errors: ValidationErrors, fieldName: string): boolean => {
+    return (errors[fieldName]?.length ?? 0) > 0;
+  },
+
+  /**
+   * 最初のエラーメッセージを取得
+   */
+  firstError: (errors: ValidationErrors, fieldName: string): string | null => {
+    return errors[fieldName]?.[0] ?? null;
+  },
+
+  /**
+   * 全エラーメッセージをフラット配列で取得
+   */
+  allErrors: (errors: ValidationErrors): string[] => {
+    return Object.values(errors).flat();
+  },
+
+  /**
+   * 空値チェック
+   */
+  empty: isEmpty,
+};

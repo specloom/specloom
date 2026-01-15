@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { validateField, validateForm } from "../../src/validation/index.js";
+import {
+  validateField,
+  validateForm,
+  Validate,
+  type ValidationErrors,
+} from "../../src/validation/index.js";
 import type { Field } from "../../src/spec/index.js";
 
 describe("validation", () => {
@@ -201,6 +206,157 @@ describe("validation", () => {
       const errors = validateForm(fields, { title: "", price: 100 });
       expect(errors.title).toHaveLength(1);
       expect(errors.price).toBeUndefined();
+    });
+  });
+
+  describe("Validate ヘルパー", () => {
+    // テスト用エラーオブジェクト
+    const errorsWithIssues: ValidationErrors = {
+      title: ["タイトルは必須です"],
+      price: ["0以上の値を入力してください", "1000以下の値を入力してください"],
+    };
+
+    const emptyErrors: ValidationErrors = {};
+
+    describe("form / field", () => {
+      it("form は validateForm と同じ", () => {
+        const fields: Field[] = [
+          { name: "title", type: "string", label: "タイトル", required: true },
+        ];
+        expect(Validate.form(fields, { title: "" })).toEqual(
+          validateForm(fields, { title: "" }),
+        );
+      });
+
+      it("field は validateField と同じ", () => {
+        const field: Field = {
+          name: "title",
+          type: "string",
+          label: "タイトル",
+          required: true,
+        };
+        expect(Validate.field(field, null)).toEqual(validateField(field, null));
+      });
+    });
+
+    describe("valid", () => {
+      it("エラーがなければ true", () => {
+        expect(Validate.valid(emptyErrors)).toBe(true);
+      });
+
+      it("エラーがあれば false", () => {
+        expect(Validate.valid(errorsWithIssues)).toBe(false);
+      });
+
+      it("空配列のみのエラーも false（キーがある場合）", () => {
+        // Note: 実装では Object.keys().length で判定
+        const errorsWithEmptyArray: ValidationErrors = { title: [] };
+        expect(Validate.valid(errorsWithEmptyArray)).toBe(false);
+      });
+    });
+
+    describe("errors", () => {
+      it("存在するフィールドのエラーを返す", () => {
+        expect(Validate.errors(errorsWithIssues, "title")).toEqual([
+          "タイトルは必須です",
+        ]);
+      });
+
+      it("複数エラーを返す", () => {
+        expect(Validate.errors(errorsWithIssues, "price")).toHaveLength(2);
+      });
+
+      it("存在しないフィールドは空配列", () => {
+        expect(Validate.errors(errorsWithIssues, "unknown")).toEqual([]);
+      });
+    });
+
+    describe("hasError", () => {
+      it("エラーがあれば true", () => {
+        expect(Validate.hasError(errorsWithIssues, "title")).toBe(true);
+      });
+
+      it("エラーがなければ false", () => {
+        expect(Validate.hasError(errorsWithIssues, "unknown")).toBe(false);
+      });
+
+      it("空のエラーオブジェクトでは false", () => {
+        expect(Validate.hasError(emptyErrors, "title")).toBe(false);
+      });
+    });
+
+    describe("firstError", () => {
+      it("最初のエラーを返す", () => {
+        expect(Validate.firstError(errorsWithIssues, "title")).toBe(
+          "タイトルは必須です",
+        );
+      });
+
+      it("複数エラーでも最初のみ", () => {
+        expect(Validate.firstError(errorsWithIssues, "price")).toBe(
+          "0以上の値を入力してください",
+        );
+      });
+
+      it("エラーがなければ null", () => {
+        expect(Validate.firstError(errorsWithIssues, "unknown")).toBe(null);
+      });
+
+      it("空のエラーオブジェクトでは null", () => {
+        expect(Validate.firstError(emptyErrors, "title")).toBe(null);
+      });
+    });
+
+    describe("allErrors", () => {
+      it("全エラーをフラット配列で返す", () => {
+        const all = Validate.allErrors(errorsWithIssues);
+        expect(all).toHaveLength(3);
+        expect(all).toContain("タイトルは必須です");
+        expect(all).toContain("0以上の値を入力してください");
+        expect(all).toContain("1000以下の値を入力してください");
+      });
+
+      it("空の場合は空配列", () => {
+        expect(Validate.allErrors(emptyErrors)).toEqual([]);
+      });
+    });
+
+    describe("empty", () => {
+      it("null は空", () => {
+        expect(Validate.empty(null)).toBe(true);
+      });
+
+      it("undefined は空", () => {
+        expect(Validate.empty(undefined)).toBe(true);
+      });
+
+      it("空文字は空", () => {
+        expect(Validate.empty("")).toBe(true);
+      });
+
+      it("空配列は空", () => {
+        expect(Validate.empty([])).toBe(true);
+      });
+
+      it("値のある文字列は空でない", () => {
+        expect(Validate.empty("hello")).toBe(false);
+      });
+
+      it("値のある配列は空でない", () => {
+        expect(Validate.empty(["a"])).toBe(false);
+      });
+
+      it("0 は空でない", () => {
+        expect(Validate.empty(0)).toBe(false);
+      });
+
+      it("false は空でない", () => {
+        expect(Validate.empty(false)).toBe(false);
+      });
+
+      it("オブジェクトは空でない", () => {
+        expect(Validate.empty({})).toBe(false);
+      });
     });
   });
 });

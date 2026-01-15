@@ -8,7 +8,9 @@
       "mcp__acp__Write",
       "mcp__ark-ui__list_examples",
       "mcp__ark-ui__get_example",
-      "mcp__acp__Edit"
+      "mcp__acp__Edit",
+      "Skill(codex-review)",
+      "Skill(codex-review:*)"
     ]
   }
 }

@@ -24,7 +24,7 @@ import type {
   Selection,
   Search,
   SortVM,
-} from "../vm/index.js";
+} from "../ui/index.js";
 import { validateField, type ValidationErrors } from "../validation/index.js";
 
 // ============================================================

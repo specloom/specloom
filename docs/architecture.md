@@ -75,14 +75,19 @@ ListVM, FormVM, ShowVM, ActionVM
 バリデーションルールと検証関数。
 
 ```ts
-// ルール
-Rules.required(value)
-Rules.minLength(value, min)
-Rules.email(value)
+// 検証関数
+validateForm(fields, data)   → ValidationErrors
+validateField(field, value)  → string[]
 
-// 検証
-Validate.field(field)  → string[]
-Validate.form(vm)      → FormViewModel
+// Validate ヘルパー
+Validate.form(fields, data)  → ValidationErrors
+Validate.field(field, value) → string[]
+Validate.valid(errors)       → boolean
+Validate.errors(errors, name)    → string[]
+Validate.hasError(errors, name)  → boolean
+Validate.firstError(errors, name) → string | null
+Validate.allErrors(errors)   → string[]
+Validate.empty(value)        → boolean
 ```
 
 ### format/
