@@ -1,36 +1,20 @@
-import { Show, createSignal } from "solid-js";
-import { Dialog } from "@ark-ui/solid/dialog";
+import { createSignal, Show } from "solid-js";
 import { Portal } from "solid-js/web";
-import { styled } from "../../styled-system/jsx";
-import { button } from "../../styled-system/recipes";
-import { dialog } from "../../styled-system/recipes";
+import { Dialog } from "@ark-ui/solid/dialog";
+import { ActionVMHelper, type ActionVM } from "specloom";
 import { css } from "../../styled-system/css";
-import type { ActionVM } from "specloom";
-
-// ============================================================
-// Styled Components
-// ============================================================
-
-const StyledButton = styled("button", button);
-
-// ============================================================
-// Types
-// ============================================================
 
 export interface ActionButtonProps {
   action: ActionVM;
   onExecute: (actionId: string) => void;
+  size?: "sm" | "md" | "lg";
 }
 
-// ============================================================
-// ActionButton Component
-// ============================================================
-
 export function ActionButton(props: ActionButtonProps) {
-  const [isConfirmOpen, setConfirmOpen] = createSignal(false);
+  const [confirmOpen, setConfirmOpen] = createSignal(false);
 
   const handleClick = () => {
-    if (props.action.confirm) {
+    if (ActionVMHelper.needsConfirm(props.action)) {
       setConfirmOpen(true);
     } else {
       props.onExecute(props.action.id);
@@ -42,101 +26,114 @@ export function ActionButton(props: ActionButtonProps) {
     props.onExecute(props.action.id);
   };
 
-  const handleCancel = () => {
-    setConfirmOpen(false);
-  };
-
-  const buttonVariant = ():
-    | "solid"
-    | "outline"
-    | "ghost"
-    | "link"
-    | "subtle" => {
-    const variant = props.action.ui?.variant;
-    switch (variant) {
-      case "primary":
-        return "solid";
-      case "danger":
-        return "solid";
-      case "secondary":
-        return "outline";
-      default:
-        return "outline";
-    }
-  };
+  const variant = () => ActionVMHelper.variant(props.action) ?? "default";
 
   return (
     <>
-      <StyledButton
-        data-specloom="action-button"
-        data-action={props.action.id}
-        data-variant={props.action.ui?.variant}
+      <button
         type="button"
-        disabled={!props.action.allowed}
+        class={css({
+          cursor: "pointer",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "2",
+          borderRadius: "md",
+          fontWeight: "medium",
+          transition: "colors",
+          px: props.size === "sm" ? "3" : props.size === "lg" ? "6" : "4",
+          py: props.size === "sm" ? "1.5" : props.size === "lg" ? "3" : "2",
+          fontSize: props.size === "sm" ? "sm" : props.size === "lg" ? "lg" : "md",
+          bg: variant() === "danger" ? "red.500" : variant() === "primary" ? "blue.500" : "gray.100",
+          color: variant() === "danger" || variant() === "primary" ? "white" : "gray.900",
+          _hover: {
+            bg: variant() === "danger" ? "red.600" : variant() === "primary" ? "blue.600" : "gray.200",
+          },
+          _disabled: {
+            opacity: 0.5,
+            cursor: "not-allowed",
+          },
+        })}
+        disabled={!ActionVMHelper.allowed(props.action)}
         onClick={handleClick}
-        variant={buttonVariant()}
-        size="sm"
-        class={
-          props.action.ui?.variant === "danger"
-            ? css({ colorPalette: "red" })
-            : undefined
-        }
       >
-        <Show when={props.action.ui?.icon}>
-          <span>{props.action.ui?.icon}</span>
+        <Show when={ActionVMHelper.icon(props.action)}>
+          <span class={css({ fontSize: "lg" })}>{ActionVMHelper.icon(props.action)}</span>
         </Show>
         {props.action.label}
-      </StyledButton>
+      </button>
 
-      {/* Confirmation Dialog */}
-      <Show when={props.action.confirm}>
-        <Dialog.Root
-          open={isConfirmOpen()}
-          onOpenChange={(e) => setConfirmOpen(e.open)}
-        >
+      <Show when={ActionVMHelper.needsConfirm(props.action)}>
+        <Dialog.Root open={confirmOpen()} onOpenChange={(e) => setConfirmOpen(e.open)}>
           <Portal>
-            <Dialog.Backdrop class={dialog().backdrop} />
-            <Dialog.Positioner class={dialog().positioner}>
+            <Dialog.Backdrop
+              class={css({
+                position: "fixed",
+                inset: 0,
+                bg: "black/50",
+                zIndex: 50,
+              })}
+            />
+            <Dialog.Positioner
+              class={css({
+                position: "fixed",
+                inset: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 50,
+              })}
+            >
               <Dialog.Content
-                data-specloom="confirm-dialog"
-                class={dialog().content}
+                class={css({
+                  bg: "white",
+                  borderRadius: "lg",
+                  p: 6,
+                  shadow: "lg",
+                  maxW: "md",
+                  w: "full",
+                  mx: 4,
+                })}
               >
-                <Dialog.Title
-                  data-specloom="confirm-title"
-                  class={dialog().title}
-                >
+                <Dialog.Title class={css({ fontWeight: "bold", fontSize: "lg", mb: 2 })}>
                   確認
                 </Dialog.Title>
-                <Dialog.Description class={dialog().description}>
-                  {props.action.confirm}
+                <Dialog.Description class={css({ color: "gray.600", mb: 6 })}>
+                  {ActionVMHelper.confirmMsg(props.action)}
                 </Dialog.Description>
-                <div
-                  class={css({
-                    display: "flex",
-                    gap: "3",
-                    justifyContent: "flex-end",
-                    mt: "4",
-                  })}
-                >
-                  <StyledButton
+                <div class={css({ display: "flex", gap: 3, justifyContent: "flex-end" })}>
+                  <button
                     type="button"
-                    variant="outline"
-                    onClick={handleCancel}
+                    class={css({
+                      px: 4,
+                      py: 2,
+                      borderRadius: "md",
+                      bg: "gray.100",
+                      color: "gray.900",
+                      fontWeight: "medium",
+                      cursor: "pointer",
+                      _hover: { bg: "gray.200" },
+                    })}
+                    onClick={() => setConfirmOpen(false)}
                   >
                     キャンセル
-                  </StyledButton>
-                  <StyledButton
+                  </button>
+                  <button
                     type="button"
-                    variant="solid"
+                    class={css({
+                      px: 4,
+                      py: 2,
+                      borderRadius: "md",
+                      bg: variant() === "danger" ? "red.500" : "blue.500",
+                      color: "white",
+                      fontWeight: "medium",
+                      cursor: "pointer",
+                      _hover: { bg: variant() === "danger" ? "red.600" : "blue.600" },
+                    })}
                     onClick={handleConfirm}
-                    class={
-                      props.action.ui?.variant === "danger"
-                        ? css({ colorPalette: "red" })
-                        : undefined
-                    }
                   >
-                    実行
-                  </StyledButton>
+                    {props.action.label}
+                  </button>
                 </div>
               </Dialog.Content>
             </Dialog.Positioner>

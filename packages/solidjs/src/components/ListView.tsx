@@ -1,454 +1,331 @@
-import { For, Show, createSignal } from "solid-js";
-import type { ListViewModel, ListFieldVM, RowVM, ActionVM } from "specloom";
-import { styled } from "../../styled-system/jsx";
+import { For, Show } from "solid-js";
+import { ListVM, type ListViewModel } from "specloom";
 import { css } from "../../styled-system/css";
-import { table } from "../../styled-system/recipes";
-import { input } from "../../styled-system/recipes";
-import { button } from "../../styled-system/recipes";
-import { badge } from "../../styled-system/recipes";
-import { ActionButton } from "./ActionButton.tsx";
-
-// ============================================================
-// Styled Components
-// ============================================================
-
-const StyledInput = styled("input", input);
-const StyledButton = styled("button", button);
-const StyledBadge = styled("span", badge);
-
-// ============================================================
-// Types
-// ============================================================
+import { ActionButton } from "./ActionButton.js";
+import { FieldDisplay } from "./FieldDisplay.js";
 
 export interface ListViewProps {
   vm: ListViewModel;
-  onAction: (actionId: string, rowId?: string) => void;
+  onSort?: (field: string) => void;
+  onSelect?: (rowId: string) => void;
+  onSelectAll?: () => void;
+  onAction: (actionId: string, rowIds?: string[]) => void;
+  onPageChange?: (page: number) => void;
   onRowClick?: (rowId: string) => void;
-  onSort?: (field: string, order: "asc" | "desc") => void;
-  onSearch?: (query: string) => void;
-  onFilterChange?: (filterId: string, active: boolean) => void;
-  onSelectionChange?: (selectedIds: string[]) => void;
 }
 
-// ============================================================
-// ListView Component
-// ============================================================
-
 export function ListView(props: ListViewProps) {
-  const [searchQuery, setSearchQuery] = createSignal(props.vm.search.query);
-  const [selectedIds, setSelectedIds] = createSignal<string[]>(
-    props.vm.selection.selected,
-  );
-  const [currentSort, setCurrentSort] = createSignal(props.vm.defaultSort);
-
-  const tableStyles = table();
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    props.onSearch?.(query);
+  const handleHeaderClick = (fieldName: string) => {
+    if (ListVM.sortable(props.vm, fieldName) && props.onSort) {
+      props.onSort(fieldName);
+    }
   };
 
-  const handleSort = (field: string) => {
-    const current = currentSort();
-    const newOrder =
-      current?.field === field && current.order === "asc" ? "desc" : "asc";
-    setCurrentSort({ field, order: newOrder });
-    props.onSort?.(field, newOrder);
-  };
-
-  const handleRowSelect = (rowId: string, selected: boolean) => {
-    const current = selectedIds();
-    const newSelection = selected
-      ? [...current, rowId]
-      : current.filter((id) => id !== rowId);
-    setSelectedIds(newSelection);
-    props.onSelectionChange?.(newSelection);
-  };
-
-  const handleSelectAll = (selected: boolean) => {
-    const newSelection = selected ? props.vm.rows.map((r) => r.id) : [];
-    setSelectedIds(newSelection);
-    props.onSelectionChange?.(newSelection);
-  };
-
-  const isAllSelected = () =>
-    props.vm.rows.length > 0 && selectedIds().length === props.vm.rows.length;
-
-  const handleRowAction = (actionId: string, rowId: string) => {
-    props.onAction(actionId, rowId);
-  };
-
-  const handleHeaderAction = (actionId: string) => {
-    props.onAction(actionId);
-  };
-
-  const handleBulkAction = (actionId: string) => {
-    props.onAction(actionId);
+  const handleRowClick = (rowId: string) => {
+    if (props.onRowClick && ListVM.clickAction(props.vm)) {
+      props.onRowClick(rowId);
+    }
   };
 
   return (
-    <div
-      data-specloom="list-view"
-      class={css({ display: "flex", flexDirection: "column", gap: "4" })}
-    >
+    <div class={css({ display: "flex", flexDirection: "column", gap: 4 })}>
       {/* Header */}
-      <header
-        data-specloom="list-header"
+      <div
         class={css({
           display: "flex",
-          justifyContent: "space-between",
           alignItems: "center",
+          justifyContent: "space-between",
         })}
       >
-        <h1
-          data-specloom="list-title"
-          class={css({ fontSize: "2xl", fontWeight: "semibold" })}
-        >
-          {props.vm.label}
+        <h1 class={css({ fontSize: "2xl", fontWeight: "bold" })}>
+          {ListVM.label(props.vm)}
         </h1>
-
-        {/* Header Actions */}
-        <div
-          data-specloom="list-header-actions"
-          class={css({ display: "flex", gap: "2" })}
-        >
-          <For each={props.vm.headerActions}>
+        <div class={css({ display: "flex", gap: 2 })}>
+          <For each={ListVM.allowedActions(ListVM.headerActions(props.vm))}>
             {(action) => (
-              <ActionButton action={action} onExecute={handleHeaderAction} />
+              <ActionButton action={action} onExecute={props.onAction} />
             )}
           </For>
         </div>
-      </header>
-
-      {/* Search & Filters */}
-      <div
-        data-specloom="list-toolbar"
-        class={css({
-          display: "flex",
-          gap: "3",
-          alignItems: "center",
-          flexWrap: "wrap",
-        })}
-      >
-        {/* Search */}
-        <Show when={props.vm.search.fields.length > 0}>
-          <StyledInput
-            type="search"
-            placeholder="検索..."
-            value={searchQuery()}
-            onInput={(e) => handleSearch(e.currentTarget.value)}
-            size="sm"
-            class={css({ minWidth: "200px" })}
-          />
-        </Show>
-
-        {/* Named Filters */}
-        <Show when={props.vm.filters.named.length > 0}>
-          <div class={css({ display: "flex", gap: "2" })}>
-            <For each={props.vm.filters.named}>
-              {(filter) => (
-                <StyledButton
-                  type="button"
-                  variant={filter.active ? "solid" : "outline"}
-                  size="xs"
-                  onClick={() =>
-                    props.onFilterChange?.(filter.id, !filter.active)
-                  }
-                >
-                  {filter.label}
-                </StyledButton>
-              )}
-            </For>
-          </div>
-        </Show>
-
-        {/* Bulk Actions */}
-        <Show
-          when={selectedIds().length > 0 && props.vm.bulkActions.length > 0}
-        >
-          <div
-            class={css({
-              display: "flex",
-              gap: "2",
-              alignItems: "center",
-              ml: "auto",
-            })}
-          >
-            <StyledBadge variant="solid">
-              {selectedIds().length}件選択中
-            </StyledBadge>
-            <For each={props.vm.bulkActions}>
-              {(action) => (
-                <ActionButton action={action} onExecute={handleBulkAction} />
-              )}
-            </For>
-          </div>
-        </Show>
       </div>
 
-      {/* Table */}
-      <div
-        data-specloom="list-table-wrapper"
-        class={css({ overflowX: "auto" })}
-      >
-        <table data-specloom="list-table" class={tableStyles.root}>
-          <thead class={tableStyles.head}>
-            <tr class={tableStyles.row}>
-              {/* Selection checkbox */}
-              <Show when={props.vm.selection.mode !== "none"}>
-                <th class={tableStyles.header} style={{ width: "40px" }}>
-                  <Show when={props.vm.selection.mode === "multi"}>
-                    <input
-                      type="checkbox"
-                      checked={isAllSelected()}
-                      onChange={(e) => handleSelectAll(e.currentTarget.checked)}
-                      class={css({ cursor: "pointer" })}
-                    />
-                  </Show>
-                </th>
-              </Show>
-
-              {/* Column headers */}
-              <For each={props.vm.fields}>
-                {(field) => (
-                  <th class={tableStyles.header}>
-                    <Show
-                      when={field.sortable}
-                      fallback={<span>{field.label}</span>}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => handleSort(field.name)}
-                        class={css({
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "1",
-                          cursor: "pointer",
-                          bg: "transparent",
-                          border: "none",
-                          fontWeight: "inherit",
-                          color: "inherit",
-                          _hover: { color: "accent.11" },
-                        })}
-                      >
-                        {field.label}
-                        <SortIndicator
-                          field={field.name}
-                          currentSort={currentSort()}
-                        />
-                      </button>
-                    </Show>
-                  </th>
-                )}
-              </For>
-
-              {/* Actions column */}
-              <Show when={props.vm.rows.some((r) => r.actions.length > 0)}>
-                <th class={tableStyles.header}>操作</th>
-              </Show>
-            </tr>
-          </thead>
-
-          <tbody class={tableStyles.body}>
-            <For each={props.vm.rows}>
-              {(row) => (
-                <ListRow
-                  row={row}
-                  fields={props.vm.fields}
-                  selectionMode={props.vm.selection.mode}
-                  isSelected={selectedIds().includes(row.id)}
-                  onSelect={handleRowSelect}
-                  onAction={handleRowAction}
-                  onRowClick={props.onRowClick}
-                  clickAction={props.vm.clickAction}
-                  tableStyles={tableStyles}
+      {/* Bulk Actions */}
+      <Show when={ListVM.selectedCount(props.vm) > 0}>
+        <div
+          class={css({
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+            p: 3,
+            bg: "blue.50",
+            borderRadius: "md",
+          })}
+        >
+          <span class={css({ color: "blue.700", fontWeight: "medium" })}>
+            {ListVM.selectedCount(props.vm)}件選択中
+          </span>
+          <div class={css({ display: "flex", gap: 2 })}>
+            <For each={ListVM.allowedActions(ListVM.bulkActions(props.vm))}>
+              {(action) => (
+                <ActionButton
+                  action={action}
+                  onExecute={(actionId) =>
+                    props.onAction(actionId, ListVM.selectedIds(props.vm))
+                  }
+                  size="sm"
                 />
               )}
             </For>
-          </tbody>
-        </table>
-      </div>
+          </div>
+        </div>
+      </Show>
 
-      {/* Empty state */}
-      <Show when={props.vm.rows.length === 0}>
+      {/* Loading */}
+      <Show when={ListVM.loading(props.vm)}>
+        <div class={css({ textAlign: "center", py: 8, color: "gray.500" })}>
+          読み込み中...
+        </div>
+      </Show>
+
+      {/* Error */}
+      <Show when={ListVM.error(props.vm)}>
         <div
-          data-specloom="list-empty"
+          class={css({
+            p: 4,
+            bg: "red.50",
+            borderRadius: "md",
+            color: "red.700",
+          })}
+        >
+          {ListVM.error(props.vm)}
+        </div>
+      </Show>
+
+      {/* Empty */}
+      <Show when={!ListVM.loading(props.vm) && ListVM.empty(props.vm)}>
+        <div
           class={css({
             textAlign: "center",
-            py: "8",
-            color: "fg.muted",
-            bg: "bg.muted",
-            borderRadius: "md",
+            py: 12,
+            color: "gray.500",
+            bg: "gray.50",
+            borderRadius: "lg",
           })}
         >
           データがありません
         </div>
       </Show>
-    </div>
-  );
-}
 
-// ============================================================
-// ListRow Component
-// ============================================================
+      {/* Table */}
+      <Show when={!ListVM.loading(props.vm) && !ListVM.empty(props.vm)}>
+        <div
+          class={css({
+            bg: "white",
+            borderRadius: "lg",
+            shadow: "sm",
+            borderWidth: 1,
+            borderColor: "gray.200",
+            overflow: "hidden",
+          })}
+        >
+          <table class={css({ w: "full", borderCollapse: "collapse" })}>
+            <thead>
+              <tr
+                class={css({
+                  bg: "gray.50",
+                  borderBottomWidth: 1,
+                  borderColor: "gray.200",
+                })}
+              >
+                {/* Selection Checkbox */}
+                <Show when={ListVM.selectable(props.vm)}>
+                  <th class={css({ w: 12, px: 4, py: 3 })}>
+                    <Show when={ListVM.multiSelect(props.vm)}>
+                      <input
+                        type="checkbox"
+                        checked={ListVM.allSelected(props.vm)}
+                        onChange={() => props.onSelectAll?.()}
+                        class={css({ cursor: "pointer" })}
+                      />
+                    </Show>
+                  </th>
+                </Show>
 
-interface ListRowProps {
-  row: RowVM;
-  fields: ListFieldVM[];
-  selectionMode: "none" | "single" | "multi";
-  isSelected: boolean;
-  onSelect: (rowId: string, selected: boolean) => void;
-  onAction: (actionId: string, rowId: string) => void;
-  onRowClick?: (rowId: string) => void;
-  clickAction?: string;
-  tableStyles: ReturnType<typeof table>;
-}
+                {/* Field Headers */}
+                <For each={ListVM.fields(props.vm)}>
+                  {(field) => (
+                    <th
+                      class={css({
+                        px: 4,
+                        py: 3,
+                        textAlign: "left",
+                        fontWeight: "semibold",
+                        fontSize: "sm",
+                        color: "gray.700",
+                        cursor: field.sortable ? "pointer" : "default",
+                        userSelect: "none",
+                        _hover: field.sortable ? { bg: "gray.100" } : {},
+                      })}
+                      onClick={() => handleHeaderClick(field.name)}
+                    >
+                      <span
+                        class={css({
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                        })}
+                      >
+                        {field.label}
+                        <Show when={field.sortable}>
+                          <span class={css({ color: "gray.400" })}>
+                            {ListVM.sortIcon(props.vm, field.name)}
+                          </span>
+                        </Show>
+                      </span>
+                    </th>
+                  )}
+                </For>
 
-function ListRow(props: ListRowProps) {
-  const handleRowClick = () => {
-    if (props.clickAction) {
-      props.onAction(props.clickAction, props.row.id);
-    } else {
-      props.onRowClick?.(props.row.id);
-    }
-  };
+                {/* Actions Header */}
+                <th class={css({ w: 32, px: 4, py: 3 })} />
+              </tr>
+            </thead>
+            <tbody>
+              <For each={ListVM.rows(props.vm)}>
+                {(row) => (
+                  <tr
+                    class={css({
+                      borderBottomWidth: 1,
+                      borderColor: "gray.100",
+                      _last: { borderBottomWidth: 0 },
+                      _hover: { bg: "gray.50" },
+                      cursor: ListVM.clickAction(props.vm)
+                        ? "pointer"
+                        : "default",
+                    })}
+                    onClick={() => handleRowClick(row.id)}
+                  >
+                    {/* Selection */}
+                    <Show when={ListVM.selectable(props.vm)}>
+                      <td
+                        class={css({ px: 4, py: 3 })}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <input
+                          type={
+                            ListVM.multiSelect(props.vm) ? "checkbox" : "radio"
+                          }
+                          name={
+                            ListVM.singleSelect(props.vm)
+                              ? `${ListVM.resource(props.vm)}-selection`
+                              : undefined
+                          }
+                          checked={ListVM.selected(props.vm, row.id)}
+                          onChange={() => props.onSelect?.(row.id)}
+                          class={css({ cursor: "pointer" })}
+                        />
+                      </td>
+                    </Show>
 
-  return (
-    <tr
-      data-specloom="list-row"
-      data-selected={props.isSelected || undefined}
-      class={css({
-        cursor: props.clickAction || props.onRowClick ? "pointer" : "default",
-        _hover: props.clickAction || props.onRowClick ? { bg: "bg.muted" } : {},
-        bg: props.isSelected ? "accent.a3" : undefined,
-      })}
-      onClick={handleRowClick}
-    >
-      {/* Selection checkbox */}
-      <Show when={props.selectionMode !== "none"}>
-        <td class={props.tableStyles.cell} onClick={(e) => e.stopPropagation()}>
-          <input
-            type={props.selectionMode === "single" ? "radio" : "checkbox"}
-            checked={props.isSelected}
-            onChange={(e) =>
-              props.onSelect(props.row.id, e.currentTarget.checked)
-            }
-            class={css({ cursor: "pointer" })}
-          />
-        </td>
-      </Show>
+                    {/* Field Values */}
+                    <For each={ListVM.fields(props.vm)}>
+                      {(field) => (
+                        <td class={css({ px: 4, py: 3 })}>
+                          <FieldDisplay
+                            field={field}
+                            value={ListVM.cellValue(row, field.name)}
+                          />
+                        </td>
+                      )}
+                    </For>
 
-      {/* Cell values */}
-      <For each={props.fields}>
-        {(field) => (
-          <td class={props.tableStyles.cell}>
-            <CellValue field={field} value={props.row.values[field.name]} />
-          </td>
-        )}
-      </For>
+                    {/* Row Actions */}
+                    <td
+                      class={css({ px: 4, py: 3, textAlign: "right" })}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div
+                        class={css({
+                          display: "flex",
+                          gap: 1,
+                          justifyContent: "flex-end",
+                        })}
+                      >
+                        <For
+                          each={ListVM.allowedActions(ListVM.rowActions(row))}
+                        >
+                          {(action) => (
+                            <ActionButton
+                              action={action}
+                              onExecute={(actionId) =>
+                                props.onAction(actionId, [row.id])
+                              }
+                              size="sm"
+                            />
+                          )}
+                        </For>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </For>
+            </tbody>
+          </table>
+        </div>
 
-      {/* Row actions */}
-      <Show when={props.row.actions.length > 0}>
-        <td class={props.tableStyles.cell} onClick={(e) => e.stopPropagation()}>
-          <div class={css({ display: "flex", gap: "1" })}>
-            <For each={props.row.actions}>
-              {(action) => (
-                <ActionButton
-                  action={action}
-                  onExecute={(actionId) =>
-                    props.onAction(actionId, props.row.id)
-                  }
-                />
-              )}
-            </For>
+        {/* Pagination */}
+        <Show when={ListVM.totalPages(props.vm) > 1}>
+          <div
+            class={css({
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 2,
+              pt: 4,
+            })}
+          >
+            <button
+              type="button"
+              disabled={!ListVM.hasPrev(props.vm)}
+              onClick={() => props.onPageChange?.(ListVM.page(props.vm) - 1)}
+              class={css({
+                px: 3,
+                py: 1.5,
+                borderRadius: "md",
+                borderWidth: 1,
+                borderColor: "gray.300",
+                bg: "white",
+                cursor: "pointer",
+                _hover: { bg: "gray.50" },
+                _disabled: { opacity: 0.5, cursor: "not-allowed" },
+              })}
+            >
+              前へ
+            </button>
+            <span class={css({ px: 3, color: "gray.600" })}>
+              {ListVM.page(props.vm)} / {ListVM.totalPages(props.vm)}
+            </span>
+            <button
+              type="button"
+              disabled={!ListVM.hasNext(props.vm)}
+              onClick={() => props.onPageChange?.(ListVM.page(props.vm) + 1)}
+              class={css({
+                px: 3,
+                py: 1.5,
+                borderRadius: "md",
+                borderWidth: 1,
+                borderColor: "gray.300",
+                bg: "white",
+                cursor: "pointer",
+                _hover: { bg: "gray.50" },
+                _disabled: { opacity: 0.5, cursor: "not-allowed" },
+              })}
+            >
+              次へ
+            </button>
           </div>
-        </td>
+        </Show>
       </Show>
-    </tr>
-  );
-}
-
-// ============================================================
-// CellValue Component
-// ============================================================
-
-interface CellValueProps {
-  field: ListFieldVM;
-  value: unknown;
-}
-
-const StatusBadge = styled("span", badge);
-
-function CellValue(props: CellValueProps) {
-  const displayValue = () => {
-    const value = props.value;
-    if (value === null || value === undefined) return "-";
-
-    switch (props.field.kind) {
-      case "boolean":
-        return value ? "Yes" : "No";
-
-      case "enum":
-      case "status": {
-        const option = props.field.options?.find((o) => o.value === value);
-        return option?.label ?? String(value);
-      }
-
-      case "relation": {
-        const rel = value as Record<string, unknown>;
-        const labelField = props.field.relation?.labelField ?? "name";
-        return String(rel[labelField] ?? rel.id ?? "-");
-      }
-
-      case "date":
-        try {
-          return new Date(String(value)).toLocaleDateString();
-        } catch {
-          return String(value);
-        }
-
-      case "datetime":
-        try {
-          return new Date(String(value)).toLocaleString();
-        } catch {
-          return String(value);
-        }
-
-      default:
-        return String(value);
-    }
-  };
-
-  // Status fields get special badge styling
-  if (props.field.kind === "status") {
-    return (
-      <StatusBadge size="sm" variant="outline">
-        {displayValue()}
-      </StatusBadge>
-    );
-  }
-
-  return <span>{displayValue()}</span>;
-}
-
-// ============================================================
-// SortIndicator Component
-// ============================================================
-
-interface SortIndicatorProps {
-  field: string;
-  currentSort?: { field: string; order: "asc" | "desc" };
-}
-
-function SortIndicator(props: SortIndicatorProps) {
-  const isActive = () => props.currentSort?.field === props.field;
-  const order = () => props.currentSort?.order;
-
-  return (
-    <span class={css({ opacity: isActive() ? 1 : 0.4, fontSize: "sm" })}>
-      <Show when={isActive()} fallback={<span>⇅</span>}>
-        <span>{order() === "asc" ? "↑" : "↓"}</span>
-      </Show>
-    </span>
+    </div>
   );
 }
