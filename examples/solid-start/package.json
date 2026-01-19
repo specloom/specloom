@@ -9,7 +9,6 @@
     "start": "vinxi start"
   },
   "dependencies": {
-    "lucide-solid": "latest",
     "@solidjs/router": "^0.15.3",
     "@solidjs/start": "^1.1.0",
     "@specloom/solidjs": "workspace:*",
