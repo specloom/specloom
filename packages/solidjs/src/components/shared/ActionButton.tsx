@@ -9,19 +9,23 @@ export interface ActionButtonProps {
   action: ActionVM;
   onExecute: (actionId: string) => void;
   size?: "sm" | "md" | "lg";
+  variant?: "primary" | "destructive" | "outline" | "ghost";
   class?: string;
 }
 
 export const ActionButton: Component<ActionButtonProps> = (props) => {
   const [open, setOpen] = createSignal(false);
 
-  const variant = () => ActionVMHelper.variant(props.action);
+  const actionVariant = () => ActionVMHelper.variant(props.action);
   const needsConfirm = () => ActionVMHelper.needsConfirm(props.action);
   const confirmMsg = () => ActionVMHelper.confirmMsg(props.action);
-  const allowed = () => ActionVMHelper.allowed(props.action);
+  const allowed = () => ActionVMHelper.isAllowed(props.action);
 
   const buttonVariant = () => {
-    switch (variant()) {
+    // props.variant が指定されていればそれを優先
+    if (props.variant) return props.variant;
+
+    switch (actionVariant()) {
       case "primary":
         return "primary";
       case "danger":
@@ -77,14 +81,14 @@ export const ActionButton: Component<ActionButtonProps> = (props) => {
                   </Dialog.Description>
                 </div>
                 <div class="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
-                  <Dialog.CloseTrigger
-                    class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-8 px-3"
-                  >
+                  <Dialog.CloseTrigger class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-8 px-3">
                     キャンセル
                   </Dialog.CloseTrigger>
                   <Button
                     type="button"
-                    variant={variant() === "danger" ? "destructive" : "primary"}
+                    variant={
+                      actionVariant() === "danger" ? "destructive" : "primary"
+                    }
                     size="sm"
                     onClick={handleConfirm}
                   >

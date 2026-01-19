@@ -11,10 +11,8 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "jsx": "preserve",
-    "jsxImportSource": "solid-js",
-    "allowImportingTsExtensions": true,
-    "rewriteRelativeImportExtensions": true,
+    "jsxImportSource": "solid-js"
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "styled-system"],
+  "exclude": ["node_modules", "dist"]
 }

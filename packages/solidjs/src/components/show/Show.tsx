@@ -6,20 +6,18 @@ import { ShowGroup } from "./ShowGroup.jsx";
 import { ActionButton } from "../shared/ActionButton.jsx";
 import { cardClasses } from "../ui/index.js";
 
-export interface ShowProps {
+export interface ShowViewProps {
   vm: ShowViewModel;
   onAction?: (actionId: string) => void;
   class?: string;
 }
 
-export const Show: Component<ShowProps> = (props) => {
+export const ShowView: Component<ShowViewProps> = (props) => {
   const groups = () => ShowVM.groups(props.vm);
   const hasGroups = () => groups().length > 0;
 
   return (
-    <div
-      class={cardClasses(props.class)}
-    >
+    <div class={cardClasses(props.class)}>
       {/* Header */}
       <div class="flex items-center justify-between border-b border-border px-6 py-4">
         <div>

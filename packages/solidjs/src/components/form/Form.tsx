@@ -6,7 +6,7 @@ import { FormGroup } from "./FormGroup.jsx";
 import { FormActions } from "./FormActions.jsx";
 import { Button, cardClasses } from "../ui/index.js";
 
-export interface FormProps {
+export interface FormViewProps {
   vm: FormViewModel;
   onChange: (name: string, value: unknown) => void;
   onSubmit: () => void;
@@ -14,7 +14,7 @@ export interface FormProps {
   class?: string;
 }
 
-export const Form: Component<FormProps> = (props) => {
+export const FormView: Component<FormViewProps> = (props) => {
   const groups = () => FormVM.groups(props.vm);
   const hasGroups = () => groups().length > 0;
   const values = () => FormVM.values(props.vm);
@@ -27,10 +27,7 @@ export const Form: Component<FormProps> = (props) => {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      class={cardClasses(props.class)}
-    >
+    <form onSubmit={handleSubmit} class={cardClasses(props.class)}>
       {/* Header */}
       <div class="flex items-center justify-between border-b border-border px-6 py-4">
         <div>

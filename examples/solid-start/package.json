@@ -12,7 +12,7 @@
     "lucide-solid": "latest",
     "@solidjs/router": "^0.15.3",
     "@solidjs/start": "^1.1.0",
-    "@specloom/solidjs2": "workspace:*",
+    "@specloom/solidjs": "workspace:*",
     "lucide-solid": "^0.562.0",
     "solid-js": "^1.9.5",
     "specloom": "workspace:*",

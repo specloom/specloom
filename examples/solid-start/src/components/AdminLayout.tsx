@@ -1,6 +1,6 @@
 import { A, useLocation } from "@solidjs/router";
 import { createSignal, type Component, type JSX } from "solid-js";
-import { Button } from "@specloom/solidjs2";
+import { Button } from "@specloom/solidjs";
 import {
   LayoutGrid,
   Users,

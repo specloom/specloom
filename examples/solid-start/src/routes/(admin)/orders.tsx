@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js";
-import { List, Show, Form, Button } from "@specloom/solidjs2";
+import { ListView, ShowView, FormView, Button } from "@specloom/solidjs";
 import { ArrowLeft } from "lucide-solid";
 import type { ListViewModel, ShowViewModel, FormViewModel } from "specloom";
 import { ordersListVM, ordersShowVM, ordersFormVM } from "~/data/orders";
@@ -71,7 +71,7 @@ export default function OrdersPage() {
 
       <div class="rounded-lg border border-border bg-card text-card-foreground shadow-sm overflow-hidden">
         {currentView() === "list" && (
-          <List
+          <ListView
             vm={listVM()}
             onAction={handleListAction}
             onSelect={handleSelect}
@@ -79,10 +79,10 @@ export default function OrdersPage() {
           />
         )}
         {currentView() === "show" && (
-          <Show vm={showVM()} onAction={handleShowAction} />
+          <ShowView vm={showVM()} onAction={handleShowAction} />
         )}
         {currentView() === "form" && (
-          <Form
+          <FormView
             vm={formVM()}
             onChange={handleFormChange}
             onSubmit={handleFormSubmit}
