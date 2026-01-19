@@ -4,6 +4,8 @@ node_modules/
 # Build outputs
 dist/
 *.tsbuildinfo
+.output/
+.vinxi/
 
 # Panda CSS generated
 styled-system/
@@ -28,3 +30,4 @@ tsp-output/
 # Environment
 .env
 .env.local
+*.timestamp_*.js

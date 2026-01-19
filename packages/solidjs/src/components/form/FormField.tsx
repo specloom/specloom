@@ -1,52 +1,107 @@
 import { type Component, Show, For } from "solid-js";
-import type { FormFieldVM, FormViewModel } from "specloom";
+import type { FormFieldVM } from "specloom";
 import { FormVM } from "specloom";
+import { useForm } from "./context.jsx";
 import { FieldInput } from "../shared/FieldInput.jsx";
 
 export interface FormFieldProps {
   field: FormFieldVM;
-  vm: FormViewModel;
-  value: unknown;
-  onChange: (name: string, value: unknown) => void;
+  value?: unknown;
+  class?: string;
 }
 
+/**
+ * FormField - 個別のフォームフィールド
+ */
 export const FormField: Component<FormFieldProps> = (props) => {
-  const hasError = () => FormVM.hasError(props.vm, props.field.name);
-  const errors = () => FormVM.fieldErrors(props.vm, props.field.name);
+  const { vm, values, onChange } = useForm();
+
+  const fieldValue = () => props.value ?? values()[props.field.name];
+  const hasError = () => FormVM.hasError(vm(), props.field.name);
+  const errors = () => FormVM.fieldErrors(vm(), props.field.name);
 
   return (
-    <div class="space-y-2">
+    <div class={props.class ?? "space-y-2"}>
       {/* Label */}
-      <label
-        for={props.field.name}
-        class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-foreground"
-      >
-        {props.field.label}
-        <Show when={props.field.required}>
-          <span class="ml-0.5 text-destructive">*</span>
-        </Show>
-      </label>
+      <FormFieldLabel field={props.field} />
 
       {/* Input */}
       <FieldInput
         field={props.field}
-        value={props.value}
-        onChange={props.onChange}
+        value={fieldValue()}
+        onChange={onChange}
       />
 
       {/* Hint */}
       <Show when={props.field.hint}>
-        <p class="text-[0.8rem] text-muted-foreground">{props.field.hint}</p>
+        <FormFieldHint hint={props.field.hint!} />
       </Show>
 
       {/* Errors */}
       <Show when={hasError()}>
-        <For each={errors()}>
-          {(error) => (
-            <p class="text-[0.8rem] font-medium text-destructive">{error}</p>
-          )}
-        </For>
+        <FormFieldErrors errors={errors()} />
       </Show>
     </div>
+  );
+};
+
+export interface FormFieldLabelProps {
+  field: FormFieldVM;
+  class?: string;
+}
+
+/**
+ * FormFieldLabel - フィールドのラベル
+ */
+export const FormFieldLabel: Component<FormFieldLabelProps> = (props) => {
+  return (
+    <label
+      for={props.field.name}
+      class={
+        props.class ??
+        "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-foreground"
+      }
+    >
+      {props.field.label}
+      <Show when={props.field.required}>
+        <span class="ml-0.5 text-destructive">*</span>
+      </Show>
+    </label>
+  );
+};
+
+export interface FormFieldHintProps {
+  hint: string;
+  class?: string;
+}
+
+/**
+ * FormFieldHint - フィールドのヒント
+ */
+export const FormFieldHint: Component<FormFieldHintProps> = (props) => {
+  return (
+    <p class={props.class ?? "text-[0.8rem] text-muted-foreground"}>
+      {props.hint}
+    </p>
+  );
+};
+
+export interface FormFieldErrorsProps {
+  errors: string[];
+  class?: string;
+}
+
+/**
+ * FormFieldErrors - フィールドのエラー表示
+ */
+export const FormFieldErrors: Component<FormFieldErrorsProps> = (props) => {
+  return (
+    <For each={props.errors}>
+      {(error) => (
+        <p class={props.class ?? "text-[0.8rem] font-medium text-destructive"}>
+          {error}
+        </p>
+      )}
+    </For>
   );
 };

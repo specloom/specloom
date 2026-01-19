@@ -5,11 +5,15 @@ import { FieldDisplay } from "../shared/FieldDisplay.jsx";
 export interface ShowFieldProps {
   field: ShowFieldVM;
   value: unknown;
+  class?: string;
 }
 
+/**
+ * ShowField - 詳細ビューの単一フィールド表示
+ */
 export const ShowField: Component<ShowFieldProps> = (props) => {
   return (
-    <div class="flex flex-col gap-1">
+    <div class={props.class ?? "flex flex-col gap-1"}>
       <dt class="text-sm font-medium text-muted-foreground">
         {props.field.label}
       </dt>

@@ -1,1 +1,0 @@
-import{createComponent as r}from"solid-js/web";import{N as o}from"./assets/components-DCP2DDCJ.js";import"solid-js";import"./assets/routing-vMheQ2Vk.js";function i(){return r(o,{href:"/users"})}export{i as default};
