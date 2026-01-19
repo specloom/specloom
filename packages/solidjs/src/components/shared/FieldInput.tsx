@@ -1,7 +1,14 @@
-import { type Component, Switch, Match, Show, createSignal, createResource } from "solid-js";
+import {
+  type Component,
+  Switch,
+  Match,
+  Show,
+  createSignal,
+  createResource,
+} from "solid-js";
 import { Index, Portal } from "solid-js/web";
 import { Field } from "@ark-ui/solid/field";
-import { NumberInput } from "@ark-ui/solid/number-input";
+
 import { Select, createListCollection } from "@ark-ui/solid/select";
 import { Switch as ArkSwitch } from "@ark-ui/solid/switch";
 import type { FormFieldVM } from "specloom";
@@ -142,35 +149,23 @@ const TextareaInput: Component<FieldInputProps> = (props) => {
   );
 };
 
-// Number input using Ark NumberInput
+// Number input
 const NumberInputField: Component<FieldInputProps> = (props) => {
   return (
-    <NumberInput.Root
-      value={props.value != null ? String(props.value) : ""}
-      onValueChange={(e) =>
-        props.onChange(
-          props.field.name,
-          Number.isNaN(e.valueAsNumber) ? undefined : e.valueAsNumber,
-        )
-      }
-      disabled={props.field.readonly}
-      min={props.field.validation?.min}
-      max={props.field.validation?.max}
-    >
-      <div class="flex">
-        <NumberInput.Input
-          class={inputClasses("flex-1 rounded-r-none")}
-        />
-        <NumberInput.Control class="flex flex-col border border-l-0 border-input rounded-r-md bg-background">
-          <NumberInput.IncrementTrigger class="px-2 py-1 hover:bg-accent border-b border-input">
-            ▲
-          </NumberInput.IncrementTrigger>
-          <NumberInput.DecrementTrigger class="px-2 py-1 hover:bg-accent">
-            ▼
-          </NumberInput.DecrementTrigger>
-        </NumberInput.Control>
-      </div>
-    </NumberInput.Root>
+    <Field.Root disabled={props.field.readonly} required={props.field.required}>
+      <Field.Input
+        type="number"
+        value={props.value != null ? String(props.value) : ""}
+        placeholder={props.field.placeholder}
+        min={props.field.validation?.min}
+        max={props.field.validation?.max}
+        onInput={(e) => {
+          const val = e.currentTarget.valueAsNumber;
+          props.onChange(props.field.name, Number.isNaN(val) ? undefined : val);
+        }}
+        class={inputClasses()}
+      />
+    </Field.Root>
   );
 };
 
@@ -298,7 +293,9 @@ const RelationInput: Component<FieldInputProps> = (props) => {
     >
       <Select.Control>
         <Select.Trigger class={selectTriggerClasses()}>
-          <Select.ValueText placeholder={props.field.placeholder ?? "選択してください"}>
+          <Select.ValueText
+            placeholder={props.field.placeholder ?? "選択してください"}
+          >
             {currentLabel() || props.field.placeholder || "選択してください"}
           </Select.ValueText>
           <Show when={options.loading}>

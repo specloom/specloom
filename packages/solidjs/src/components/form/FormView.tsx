@@ -20,7 +20,10 @@ export interface FormViewProps {
   onSubmit: () => void;
   onAction?: (actionId: string) => void;
   /** リレーションフィールドのオプション検索 */
-  onOptionsSearch?: (resource: string, query: string) => Promise<RelationOption[]>;
+  onOptionsSearch?: (
+    resource: string,
+    query: string,
+  ) => Promise<RelationOption[]>;
   class?: string;
   children?: JSX.Element;
 }
