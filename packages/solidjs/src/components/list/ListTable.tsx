@@ -163,7 +163,7 @@ export interface ListTableBodyProps {
  * ListTableBody - テーブルボディ
  */
 export const ListTableBody: Component<ListTableBodyProps> = (props) => {
-  const { rows, fields, empty } = useList();
+  const { rows, fields, empty, selectable } = useList();
 
   const renderRow = () => {
     if (typeof props.children === "function") {
@@ -172,13 +172,16 @@ export const ListTableBody: Component<ListTableBodyProps> = (props) => {
     return undefined;
   };
 
+  // カラム数: fields + actions(1) + selection(0 or 1)
+  const colCount = () => fields().length + 1 + (selectable() ? 1 : 0);
+
   return (
     <tbody class={props.class ?? "[&_tr:last-child]:border-0"}>
       <Show
         when={!empty()}
         fallback={
           <tr>
-            <td colspan={fields().length + 2} class="h-24 text-center">
+            <td colspan={colCount()} class="h-24 text-center">
               <ListEmpty />
             </td>
           </tr>

@@ -14,7 +14,7 @@ export interface FormFieldProps {
  * FormField - 個別のフォームフィールド
  */
 export const FormField: Component<FormFieldProps> = (props) => {
-  const { vm, values, onChange } = useForm();
+  const { vm, values, onChange, onOptionsSearch } = useForm();
 
   const fieldValue = () => props.value ?? values()[props.field.name];
   const hasError = () => FormVM.hasError(vm(), props.field.name);
@@ -30,6 +30,7 @@ export const FormField: Component<FormFieldProps> = (props) => {
         field={props.field}
         value={fieldValue()}
         onChange={onChange}
+        onOptionsSearch={onOptionsSearch}
       />
 
       {/* Hint */}

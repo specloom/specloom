@@ -6,6 +6,7 @@ import type {
   FieldGroup,
 } from "specloom";
 import { FormVM } from "specloom";
+import type { RelationOption } from "../shared/FieldInput.jsx";
 
 export interface FormContextValue {
   // ViewModel
@@ -15,6 +16,7 @@ export interface FormContextValue {
   onChange: (name: string, value: unknown) => void;
   onSubmit: () => void;
   onAction?: (actionId: string) => void;
+  onOptionsSearch?: (resource: string, query: string) => Promise<RelationOption[]>;
 
   // Derived values
   fields: Accessor<FormFieldVM[]>;
@@ -40,6 +42,7 @@ export interface FormProviderProps {
   onChange: (name: string, value: unknown) => void;
   onSubmit: () => void;
   onAction?: (actionId: string) => void;
+  onOptionsSearch?: (resource: string, query: string) => Promise<RelationOption[]>;
   children: JSX.Element;
 }
 
@@ -51,6 +54,7 @@ export function FormProvider(props: FormProviderProps) {
     onChange: props.onChange,
     onSubmit: props.onSubmit,
     onAction: props.onAction,
+    onOptionsSearch: props.onOptionsSearch,
 
     // Derived
     fields: () => FormVM.fields(vm()),

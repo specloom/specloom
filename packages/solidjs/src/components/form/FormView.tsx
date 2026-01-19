@@ -6,6 +6,7 @@ import {
 } from "solid-js";
 import type { FormViewModel } from "specloom";
 import { FormProvider, useForm } from "./context.jsx";
+import type { RelationOption } from "../shared/FieldInput.jsx";
 import { FormHeader } from "./FormHeader.jsx";
 import { FormBody } from "./FormBody.jsx";
 import { FormFooter } from "./FormFooter.jsx";
@@ -18,6 +19,8 @@ export interface FormViewProps {
   onChange: (name: string, value: unknown) => void;
   onSubmit: () => void;
   onAction?: (actionId: string) => void;
+  /** リレーションフィールドのオプション検索 */
+  onOptionsSearch?: (resource: string, query: string) => Promise<RelationOption[]>;
   class?: string;
   children?: JSX.Element;
 }
@@ -55,6 +58,7 @@ export const FormView: Component<FormViewProps> = (props) => {
       onChange={props.onChange}
       onSubmit={props.onSubmit}
       onAction={props.onAction}
+      onOptionsSearch={props.onOptionsSearch}
     >
       <FormViewInner class={props.class} hasChildren={hasChildren}>
         <Show when={hasChildren()} fallback={<DefaultFormContent />}>

@@ -108,14 +108,22 @@ export const Serialize = {
       const value = field.value;
       if (value == null) continue;
 
-      if (value instanceof Date) {
+      if (value instanceof File || value instanceof Blob) {
+        // File/Blob はそのまま追加
+        formData.append(field.name, value);
+      } else if (value instanceof Date) {
         formData.append(field.name, value.toISOString());
-      } else if (typeof value === "object" && !Array.isArray(value)) {
-        formData.append(field.name, JSON.stringify(value));
       } else if (Array.isArray(value)) {
         for (const item of value) {
-          formData.append(`${field.name}[]`, String(item));
+          if (item instanceof File || item instanceof Blob) {
+            formData.append(`${field.name}[]`, item);
+          } else {
+            formData.append(`${field.name}[]`, String(item));
+          }
         }
+      } else if (typeof value === "object") {
+        // プレーンオブジェクトのみ JSON 文字列化
+        formData.append(field.name, JSON.stringify(value));
       } else {
         formData.append(field.name, String(value));
       }

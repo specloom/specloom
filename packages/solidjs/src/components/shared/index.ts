@@ -7,4 +7,4 @@ export type {
   FieldDisplayProps,
   FieldDisplayProps as FieldValueProps,
 } from "./FieldDisplay.jsx";
-export type { FieldInputProps } from "./FieldInput.jsx";
+export type { FieldInputProps, RelationOption } from "./FieldInput.jsx";

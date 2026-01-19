@@ -394,13 +394,22 @@ function getTypeString(prop: ModelProperty): string {
       // Check if it's an array
       if (type.name === "Array" && type.templateMapper?.args) {
         const elementType = type.templateMapper.args[0];
-        if (
-          elementType &&
-          elementType.entityKind === "Type" &&
-          elementType.kind === "Model"
-        ) {
-          return `${elementType.name}[]`;
+        if (elementType && elementType.entityKind === "Type") {
+          // Handle Model element type (e.g., Tag[])
+          if (elementType.kind === "Model") {
+            return `${elementType.name}[]`;
+          }
+          // Handle Scalar element type (e.g., string[])
+          if (elementType.kind === "Scalar") {
+            return `${mapScalarType(elementType.name)}[]`;
+          }
+          // Handle Enum element type (e.g., Status[])
+          if (elementType.kind === "Enum") {
+            return "string[]";
+          }
         }
+        // Fallback for unknown array element type
+        return "unknown[]";
       }
       return type.name;
     case "Enum":

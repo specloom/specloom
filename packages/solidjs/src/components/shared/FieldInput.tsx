@@ -1,4 +1,4 @@
-import { type Component, Switch, Match, Show } from "solid-js";
+import { type Component, Switch, Match, Show, createSignal, createResource } from "solid-js";
 import { Index, Portal } from "solid-js/web";
 import { Field } from "@ark-ui/solid/field";
 import { NumberInput } from "@ark-ui/solid/number-input";
@@ -13,10 +13,20 @@ import {
   textareaClasses,
 } from "../ui/index.js";
 
+export interface RelationOption {
+  value: string;
+  label: string;
+}
+
 export interface FieldInputProps {
   field: FormFieldVM;
   value: unknown;
   onChange: (name: string, value: unknown) => void;
+  /** リレーションフィールドのオプション検索コールバック */
+  onOptionsSearch?: (
+    resource: string,
+    query: string,
+  ) => Promise<RelationOption[]>;
 }
 
 export const FieldInput: Component<FieldInputProps> = (props) => {
@@ -53,7 +63,7 @@ export const FieldInput: Component<FieldInputProps> = (props) => {
       </Match>
 
       <Match when={props.field.kind === "relation"}>
-        <EnumInput {...props} />
+        <RelationInput {...props} />
       </Match>
 
       <Match when={props.field.kind === "date"}>
@@ -219,6 +229,120 @@ const EnumInput: Component<FieldInputProps> = (props) => {
                   </Select.Item>
                 )}
               </Index>
+            </Select.ItemGroup>
+          </Select.Content>
+        </Select.Positioner>
+      </Portal>
+      <Select.HiddenSelect />
+    </Select.Root>
+  );
+};
+
+// Relation input with async search support
+const RelationInput: Component<FieldInputProps> = (props) => {
+  const [query, setQuery] = createSignal("");
+  const [isOpen, setIsOpen] = createSignal(false);
+
+  // 静的 options がある場合はそれを使用、なければ onOptionsSearch を呼ぶ
+  const [options] = createResource(
+    () => ({ query: query(), isOpen: isOpen() }),
+    async ({ query: q, isOpen: open }) => {
+      // 静的 options がある場合
+      if (props.field.options && props.field.options.length > 0) {
+        const filtered = props.field.options.filter((opt) =>
+          opt.label.toLowerCase().includes(q.toLowerCase()),
+        );
+        return filtered;
+      }
+
+      // 動的検索
+      if (props.onOptionsSearch && props.field.relation && open) {
+        return await props.onOptionsSearch(props.field.relation.resource, q);
+      }
+
+      return [];
+    },
+  );
+
+  // 現在の値のラベルを取得
+  const currentLabel = () => {
+    const val = props.value;
+    if (val == null) return "";
+
+    // options から探す
+    const opt = props.field.options?.find((o) => o.value === String(val));
+    if (opt) return opt.label;
+
+    // 取得済み options から探す
+    const loadedOpt = options()?.find((o) => o.value === String(val));
+    if (loadedOpt) return loadedOpt.label;
+
+    // 見つからない場合は値をそのまま表示
+    return String(val);
+  };
+
+  const collection = () =>
+    createListCollection({
+      items: options() ?? [],
+      itemToString: (item) => item.label,
+      itemToValue: (item) => item.value,
+    });
+
+  return (
+    <Select.Root
+      collection={collection()}
+      value={props.value != null ? [String(props.value)] : []}
+      onValueChange={(e) => props.onChange(props.field.name, e.value[0])}
+      onOpenChange={(e) => setIsOpen(e.open)}
+      disabled={props.field.readonly}
+    >
+      <Select.Control>
+        <Select.Trigger class={selectTriggerClasses()}>
+          <Select.ValueText placeholder={props.field.placeholder ?? "選択してください"}>
+            {currentLabel() || props.field.placeholder || "選択してください"}
+          </Select.ValueText>
+          <Show when={options.loading}>
+            <span class="animate-spin text-muted-foreground">⟳</span>
+          </Show>
+          <Select.Indicator>▼</Select.Indicator>
+        </Select.Trigger>
+      </Select.Control>
+      <Portal>
+        <Select.Positioner>
+          <Select.Content class={selectContentClasses("py-1")}>
+            {/* 検索入力 */}
+            <Show when={props.onOptionsSearch}>
+              <div class="p-2 border-b border-border">
+                <input
+                  type="text"
+                  value={query()}
+                  onInput={(e) => setQuery(e.currentTarget.value)}
+                  placeholder="検索..."
+                  class={inputClasses("h-8")}
+                />
+              </div>
+            </Show>
+            <Select.ItemGroup>
+              <Show
+                when={!options.loading && (options()?.length ?? 0) > 0}
+                fallback={
+                  <div class="px-3 py-2 text-sm text-muted-foreground">
+                    {options.loading ? "読み込み中..." : "選択肢がありません"}
+                  </div>
+                }
+              >
+                <Index each={options()}>
+                  {(item) => (
+                    <Select.Item
+                      item={item()}
+                      class={selectItemClasses("justify-between")}
+                    >
+                      <Select.ItemText>{item().label}</Select.ItemText>
+                      <Select.ItemIndicator>✓</Select.ItemIndicator>
+                    </Select.Item>
+                  )}
+                </Index>
+              </Show>
             </Select.ItemGroup>
           </Select.Content>
         </Select.Positioner>
