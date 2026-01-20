@@ -14,7 +14,7 @@
     /** Timezone for date/datetime formatting (e.g., 'Asia/Tokyo', 'UTC'). undefined = local time */
     timeZone?: string;
     class?: string;
-    children: Snippet;
+    children?: Snippet;
   }
 
   let {
@@ -47,6 +47,8 @@
 
 <form onsubmit={handleSubmit}>
   <Card.Root class={cn(className)}>
-    {@render children()}
+    {#if children}
+      {@render children()}
+    {/if}
   </Card.Root>
 </form>

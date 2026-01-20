@@ -71,7 +71,9 @@ export const ListVM = {
     return Math.ceil(total / size);
   },
   hasNext: (vm: ListViewModel) => ListVM.page(vm) < ListVM.totalPages(vm),
+  hasNextPage: (vm: ListViewModel) => ListVM.page(vm) < ListVM.totalPages(vm),
   hasPrev: (vm: ListViewModel) => ListVM.page(vm) > 1,
+  hasPrevPage: (vm: ListViewModel) => ListVM.page(vm) > 1,
 
   // ============================================================
   // アクション

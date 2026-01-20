@@ -6,6 +6,7 @@ dist/
 *.tsbuildinfo
 .output/
 .vinxi/
+.svelte-kit/
 
 # Panda CSS generated
 styled-system/

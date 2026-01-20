@@ -5,12 +5,14 @@
 
   interface Props {
     class?: string;
-    children: Snippet;
+    children?: Snippet;
   }
 
   let { class: className, children }: Props = $props();
 </script>
 
 <Table.Root class={cn(className)}>
-  {@render children()}
+  {#if children}
+    {@render children()}
+  {/if}
 </Table.Root>

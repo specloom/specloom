@@ -1,7 +1,6 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import type { FormFieldVM, FieldGroup } from "specloom";
-  import { FormHelpers } from "specloom";
   import { getFormContext } from "./context.svelte.js";
   import * as Card from "$lib/components/ui/card/index.js";
   import { cn } from "$lib/utils.js";

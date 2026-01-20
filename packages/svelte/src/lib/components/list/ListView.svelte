@@ -14,7 +14,7 @@
     onPageChange?: (page: number) => void;
     onRowClick?: (rowId: string) => void;
     class?: string;
-    children: Snippet;
+    children?: Snippet;
   }
 
   let {
@@ -43,5 +43,7 @@
 </script>
 
 <Card.Root class={cn(className)}>
-  {@render children()}
+  {#if children}
+    {@render children()}
+  {/if}
 </Card.Root>
