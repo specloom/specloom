@@ -12,7 +12,7 @@ import type {
   ShowView,
   FormView,
 } from "../../src/spec/index.js";
-import type { Context } from "../../src/ui/index.js";
+import type { Context } from "../../src/vm/index.js";
 
 const createResource = (): Resource => ({
   name: "Post",

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { Serialize } from "../../src/serialize/index.js";
-import type { FormViewModel } from "../../src/ui/types.js";
+import type { FormViewModel } from "../../src/vm/types.js";
 
 const createFormVM = (overrides?: Partial<FormViewModel>): FormViewModel => ({
   type: "form",

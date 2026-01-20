@@ -2,7 +2,7 @@
 // Serialize - 送信用データ変換
 // ============================================================
 
-import type { FormViewModel } from "../ui/types.js";
+import type { FormViewModel } from "../vm/types.js";
 
 /**
  * シリアライズオプション

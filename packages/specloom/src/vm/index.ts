@@ -1,6 +1,12 @@
 // ============================================================
-// VM Module - 互換性のための再エクスポート
+// UI Module - ViewModel 型と操作関数
 // ============================================================
-// @deprecated ui/ モジュールを使用してください
 
-export * from "../ui/index.js";
+// 型定義
+export * from "./types.js";
+
+// 操作関数
+export { ListVM } from "./list.js";
+export { FormVM } from "./form.js";
+export { ShowVM } from "./show.js";
+export { ActionVMHelper } from "./action.js";

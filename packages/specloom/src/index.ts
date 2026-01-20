@@ -2,10 +2,7 @@
 export * from "./spec/index.js";
 
 // UI (ViewModel types and operations)
-export * from "./ui/index.js";
-
-// Builder
-export * from "./builder/index.js";
+export * from "./vm/index.js";
 
 // Loader
 export * from "./loader/index.js";

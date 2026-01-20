@@ -1,0 +1,1 @@
+import{f as i,a as n}from"../chunks/JXG7iNR4.js";import{x as t,y as e}from"../chunks/wgvE3pql.js";import{s as m}from"../chunks/C_wH4D0R.js";var p=i('<div class="min-h-screen bg-background"><!></div>');function v(r,a){var o=p(),s=t(o);m(s,()=>a.children),e(o),n(r,o)}export{v as component};
