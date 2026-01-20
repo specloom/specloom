@@ -7,16 +7,18 @@ function __memo(fn) {
 return {
 	appDir: "_app",
 	appPath: "_app",
-	assets: new Set(["robots.txt"]),
-	mimeTypes: {".txt":"text/plain"},
+	assets: new Set(["favicon.png"]),
+	mimeTypes: {".png":"image/png"},
 	_: {
-		client: {start:"_app/immutable/entry/start.1fA_wKEr.js",app:"_app/immutable/entry/app.DQWFI62B.js",imports:["_app/immutable/entry/start.1fA_wKEr.js","_app/immutable/chunks/BM8rOf3A.js","_app/immutable/chunks/wgvE3pql.js","_app/immutable/chunks/CTHtVnDP.js","_app/immutable/entry/app.DQWFI62B.js","_app/immutable/chunks/wgvE3pql.js","_app/immutable/chunks/DpyG9E8e.js","_app/immutable/chunks/JXG7iNR4.js","_app/immutable/chunks/CTHtVnDP.js","_app/immutable/chunks/Cxd7G7E7.js","_app/immutable/chunks/BQ3hyv7o.js"],stylesheets:[],fonts:[],uses_env_dynamic_public:false},
+		client: {start:"_app/immutable/entry/start.BpFIPhZX.js",app:"_app/immutable/entry/app.BM86zk94.js",imports:["_app/immutable/entry/start.BpFIPhZX.js","_app/immutable/chunks/D4pAIQkD.js","_app/immutable/chunks/cROy4u8D.js","_app/immutable/chunks/CitCTaoR.js","_app/immutable/entry/app.BM86zk94.js","_app/immutable/chunks/cROy4u8D.js","_app/immutable/chunks/Crd-2hK2.js","_app/immutable/chunks/Dfj0Z4wW.js","_app/immutable/chunks/Dw7LeKGv.js","_app/immutable/chunks/CitCTaoR.js","_app/immutable/chunks/D-jETF6z.js","_app/immutable/chunks/BRuvjvby.js"],stylesheets:[],fonts:[],uses_env_dynamic_public:false},
 		nodes: [
 			__memo(() => import('./nodes/0.js')),
 			__memo(() => import('./nodes/1.js')),
 			__memo(() => import('./nodes/2.js')),
 			__memo(() => import('./nodes/3.js')),
-			__memo(() => import('./nodes/4.js'))
+			__memo(() => import('./nodes/4.js')),
+			__memo(() => import('./nodes/5.js')),
+			__memo(() => import('./nodes/6.js'))
 		],
 		remotes: {
 			
@@ -30,17 +32,31 @@ return {
 				endpoint: null
 			},
 			{
+				id: "/orders",
+				pattern: /^\/orders\/?$/,
+				params: [],
+				page: { layouts: [0,], errors: [1,], leaf: 3 },
+				endpoint: null
+			},
+			{
 				id: "/posts",
 				pattern: /^\/posts\/?$/,
 				params: [],
-				page: { layouts: [0,], errors: [1,], leaf: 3 },
+				page: { layouts: [0,], errors: [1,], leaf: 4 },
+				endpoint: null
+			},
+			{
+				id: "/products",
+				pattern: /^\/products\/?$/,
+				params: [],
+				page: { layouts: [0,], errors: [1,], leaf: 5 },
 				endpoint: null
 			},
 			{
 				id: "/users",
 				pattern: /^\/users\/?$/,
 				params: [],
-				page: { layouts: [0,], errors: [1,], leaf: 4 },
+				page: { layouts: [0,], errors: [1,], leaf: 6 },
 				endpoint: null
 			}
 		],

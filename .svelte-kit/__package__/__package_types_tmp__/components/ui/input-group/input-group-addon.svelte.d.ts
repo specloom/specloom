@@ -1,0 +1,28 @@
+import { type VariantProps } from "tailwind-variants";
+export declare const inputGroupAddonVariants: import("tailwind-variants").TVReturnType<{
+    align: {
+        "inline-start": string;
+        "inline-end": string;
+        "block-start": string;
+        "block-end": string;
+    };
+}, undefined, "text-muted-foreground flex h-auto cursor-text items-center justify-center gap-2 py-1.5 text-sm font-medium select-none group-data-[disabled=true]/input-group:opacity-50 [&>kbd]:rounded-[calc(var(--radius)-5px)] [&>svg:not([class*='size-'])]:size-4", {
+    align: {
+        "inline-start": string;
+        "inline-end": string;
+        "block-start": string;
+        "block-end": string;
+    };
+}, undefined, import("tailwind-variants").TVReturnType<{
+    align: {
+        "inline-start": string;
+        "inline-end": string;
+        "block-start": string;
+        "block-end": string;
+    };
+}, undefined, "text-muted-foreground flex h-auto cursor-text items-center justify-center gap-2 py-1.5 text-sm font-medium select-none group-data-[disabled=true]/input-group:opacity-50 [&>kbd]:rounded-[calc(var(--radius)-5px)] [&>svg:not([class*='size-'])]:size-4", unknown, unknown, undefined>>;
+export type InputGroupAddonAlign = VariantProps<typeof inputGroupAddonVariants>["align"];
+declare const InputGroupAddon: import("svelte").Component<any, {}, "ref">;
+type InputGroupAddon = ReturnType<typeof InputGroupAddon>;
+export default InputGroupAddon;
+//# sourceMappingURL=input-group-addon.svelte.d.ts.map

@@ -1,30 +1,11 @@
-var is_array = Array.isArray;
-var index_of = Array.prototype.indexOf;
-var array_from = Array.from;
-var define_property = Object.defineProperty;
-var get_descriptor = Object.getOwnPropertyDescriptor;
-var object_prototype = Object.prototype;
-var array_prototype = Array.prototype;
-var get_prototype_of = Object.getPrototypeOf;
-var is_extensible = Object.isExtensible;
-const noop = () => {
-};
-function run(fn) {
-  return fn();
+function equals(value) {
+  return value === this.v;
 }
-function run_all(arr) {
-  for (var i = 0; i < arr.length; i++) {
-    arr[i]();
-  }
+function safe_not_equal(a, b) {
+  return a != a ? b == b : a !== b || a !== null && typeof a === "object" || typeof a === "function";
 }
-function deferred() {
-  var resolve;
-  var reject;
-  var promise = new Promise((res, rej) => {
-    resolve = res;
-    reject = rej;
-  });
-  return { promise, resolve, reject };
+function safe_equals(value) {
+  return !safe_not_equal(value, this.v);
 }
 function lifecycle_outside_component(name) {
   {
@@ -63,9 +44,6 @@ function setContext(key, context) {
   get_or_init_context_map().set(key, context);
   return context;
 }
-function hasContext(key) {
-  return get_or_init_context_map().has(key);
-}
 function get_or_init_context_map(name) {
   if (ssr_context === null) {
     lifecycle_outside_component();
@@ -91,25 +69,14 @@ function get_parent_context(ssr_context2) {
   return null;
 }
 export {
-  array_prototype as a,
-  get_prototype_of as b,
-  is_extensible as c,
-  deferred as d,
-  index_of as e,
-  define_property as f,
-  get_descriptor as g,
-  array_from as h,
-  is_array as i,
-  getContext as j,
-  escape_html as k,
-  hasContext as l,
-  run as m,
-  noop as n,
-  object_prototype as o,
-  set_ssr_context as p,
-  ssr_context as q,
-  run_all as r,
-  setContext as s,
-  push as t,
-  pop as u
+  safe_not_equal as a,
+  safe_equals as b,
+  equals as c,
+  set_ssr_context as d,
+  escape_html as e,
+  ssr_context as f,
+  getContext as g,
+  pop as h,
+  push as p,
+  setContext as s
 };

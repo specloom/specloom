@@ -1,0 +1,1 @@
+{"version":3,"file":"pagination-ellipsis.svelte.d.ts","sourceRoot":"","sources":["../../../../src/lib/components/ui/pagination/pagination-ellipsis.svelte.ts"],"names":[],"mappings":"AAKA,OAAO,KAAK,EAAE,cAAc,EAAE,MAAM,iBAAiB,CAAC;AAqBtD,QAAA,MAAM,kBAAkB,yGAAwC,CAAC;AACjE,KAAK,kBAAkB,GAAG,UAAU,CAAC,OAAO,kBAAkB,CAAC,CAAC;AAChE,eAAe,kBAAkB,CAAC"}

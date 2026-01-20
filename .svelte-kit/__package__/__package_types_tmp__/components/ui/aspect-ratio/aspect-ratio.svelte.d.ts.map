@@ -1,0 +1,1 @@
+{"version":3,"file":"aspect-ratio.svelte.d.ts","sourceRoot":"","sources":["../../../../src/lib/components/ui/aspect-ratio/aspect-ratio.svelte.ts"],"names":[],"mappings":"AAGA,OAAO,EAAE,WAAW,IAAI,oBAAoB,EAAE,MAAM,SAAS,CAAC;AAY9D,QAAA,MAAM,WAAW,uEAAwC,CAAC;AAC1D,KAAK,WAAW,GAAG,UAAU,CAAC,OAAO,WAAW,CAAC,CAAC;AAClD,eAAe,WAAW,CAAC"}

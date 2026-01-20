@@ -1,5 +1,12 @@
-function _page($$renderer) {
-  $$renderer.push(`<div class="container mx-auto py-8"><h1 class="text-3xl font-bold mb-8">Specloom SvelteKit Example</h1> <div class="grid gap-4 md:grid-cols-2"><a href="/users" class="block"><div class="rounded-lg border bg-card p-6 hover:bg-accent transition-colors"><h2 class="text-xl font-semibold mb-2">ユーザー管理</h2> <p class="text-muted-foreground">ユーザーの一覧表示、編集、削除</p></div></a> <a href="/posts" class="block"><div class="rounded-lg border bg-card p-6 hover:bg-accent transition-colors"><h2 class="text-xl font-semibold mb-2">記事管理</h2> <p class="text-muted-foreground">記事の一覧表示、編集、削除</p></div></a></div></div>`);
+import "@sveltejs/kit/internal";
+import "../../chunks/exports.js";
+import "../../chunks/utils2.js";
+import "@sveltejs/kit/internal/server";
+import "../../chunks/state.svelte.js";
+function _page($$renderer, $$props) {
+  $$renderer.component(($$renderer2) => {
+    $$renderer2.push(`<div class="flex items-center justify-center h-full"><p class="text-muted-foreground">リダイレクト中...</p></div>`);
+  });
 }
 export {
   _page as default

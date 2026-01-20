@@ -2,7 +2,8 @@ import { get_request_store, with_request_store } from "@sveltejs/kit/internal/se
 import { error, json } from "@sveltejs/kit";
 import { b as stringify_remote_arg, e as parse, f as flatten_issues, g as create_field_proxy, n as normalize_issue, h as set_nested_value, i as deep_set, a as stringify, c as create_remote_key } from "./chunks/shared.js";
 import { ValidationError } from "@sveltejs/kit/internal";
-import { b as base, c as app_dir, D as DEV, p as prerendering } from "./chunks/environment.js";
+import { D as DEV } from "./chunks/utils.js";
+import { b as base, c as app_dir, p as prerendering } from "./chunks/environment.js";
 function create_validator(validate_or_fn, maybe_fn) {
   if (!maybe_fn) {
     return (arg) => {
