@@ -19,10 +19,10 @@ export type { FieldUI, ActionUI, Option, FieldValidation, FilterExpression };
  * 評価コンテキスト
  */
 export interface Context {
-  user: Record<string, unknown>;
-  role: string;
-  permissions: string[];
-  custom: Record<string, unknown>;
+  user?: Record<string, unknown>;
+  role?: string;
+  permissions?: string[];
+  custom?: Record<string, unknown>;
 }
 
 // ============================================================
