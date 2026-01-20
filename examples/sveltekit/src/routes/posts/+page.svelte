@@ -48,7 +48,7 @@
   );
 
   // ShowViewModel を評価
-  let showVM = $derived<ShowViewModel>(() => {
+  let showVM = $derived.by<ShowViewModel>(() => {
     const post = postsData.find((p) => p.id === currentPostId);
     if (!post) {
       return evaluateShowView({
@@ -67,7 +67,7 @@
   });
 
   // FormViewModel を評価
-  let formVM = $derived<FormViewModel>(() => {
+  let formVM = $derived.by<FormViewModel>(() => {
     const post = formMode === "edit"
       ? postsData.find((p) => p.id === currentPostId)
       : undefined;
@@ -154,10 +154,10 @@
         onRowClick={handleRowClick}
       />
     {:else if currentView === "show"}
-      <ShowView vm={showVM()} onAction={handleShowAction} />
+      <ShowView vm={showVM} onAction={handleShowAction} />
     {:else if currentView === "form"}
       <FormView
-        vm={formVM()}
+        vm={formVM}
         onAction={handleFormAction}
       />
     {/if}
