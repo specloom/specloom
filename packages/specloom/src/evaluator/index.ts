@@ -262,9 +262,24 @@ function toFilters(view: ListView, activeFilter?: string): Filters {
     id: f.id,
     label: f.label,
     active: f.id === (activeFilter ?? view.namedFilters?.[0]?.id),
+    filter: isFilterExpression(f.filter) ? f.filter : undefined,
   }));
 
   return { named };
+}
+
+/**
+ * FilterExpression かどうかを判定する型ガード
+ */
+function isFilterExpression(value: unknown): value is Filters["custom"] {
+  if (value == null || typeof value !== "object") return false;
+  const obj = value as Record<string, unknown>;
+
+  // AND/OR/NOT
+  if ("and" in obj || "or" in obj || "not" in obj) return true;
+
+  // FilterCondition
+  return "field" in obj && "op" in obj && "value" in obj;
 }
 
 function toSelection(view: ListView, selected?: string[]): Selection {

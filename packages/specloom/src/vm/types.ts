@@ -90,6 +90,7 @@ export interface NamedFilterVM {
   id: string;
   label: string;
   active: boolean;
+  filter?: FilterExpression;
 }
 
 export interface Selection {

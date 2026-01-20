@@ -2,8 +2,15 @@
 // ListVM - List ViewModel 操作関数
 // ============================================================
 
-import type { ListViewModel, ListFieldVM, RowVM, ActionVM } from "./types.js";
+import type {
+  ListViewModel,
+  ListFieldVM,
+  RowVM,
+  ActionVM,
+  FilterExpression,
+} from "./types.js";
 import { Format, type FormatOptions } from "../format/index.js";
+import { evaluateFilter } from "../filter/index.js";
 
 export const ListVM = {
   // ============================================================
@@ -57,6 +64,54 @@ export const ListVM = {
   filterActive: (vm: ListViewModel, id: string) =>
     vm.filters.named.find((f) => f.id === id)?.active ?? false,
   customFilter: (vm: ListViewModel) => vm.filters.custom,
+
+  /** 指定したフィルターの条件式を取得 */
+  getFilterExpression: (
+    vm: ListViewModel,
+    filterId: string,
+  ): FilterExpression | undefined =>
+    vm.filters.named.find((f) => f.id === filterId)?.filter,
+
+  /**
+   * アクティブなフィルター条件を結合して取得
+   * 複数のフィルターがアクティブな場合はANDで結合
+   */
+  getActiveFilterExpression: (
+    vm: ListViewModel,
+  ): FilterExpression | undefined => {
+    const activeFilters = vm.filters.named.filter((f) => f.active && f.filter);
+    const customFilter = vm.filters.custom;
+
+    const expressions: FilterExpression[] = [];
+    for (const f of activeFilters) {
+      if (f.filter) expressions.push(f.filter);
+    }
+    if (customFilter) expressions.push(customFilter);
+
+    if (expressions.length === 0) return undefined;
+    if (expressions.length === 1) return expressions[0];
+    return { and: expressions };
+  },
+
+  /**
+   * 行がアクティブなフィルター条件にマッチするか判定
+   */
+  rowMatchesFilter: (vm: ListViewModel, row: RowVM): boolean => {
+    const filter = ListVM.getActiveFilterExpression(vm);
+    if (!filter) return true;
+    return evaluateFilter(filter, row.values as Record<string, unknown>);
+  },
+
+  /**
+   * アクティブなフィルター条件で行をフィルタリング（クライアントサイド）
+   */
+  filterRows: (vm: ListViewModel): RowVM[] => {
+    const filter = ListVM.getActiveFilterExpression(vm);
+    if (!filter) return vm.rows;
+    return vm.rows.filter((row) =>
+      evaluateFilter(filter, row.values as Record<string, unknown>),
+    );
+  },
 
   // ============================================================
   // ページネーション
@@ -156,6 +211,28 @@ export const ListVM = {
     filters: {
       ...vm.filters,
       named: vm.filters.named.map((f) => ({ ...f, active: false })),
+      custom: undefined,
+    },
+  }),
+
+  /** カスタムフィルターを設定 */
+  setCustomFilter: (
+    vm: ListViewModel,
+    filter: FilterExpression | undefined,
+  ): ListViewModel => ({
+    ...vm,
+    filters: {
+      ...vm.filters,
+      custom: filter,
+    },
+  }),
+
+  /** カスタムフィルターをクリア */
+  clearCustomFilter: (vm: ListViewModel): ListViewModel => ({
+    ...vm,
+    filters: {
+      ...vm.filters,
+      custom: undefined,
     },
   }),
 

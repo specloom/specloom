@@ -88,6 +88,51 @@ vm = ListVM.setError(vm, "エラーメッセージ");
 vm = ListVM.setRows(vm, newRows, totalCount);
 ```
 
+#### フィルター機能
+
+ListVMは定義済みフィルター（named filter）とカスタムフィルターの両方をサポートします。
+
+```typescript
+import { ListVM, type FilterExpression } from "specloom";
+
+// 定義済みフィルターの操作
+vm = ListVM.toggleFilter(vm, "published");     // フィルターのON/OFF
+vm = ListVM.setFilterActive(vm, "draft", true); // 明示的に設定
+vm = ListVM.clearFilters(vm);                   // 全フィルターをクリア
+
+// 定義済みフィルターの条件式を取得
+const filter = ListVM.getFilterExpression(vm, "published");
+// → { field: "status", op: "eq", value: "published" }
+
+// カスタムフィルターを設定（動的なフィルター条件）
+vm = ListVM.setCustomFilter(vm, {
+  field: "name",
+  op: "ilike",
+  value: "田中",
+});
+
+// 複合条件のカスタムフィルター
+vm = ListVM.setCustomFilter(vm, {
+  and: [
+    { field: "status", op: "eq", value: "active" },
+    { field: "price", op: "gte", value: 1000 },
+  ],
+});
+
+// カスタムフィルターをクリア
+vm = ListVM.clearCustomFilter(vm);
+
+// アクティブな全フィルター条件を結合して取得（API送信用）
+const activeFilter = ListVM.getActiveFilterExpression(vm);
+// 複数のフィルターがアクティブな場合はANDで結合される
+
+// クライアントサイドでフィルタリング
+const filteredRows = ListVM.filterRows(vm);
+
+// 行がフィルター条件にマッチするか判定
+const matches = ListVM.rowMatchesFilter(vm, row);
+```
+
 ### FormVM（フォーム画面）
 
 ```typescript
