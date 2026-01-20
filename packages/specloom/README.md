@@ -63,74 +63,173 @@ import { ListVM, type ListViewModel } from "specloom";
 
 let vm: ListViewModel = createInitialListVM();
 
-// 読み取り
+// 基本の読み取り
 ListVM.fields(vm)           // フィールド一覧
 ListVM.rows(vm)             // 行データ
-ListVM.page(vm)             // 現在ページ
-ListVM.totalPages(vm)       // 総ページ数
-ListVM.selectedIds(vm)      // 選択中のID
-ListVM.searchable(vm)       // 検索可能か
-ListVM.activeFilters(vm)    // アクティブなフィルター
+ListVM.empty(vm)            // 行が空か
 
-// 状態更新（イミュータブル）
-vm = ListVM.setSearchQuery(vm, "検索キーワード");
-vm = ListVM.toggleFilter(vm, "active");
-vm = ListVM.setFilterActive(vm, "status", true);
-vm = ListVM.clearFilters(vm);
-vm = ListVM.toggleSelect(vm, "row-1");
-vm = ListVM.toggleSelectAll(vm);
-vm = ListVM.clearSelection(vm);
-vm = ListVM.setSort(vm, "createdAt", "desc");
-vm = ListVM.toggleSort(vm, "name");  // asc → desc → なし
-vm = ListVM.setPage(vm, 2);
+// 基本の状態更新
 vm = ListVM.setLoading(vm, true);
 vm = ListVM.setError(vm, "エラーメッセージ");
 vm = ListVM.setRows(vm, newRows, totalCount);
 ```
 
-#### フィルター機能
+#### ソート機能（複数カラム対応）
 
-ListVMは定義済みフィルター（named filter）とカスタムフィルターの両方をサポートします。
+```typescript
+// 読み取り
+ListVM.sorts(vm)                    // 現在のソート一覧
+ListVM.getSort(vm, "name")          // 指定フィールドのソート情報
+ListVM.isSorted(vm, "name")         // ソートされているか
+ListVM.sortPriority(vm, "name")     // ソート優先度（0が最優先、-1はソートなし）
+ListVM.hasSorts(vm)                 // ソートがアクティブか
+
+// 状態更新
+vm = ListVM.setSort(vm, "createdAt", "desc");     // 単一ソートを設定
+vm = ListVM.toggleSort(vm, "name");               // asc → desc → なし
+vm = ListVM.addSort(vm, "updatedAt", "desc");     // 2次ソートを追加
+vm = ListVM.removeSort(vm, "name");               // ソートを削除
+vm = ListVM.clearSorts(vm);                       // 全ソートをクリア
+vm = ListVM.resetSort(vm, defaultSort);           // デフォルトにリセット
+```
+
+#### ページネーション機能
+
+```typescript
+// 読み取り
+ListVM.page(vm)             // 現在ページ
+ListVM.pageSize(vm)         // ページサイズ
+ListVM.total(vm)            // 総件数
+ListVM.totalPages(vm)       // 総ページ数
+ListVM.hasNextPage(vm)      // 次のページがあるか
+ListVM.hasPrevPage(vm)      // 前のページがあるか
+ListVM.isFirstPage(vm)      // 最初のページか
+ListVM.isLastPage(vm)       // 最後のページか
+ListVM.pageRange(vm)        // { start: 1, end: 20 }
+ListVM.pageInfo(vm)         // "1-20 of 150"
+
+// 状態更新
+vm = ListVM.setPage(vm, 2);
+vm = ListVM.setPageSize(vm, 50);    // ページサイズ変更（1ページ目に戻る）
+vm = ListVM.nextPage(vm);
+vm = ListVM.prevPage(vm);
+vm = ListVM.firstPage(vm);
+vm = ListVM.lastPage(vm);
+```
+
+#### 検索機能
+
+```typescript
+// 読み取り
+ListVM.searchable(vm)       // 検索可能か
+ListVM.searchQuery(vm)      // 現在の検索クエリ
+ListVM.searchFields(vm)     // 検索対象フィールド
+ListVM.isSearchActive(vm)   // 検索がアクティブか
+
+// 状態更新
+vm = ListVM.setSearchQuery(vm, "検索キーワード");
+vm = ListVM.clearSearch(vm);
+```
+
+#### 選択機能
+
+```typescript
+// 読み取り
+ListVM.selectable(vm)       // 選択可能か
+ListVM.multiSelect(vm)      // 複数選択モードか
+ListVM.selected(vm, rowId)  // 行が選択されているか
+ListVM.allSelected(vm)      // 全選択されているか
+ListVM.selectedIds(vm)      // 選択中のID一覧
+ListVM.selectedCount(vm)    // 選択件数
+ListVM.selectedRows(vm)     // 選択中の行
+ListVM.isIndeterminate(vm)  // 一部選択状態（チェックボックスの─表示用）
+ListVM.selectionState(vm)   // "none" | "some" | "all"
+
+// 状態更新
+vm = ListVM.toggleSelect(vm, "row-1");
+vm = ListVM.toggleSelectAll(vm);
+vm = ListVM.clearSelection(vm);
+```
+
+#### フィルター機能
 
 ```typescript
 import { ListVM, type FilterExpression } from "specloom";
 
-// 定義済みフィルターの操作
-vm = ListVM.toggleFilter(vm, "published");     // フィルターのON/OFF
-vm = ListVM.setFilterActive(vm, "draft", true); // 明示的に設定
-vm = ListVM.clearFilters(vm);                   // 全フィルターをクリア
+// 読み取り
+ListVM.filters(vm)                         // named filter一覧
+ListVM.activeFilters(vm)                   // アクティブなフィルター
+ListVM.filterActive(vm, "published")       // 特定フィルターがアクティブか
+ListVM.getFilterExpression(vm, "published") // フィルター条件式を取得
+ListVM.getActiveFilterExpression(vm)       // アクティブな条件を結合（AND）
 
-// 定義済みフィルターの条件式を取得
-const filter = ListVM.getFilterExpression(vm, "published");
-// → { field: "status", op: "eq", value: "published" }
+// 状態更新
+vm = ListVM.toggleFilter(vm, "published");
+vm = ListVM.setFilterActive(vm, "draft", true);
+vm = ListVM.clearFilters(vm);
 
-// カスタムフィルターを設定（動的なフィルター条件）
+// カスタムフィルター（動的なフィルター条件）
 vm = ListVM.setCustomFilter(vm, {
   field: "name",
   op: "ilike",
   value: "田中",
 });
-
-// 複合条件のカスタムフィルター
 vm = ListVM.setCustomFilter(vm, {
   and: [
     { field: "status", op: "eq", value: "active" },
     { field: "price", op: "gte", value: 1000 },
   ],
 });
-
-// カスタムフィルターをクリア
 vm = ListVM.clearCustomFilter(vm);
 
-// アクティブな全フィルター条件を結合して取得（API送信用）
-const activeFilter = ListVM.getActiveFilterExpression(vm);
-// 複数のフィルターがアクティブな場合はANDで結合される
-
-// クライアントサイドでフィルタリング
+// クライアントサイドフィルタリング
 const filteredRows = ListVM.filterRows(vm);
-
-// 行がフィルター条件にマッチするか判定
 const matches = ListVM.rowMatchesFilter(vm, row);
+```
+
+#### 行のローディング・エラー状態
+
+```typescript
+// 読み取り
+ListVM.rowLoading(vm, rowId)     // 行がローディング中か
+ListVM.rowsLoadingIds(vm)        // ローディング中の行ID一覧
+ListVM.rowHasErrors(vm, rowId)   // 行にエラーがあるか
+ListVM.rowErrors(vm, rowId)      // 行のエラー一覧
+
+// 状態更新（インライン編集、行アクション用）
+vm = ListVM.setRowLoading(vm, "row-1", true);
+vm = ListVM.setRowsLoading(vm, ["row-1", "row-2"], true);
+vm = ListVM.setRowErrors(vm, "row-1", ["保存に失敗しました"]);
+vm = ListVM.clearRowErrors(vm, "row-1");
+vm = ListVM.clearAllRowErrors(vm);
+```
+
+#### バルクアクション機能
+
+```typescript
+// 読み取り
+ListVM.bulkActions(vm)              // バルクアクション一覧
+ListVM.isBulkActionInProgress(vm)   // バルクアクション実行中か
+ListVM.bulkActionId(vm)             // 実行中のアクションID
+ListVM.bulkProgress(vm)             // 進捗情報
+ListVM.bulkProgressPercent(vm)      // 進捗率（0-100）
+
+// 状態更新
+vm = ListVM.startBulkAction(vm, "delete", selectedIds);
+vm = ListVM.updateBulkRowStatus(vm, "row-1", "success");
+vm = ListVM.updateBulkRowStatus(vm, "row-2", "failed", "削除権限がありません");
+vm = ListVM.completeBulkAction(vm);
+vm = ListVM.cancelBulkAction(vm);
+```
+
+#### APIクエリ生成
+
+```typescript
+// ViewModelからAPIクエリパラメータを生成
+const params = ListVM.toQueryParams(vm);
+// → { page: 1, per_page: 20, sort: "createdAt", order: "desc", search: "検索", filter: "published" }
+
+const url = `/api/posts?${new URLSearchParams(params as any)}`;
 ```
 
 ### FormVM（フォーム画面）
@@ -202,13 +301,33 @@ interface ListViewModel {
   rows: RowVM[];
   headerActions: ActionVM[];
   bulkActions: ActionVM[];
-  filters: { named: NamedFilterVM[] };
+  filters: { named: NamedFilterVM[]; custom?: FilterExpression };
   selection: { mode: "none" | "single" | "multi"; selected: string[] };
   search: { fields: string[]; query: string };
   defaultSort?: { field: string; order: "asc" | "desc" };
+  sorts?: { field: string; order: "asc" | "desc" }[];  // 複数カラムソート
   pagination?: { page: number; pageSize: number; totalCount: number };
   isLoading?: boolean;
   error?: string;
+  rowsLoading?: string[];                // 行ごとのローディング
+  rowErrors?: Record<string, string[]>;  // 行ごとのエラー
+  bulkActionInProgress?: string;         // 実行中のバルクアクションID
+  bulkActionProgress?: BulkActionProgress;
+}
+
+interface NamedFilterVM {
+  id: string;
+  label: string;
+  active: boolean;
+  filter?: FilterExpression;  // フィルター条件式
+}
+
+interface BulkActionProgress {
+  total: number;
+  completed: number;
+  failed: number;
+  rowStatus?: Record<string, "pending" | "success" | "failed" | "skipped">;
+  rowErrors?: Record<string, string>;
 }
 ```
 

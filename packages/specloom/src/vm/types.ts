@@ -46,12 +46,32 @@ export interface ListViewModel {
   filters: Filters;
   selection: Selection;
   search: Search;
+  /** spec定義のデフォルトソート */
   defaultSort?: SortVM;
+  /** ユーザーが適用中のソート（複数カラム対応） */
+  sorts?: SortVM[];
   clickAction?: string;
-  // 追加
   pagination?: Pagination;
   isLoading?: boolean;
   error?: string;
+  /** 行ごとのローディング状態 */
+  rowsLoading?: string[];
+  /** 行ごとのエラー */
+  rowErrors?: Record<string, string[]>;
+  /** 実行中のバルクアクションID */
+  bulkActionInProgress?: string;
+  /** バルクアクションの進捗 */
+  bulkActionProgress?: BulkActionProgress;
+}
+
+export interface BulkActionProgress {
+  total: number;
+  completed: number;
+  failed: number;
+  /** 行ごとのステータス */
+  rowStatus?: Record<string, "pending" | "success" | "failed" | "skipped">;
+  /** 行ごとのエラーメッセージ */
+  rowErrors?: Record<string, string>;
 }
 
 export interface Pagination {
@@ -79,6 +99,10 @@ export interface RowVM {
   id: string;
   values: Record<string, unknown>;
   actions: ActionVM[];
+  /** 行のローディング状態 */
+  isLoading?: boolean;
+  /** 行のエラー */
+  errors?: string[];
 }
 
 export interface Filters {
