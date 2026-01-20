@@ -207,4 +207,53 @@ describe("ShowVM", () => {
       expect(ShowVM.id(vm)).toBe("1");
     });
   });
+
+  describe("状態更新（イミュータブル）", () => {
+    it("setLoading でローディング状態を設定できる", () => {
+      const vm = createShowVM();
+      const loading = ShowVM.setLoading(vm, true);
+      expect(ShowVM.loading(loading)).toBe(true);
+
+      const done = ShowVM.setLoading(loading, false);
+      expect(ShowVM.loading(done)).toBe(false);
+    });
+
+    it("setError でエラーを設定できる", () => {
+      const vm = createShowVM();
+      const withError = ShowVM.setError(vm, "取得に失敗しました");
+      expect(ShowVM.error(withError)).toBe("取得に失敗しました");
+
+      const cleared = ShowVM.setError(withError, undefined);
+      expect(ShowVM.error(cleared)).toBeUndefined();
+    });
+
+    it("setData でフィールドデータを更新できる", () => {
+      const vm = createShowVM();
+      const updated = ShowVM.setData(vm, {
+        title: "更新されたタイトル",
+        viewCount: 5000,
+      });
+
+      expect(ShowVM.value(updated, "title")).toBe("更新されたタイトル");
+      expect(ShowVM.value(updated, "viewCount")).toBe(5000);
+      expect(ShowVM.value(updated, "status")).toBe("published"); // 変更なし
+      expect(ShowVM.value(vm, "title")).toBe("テスト記事"); // 元は変わらない
+    });
+
+    it("setFieldValue で単一フィールド値を更新できる", () => {
+      const vm = createShowVM();
+      const updated = ShowVM.setFieldValue(vm, "title", "新しいタイトル");
+
+      expect(ShowVM.value(updated, "title")).toBe("新しいタイトル");
+      expect(ShowVM.value(vm, "title")).toBe("テスト記事"); // 元は変わらない
+    });
+
+    it("setId でIDを更新できる", () => {
+      const vm = createShowVM();
+      const updated = ShowVM.setId(vm, "2");
+
+      expect(ShowVM.id(updated)).toBe("2");
+      expect(ShowVM.id(vm)).toBe("1"); // 元は変わらない
+    });
+  });
 });

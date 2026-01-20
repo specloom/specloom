@@ -19,6 +19,8 @@
     onAction?: (actionId: string, rowIds?: string[]) => void;
     onPageChange?: (page: number) => void;
     onRowClick?: (rowId: string) => void;
+    onSearch?: (query: string) => void;
+    onFilterToggle?: (filterId: string) => void;
     class?: string;
     children?: Snippet;
   }
@@ -31,6 +33,8 @@
     onAction,
     onPageChange,
     onRowClick,
+    onSearch,
+    onFilterToggle,
     class: className,
     children,
   }: Props = $props();
@@ -45,6 +49,8 @@
     onAction: (actionId, rowIds) => onAction?.(actionId, rowIds),
     onPageChange: (page) => onPageChange?.(page),
     onRowClick: (rowId) => onRowClick?.(rowId),
+    onSearch: (query) => onSearch?.(query),
+    onFilterToggle: (filterId) => onFilterToggle?.(filterId),
   });
 </script>
 

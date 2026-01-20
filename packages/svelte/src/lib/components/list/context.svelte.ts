@@ -15,6 +15,8 @@ export interface ListContextValue {
   onAction?: (actionId: string, rowIds?: string[]) => void;
   onPageChange?: (page: number) => void;
   onRowClick?: (rowId: string) => void;
+  onSearch?: (query: string) => void;
+  onFilterToggle?: (filterId: string) => void;
 
   // Derived values
   readonly fields: ListFieldVM[];
@@ -36,6 +38,11 @@ export interface ListContextValue {
   readonly total: number;
   readonly hasNext: boolean;
   readonly hasPrev: boolean;
+  readonly searchQuery: string;
+  readonly searchFields: string[];
+  readonly searchable: boolean;
+  readonly filters: { id: string; label: string; active: boolean }[];
+  readonly hasFilters: boolean;
 }
 
 export interface CreateListContextOptions {
@@ -46,6 +53,8 @@ export interface CreateListContextOptions {
   onAction?: (actionId: string, rowIds?: string[]) => void;
   onPageChange?: (page: number) => void;
   onRowClick?: (rowId: string) => void;
+  onSearch?: (query: string) => void;
+  onFilterToggle?: (filterId: string) => void;
 }
 
 export function createListContext(
@@ -61,6 +70,8 @@ export function createListContext(
     onAction: options.onAction,
     onPageChange: options.onPageChange,
     onRowClick: options.onRowClick,
+    onSearch: options.onSearch,
+    onFilterToggle: options.onFilterToggle,
 
     // Derived - 直接プロパティアクセス
     get fields() {
@@ -119,6 +130,21 @@ export function createListContext(
     },
     get hasPrev() {
       return ListHelpers.hasPrevPage(options.vm());
+    },
+    get searchQuery() {
+      return options.vm().search.query;
+    },
+    get searchFields() {
+      return options.vm().search.fields;
+    },
+    get searchable() {
+      return options.vm().search.fields.length > 0;
+    },
+    get filters() {
+      return options.vm().filters.named;
+    },
+    get hasFilters() {
+      return options.vm().filters.named.length > 0;
     },
   };
 

@@ -149,7 +149,9 @@ describe("FormVM", () => {
 
     it("fieldErrors で特定フィールドのエラーを取得できる", () => {
       const vm = createFormVM();
-      expect(FormVM.fieldErrors(vm, "status")).toContain("ステータスを選択してください");
+      expect(FormVM.fieldErrors(vm, "status")).toContain(
+        "ステータスを選択してください",
+      );
       expect(FormVM.fieldErrors(vm, "title")).toHaveLength(0);
     });
 
@@ -298,6 +300,177 @@ describe("FormVM", () => {
 
       const vmCreate = createFormVM({ mode: "create", id: undefined });
       expect(FormVM.id(vmCreate)).toBeUndefined();
+    });
+  });
+
+  describe("状態更新（イミュータブル）", () => {
+    describe("値の更新", () => {
+      it("setValue でフィールド値を更新できる", () => {
+        const vm = createFormVM({ isDirty: false });
+        const updated = FormVM.setValue(vm, "title", "新しいタイトル");
+
+        expect(FormVM.value(updated, "title")).toBe("新しいタイトル");
+        expect(updated.isDirty).toBe(true);
+        expect(FormVM.value(vm, "title")).toBe("テスト記事"); // 元は変わらない
+      });
+
+      it("setValues で複数フィールドを一括更新できる", () => {
+        const vm = createFormVM({ isDirty: false });
+        const updated = FormVM.setValues(vm, {
+          title: "新タイトル",
+          content: "新本文",
+        });
+
+        expect(FormVM.value(updated, "title")).toBe("新タイトル");
+        expect(FormVM.value(updated, "content")).toBe("新本文");
+        expect(updated.isDirty).toBe(true);
+      });
+    });
+
+    describe("エラーの更新", () => {
+      it("setFieldErrors でフィールドエラーを設定できる", () => {
+        const vm = createFormVM({ isValid: true });
+        const updated = FormVM.setFieldErrors(vm, "title", [
+          "必須です",
+          "短すぎます",
+        ]);
+
+        expect(FormVM.fieldErrors(updated, "title")).toEqual([
+          "必須です",
+          "短すぎます",
+        ]);
+        expect(updated.isValid).toBe(false);
+      });
+
+      it("clearErrors で全エラーをクリアできる", () => {
+        const vm = createFormVM();
+        expect(FormVM.hasErrors(vm)).toBe(true);
+
+        const updated = FormVM.clearErrors(vm);
+        expect(FormVM.hasErrors(updated)).toBe(false);
+        expect(updated.isValid).toBe(true);
+      });
+
+      it("setAllErrors で全エラーを一括設定できる", () => {
+        const vm = createFormVM();
+        const updated = FormVM.setAllErrors(vm, {
+          title: ["タイトルエラー"],
+          content: ["本文エラー1", "本文エラー2"],
+        });
+
+        expect(FormVM.fieldErrors(updated, "title")).toEqual([
+          "タイトルエラー",
+        ]);
+        expect(FormVM.fieldErrors(updated, "content")).toEqual([
+          "本文エラー1",
+          "本文エラー2",
+        ]);
+        expect(FormVM.fieldErrors(updated, "status")).toEqual([]); // クリアされる
+      });
+    });
+
+    describe("バリデーション", () => {
+      it("validate でフォーム全体をバリデーションできる", () => {
+        const vm = createFormVM({
+          fields: [
+            {
+              name: "email",
+              label: "メール",
+              kind: "email",
+              value: "",
+              required: true,
+              readonly: false,
+              errors: [],
+            },
+          ],
+          isValid: true,
+        });
+
+        const validated = FormVM.validate(vm);
+        expect(FormVM.hasError(validated, "email")).toBe(true);
+        expect(validated.isValid).toBe(false);
+      });
+
+      it("validateField で単一フィールドをバリデーションできる", () => {
+        const vm = createFormVM({
+          fields: [
+            {
+              name: "title",
+              label: "タイトル",
+              kind: "text",
+              value: "",
+              required: true,
+              readonly: false,
+              errors: [],
+            },
+            {
+              name: "content",
+              label: "本文",
+              kind: "text",
+              value: "",
+              required: true,
+              readonly: false,
+              errors: [],
+            },
+          ],
+          isValid: true,
+        });
+
+        const validated = FormVM.validateField(vm, "title");
+        expect(FormVM.hasError(validated, "title")).toBe(true);
+        expect(FormVM.hasError(validated, "content")).toBe(false); // バリデーションされない
+      });
+    });
+
+    describe("状態フラグ", () => {
+      it("setSubmitting で送信中状態を設定できる", () => {
+        const vm = createFormVM();
+        const submitting = FormVM.setSubmitting(vm, true);
+        expect(FormVM.submitting(submitting)).toBe(true);
+
+        const done = FormVM.setSubmitting(submitting, false);
+        expect(FormVM.submitting(done)).toBe(false);
+      });
+
+      it("setLoading でローディング状態を設定できる", () => {
+        const vm = createFormVM();
+        const loading = FormVM.setLoading(vm, true);
+        expect(FormVM.loading(loading)).toBe(true);
+      });
+
+      it("setError でエラーを設定できる", () => {
+        const vm = createFormVM();
+        const withError = FormVM.setError(vm, "保存に失敗しました");
+        expect(FormVM.error(withError)).toBe("保存に失敗しました");
+
+        const cleared = FormVM.setError(withError, undefined);
+        expect(FormVM.error(cleared)).toBeUndefined();
+      });
+    });
+
+    describe("リセット", () => {
+      it("reset でフォームをリセットできる", () => {
+        const vm = createFormVM({ isDirty: true, isValid: false });
+        const reset = FormVM.reset(vm);
+
+        expect(reset.isDirty).toBe(false);
+        expect(reset.isValid).toBe(true);
+        expect(FormVM.fieldErrors(reset, "status")).toEqual([]);
+      });
+
+      it("reset で初期値を指定できる", () => {
+        const vm = createFormVM();
+        const reset = FormVM.reset(vm, { title: "初期タイトル" });
+
+        expect(FormVM.value(reset, "title")).toBe("初期タイトル");
+      });
+
+      it("markClean でdirty状態をクリアできる", () => {
+        const vm = createFormVM({ isDirty: true });
+        const clean = FormVM.markClean(vm);
+
+        expect(clean.isDirty).toBe(false);
+      });
     });
   });
 });

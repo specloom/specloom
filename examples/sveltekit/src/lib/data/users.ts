@@ -257,7 +257,13 @@ export function createUsersListVM(page: number = 1): ListViewModel {
       },
       { id: "bulk-export", label: "エクスポート", allowed: true },
     ],
-    filters: { named: [] },
+    filters: {
+      named: [
+        { id: "active", label: "有効のみ", active: false },
+        { id: "admin", label: "管理者", active: false },
+        { id: "editor", label: "編集者", active: false },
+      ],
+    },
     selection: { mode: "multi", selected: [] },
     search: { fields: ["name", "email"], query: "" },
     defaultSort: { field: "createdAt", order: "desc" },

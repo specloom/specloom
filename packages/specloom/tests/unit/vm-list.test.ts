@@ -27,21 +27,29 @@ const createListVM = (overrides?: Partial<ListViewModel>): ListViewModel => ({
       relation: { resource: "User", labelField: "name" },
     },
   ],
-  headerActions: [
-    { id: "create", label: "新規作成", allowed: true },
-  ],
+  headerActions: [{ id: "create", label: "新規作成", allowed: true }],
   bulkActions: [
     { id: "delete", label: "削除", allowed: true, confirm: "削除しますか？" },
   ],
   rows: [
     {
       id: "1",
-      values: { id: "1", title: "記事1", status: "draft", author: { id: "u1", name: "田中" } },
+      values: {
+        id: "1",
+        title: "記事1",
+        status: "draft",
+        author: { id: "u1", name: "田中" },
+      },
       actions: [{ id: "edit", label: "編集", allowed: true }],
     },
     {
       id: "2",
-      values: { id: "2", title: "記事2", status: "published", author: { id: "u2", name: "鈴木" } },
+      values: {
+        id: "2",
+        title: "記事2",
+        status: "published",
+        author: { id: "u2", name: "鈴木" },
+      },
       actions: [{ id: "edit", label: "編集", allowed: true }],
     },
   ],
@@ -105,7 +113,9 @@ describe("ListVM", () => {
       const vm = createListVM();
       expect(ListVM.sortIcon(vm, "title")).toBe("↑");
 
-      const vmDesc = createListVM({ defaultSort: { field: "title", order: "desc" } });
+      const vmDesc = createListVM({
+        defaultSort: { field: "title", order: "desc" },
+      });
       expect(ListVM.sortIcon(vmDesc, "title")).toBe("↓");
 
       expect(ListVM.sortIcon(vm, "status")).toBe("⇅");
@@ -137,7 +147,9 @@ describe("ListVM", () => {
       const vm = createListVM();
       expect(ListVM.selectable(vm)).toBe(true);
 
-      const vmNone = createListVM({ selection: { mode: "none", selected: [] } });
+      const vmNone = createListVM({
+        selection: { mode: "none", selected: [] },
+      });
       expect(ListVM.selectable(vmNone)).toBe(false);
     });
 
@@ -145,7 +157,9 @@ describe("ListVM", () => {
       const vm = createListVM();
       expect(ListVM.multiSelect(vm)).toBe(true);
 
-      const vmSingle = createListVM({ selection: { mode: "single", selected: [] } });
+      const vmSingle = createListVM({
+        selection: { mode: "single", selected: [] },
+      });
       expect(ListVM.multiSelect(vmSingle)).toBe(false);
     });
 
@@ -156,7 +170,9 @@ describe("ListVM", () => {
     });
 
     it("allSelected で全選択か判定できる", () => {
-      const vm = createListVM({ selection: { mode: "multi", selected: ["1", "2"] } });
+      const vm = createListVM({
+        selection: { mode: "multi", selected: ["1", "2"] },
+      });
       expect(ListVM.allSelected(vm)).toBe(true);
 
       const vmPartial = createListVM();
@@ -322,7 +338,9 @@ describe("ListVM", () => {
     it("formatCell で relation をラベルに変換できる", () => {
       const vm = createListVM();
       const authorField = ListVM.field(vm, "author")!;
-      expect(ListVM.formatCell(authorField, { id: "u1", name: "田中" })).toBe("田中");
+      expect(ListVM.formatCell(authorField, { id: "u1", name: "田中" })).toBe(
+        "田中",
+      );
     });
 
     it("formatCell で null/undefined は - を返す", () => {
@@ -365,6 +383,163 @@ describe("ListVM", () => {
     it("clickAction でクリックアクションを取得できる", () => {
       const vm = createListVM({ clickAction: "show" });
       expect(ListVM.clickAction(vm)).toBe("show");
+    });
+  });
+
+  describe("状態更新（イミュータブル）", () => {
+    describe("検索", () => {
+      it("setSearchQuery で検索クエリを更新できる", () => {
+        const vm = createListVM();
+        const updated = ListVM.setSearchQuery(vm, "新しいクエリ");
+        expect(updated.search.query).toBe("新しいクエリ");
+        expect(vm.search.query).toBe("記事"); // 元は変わらない
+      });
+    });
+
+    describe("フィルター", () => {
+      it("toggleFilter でフィルターをトグルできる", () => {
+        const vm = createListVM();
+        expect(ListVM.filterActive(vm, "draft")).toBe(false);
+
+        const updated = ListVM.toggleFilter(vm, "draft");
+        expect(ListVM.filterActive(updated, "draft")).toBe(true);
+        expect(ListVM.filterActive(vm, "draft")).toBe(false); // 元は変わらない
+
+        const toggled = ListVM.toggleFilter(updated, "draft");
+        expect(ListVM.filterActive(toggled, "draft")).toBe(false);
+      });
+
+      it("setFilterActive でフィルターを直接設定できる", () => {
+        const vm = createListVM();
+        const updated = ListVM.setFilterActive(vm, "draft", true);
+        expect(ListVM.filterActive(updated, "draft")).toBe(true);
+      });
+
+      it("clearFilters で全フィルターをクリアできる", () => {
+        const vm = createListVM({
+          filters: {
+            named: [
+              { id: "all", label: "すべて", active: true },
+              { id: "draft", label: "下書き", active: true },
+            ],
+          },
+        });
+        const updated = ListVM.clearFilters(vm);
+        expect(ListVM.activeFilters(updated)).toHaveLength(0);
+      });
+    });
+
+    describe("選択", () => {
+      it("toggleSelect で行を選択/解除できる", () => {
+        const vm = createListVM({ selection: { mode: "multi", selected: [] } });
+
+        const selected = ListVM.toggleSelect(vm, "1");
+        expect(ListVM.selected(selected, "1")).toBe(true);
+
+        const deselected = ListVM.toggleSelect(selected, "1");
+        expect(ListVM.selected(deselected, "1")).toBe(false);
+      });
+
+      it("toggleSelectAll で全選択/全解除できる", () => {
+        const vm = createListVM({ selection: { mode: "multi", selected: [] } });
+
+        const allSelected = ListVM.toggleSelectAll(vm);
+        expect(ListVM.allSelected(allSelected)).toBe(true);
+        expect(ListVM.selectedIds(allSelected)).toEqual(["1", "2"]);
+
+        const allDeselected = ListVM.toggleSelectAll(allSelected);
+        expect(ListVM.allSelected(allDeselected)).toBe(false);
+        expect(ListVM.selectedIds(allDeselected)).toEqual([]);
+      });
+
+      it("clearSelection で選択をクリアできる", () => {
+        const vm = createListVM({
+          selection: { mode: "multi", selected: ["1", "2"] },
+        });
+        const updated = ListVM.clearSelection(vm);
+        expect(ListVM.selectedIds(updated)).toEqual([]);
+      });
+    });
+
+    describe("ソート", () => {
+      it("setSort でソートを設定できる", () => {
+        const vm = createListVM();
+        const updated = ListVM.setSort(vm, "status", "desc");
+        expect(ListVM.sortField(updated)).toBe("status");
+        expect(ListVM.sortOrder(updated, "status")).toBe("desc");
+      });
+
+      it("toggleSort でソートをトグルできる", () => {
+        const vm = createListVM({ defaultSort: undefined });
+
+        // なし → asc
+        const asc = ListVM.toggleSort(vm, "title");
+        expect(ListVM.sortOrder(asc, "title")).toBe("asc");
+
+        // asc → desc
+        const desc = ListVM.toggleSort(asc, "title");
+        expect(ListVM.sortOrder(desc, "title")).toBe("desc");
+
+        // desc → なし
+        const none = ListVM.toggleSort(desc, "title");
+        expect(ListVM.sortField(none)).toBeNull();
+
+        // 別フィールドへ切り替え → asc
+        const another = ListVM.toggleSort(asc, "status");
+        expect(ListVM.sortField(another)).toBe("status");
+        expect(ListVM.sortOrder(another, "status")).toBe("asc");
+      });
+    });
+
+    describe("ページネーション", () => {
+      it("setPage でページを設定できる", () => {
+        const vm = createListVM();
+        const updated = ListVM.setPage(vm, 2);
+        expect(ListVM.page(updated)).toBe(2);
+        expect(ListVM.page(vm)).toBe(1); // 元は変わらない
+      });
+
+      it("setPage は pagination がない場合は何もしない", () => {
+        const vm = createListVM({ pagination: undefined });
+        const updated = ListVM.setPage(vm, 2);
+        expect(updated).toBe(vm);
+      });
+    });
+
+    describe("状態", () => {
+      it("setLoading でローディング状態を設定できる", () => {
+        const vm = createListVM();
+        const loading = ListVM.setLoading(vm, true);
+        expect(ListVM.loading(loading)).toBe(true);
+
+        const notLoading = ListVM.setLoading(loading, false);
+        expect(ListVM.loading(notLoading)).toBe(false);
+      });
+
+      it("setError でエラーを設定できる", () => {
+        const vm = createListVM();
+        const withError = ListVM.setError(vm, "エラーが発生しました");
+        expect(ListVM.error(withError)).toBe("エラーが発生しました");
+
+        const cleared = ListVM.setError(withError, undefined);
+        expect(ListVM.error(cleared)).toBeUndefined();
+      });
+
+      it("setRows で行データを更新できる", () => {
+        const vm = createListVM();
+        const newRows = [{ id: "3", values: { title: "新記事" }, actions: [] }];
+        const updated = ListVM.setRows(vm, newRows, 50);
+        expect(ListVM.rows(updated)).toHaveLength(1);
+        expect(ListVM.total(updated)).toBe(50);
+        expect(ListVM.rows(vm)).toHaveLength(2); // 元は変わらない
+      });
+
+      it("setRows で totalCount を省略すると既存値を維持", () => {
+        const vm = createListVM();
+        const newRows = [{ id: "3", values: {}, actions: [] }];
+        const updated = ListVM.setRows(vm, newRows);
+        expect(ListVM.total(updated)).toBe(25);
+      });
     });
   });
 });

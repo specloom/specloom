@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import { Pagination as PaginationPrimitive } from "bits-ui";
   import { getListContext } from "./context.svelte.js";
   import * as Pagination from "$lib/components/ui/pagination/index.js";
   import { cn } from "$lib/utils.js";

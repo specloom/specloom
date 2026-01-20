@@ -113,4 +113,135 @@ export const ListVM = {
   label: (vm: ListViewModel) => vm.label,
   resource: (vm: ListViewModel) => vm.resource,
   clickAction: (vm: ListViewModel) => vm.clickAction,
+
+  // ============================================================
+  // 状態更新（イミュータブル）
+  // ============================================================
+
+  /** 検索クエリを更新 */
+  setSearchQuery: (vm: ListViewModel, query: string): ListViewModel => ({
+    ...vm,
+    search: { ...vm.search, query },
+  }),
+
+  /** フィルターをトグル */
+  toggleFilter: (vm: ListViewModel, filterId: string): ListViewModel => ({
+    ...vm,
+    filters: {
+      ...vm.filters,
+      named: vm.filters.named.map((f) =>
+        f.id === filterId ? { ...f, active: !f.active } : f,
+      ),
+    },
+  }),
+
+  /** フィルターを設定 */
+  setFilterActive: (
+    vm: ListViewModel,
+    filterId: string,
+    active: boolean,
+  ): ListViewModel => ({
+    ...vm,
+    filters: {
+      ...vm.filters,
+      named: vm.filters.named.map((f) =>
+        f.id === filterId ? { ...f, active } : f,
+      ),
+    },
+  }),
+
+  /** 全フィルターをクリア */
+  clearFilters: (vm: ListViewModel): ListViewModel => ({
+    ...vm,
+    filters: {
+      ...vm.filters,
+      named: vm.filters.named.map((f) => ({ ...f, active: false })),
+    },
+  }),
+
+  /** 行を選択/解除 */
+  toggleSelect: (vm: ListViewModel, rowId: string): ListViewModel => {
+    const selected = vm.selection.selected.includes(rowId)
+      ? vm.selection.selected.filter((id) => id !== rowId)
+      : [...vm.selection.selected, rowId];
+    return {
+      ...vm,
+      selection: { ...vm.selection, selected },
+    };
+  },
+
+  /** 全選択/全解除 */
+  toggleSelectAll: (vm: ListViewModel): ListViewModel => {
+    const allSelected =
+      vm.rows.length > 0 && vm.selection.selected.length === vm.rows.length;
+    return {
+      ...vm,
+      selection: {
+        ...vm.selection,
+        selected: allSelected ? [] : vm.rows.map((r) => r.id),
+      },
+    };
+  },
+
+  /** 選択をクリア */
+  clearSelection: (vm: ListViewModel): ListViewModel => ({
+    ...vm,
+    selection: { ...vm.selection, selected: [] },
+  }),
+
+  /** ソートを設定 */
+  setSort: (
+    vm: ListViewModel,
+    field: string,
+    order: "asc" | "desc",
+  ): ListViewModel => ({
+    ...vm,
+    defaultSort: { field, order },
+  }),
+
+  /** ソートをトグル（asc → desc → なし → asc） */
+  toggleSort: (vm: ListViewModel, field: string): ListViewModel => {
+    const current = vm.defaultSort;
+    if (current?.field !== field) {
+      return { ...vm, defaultSort: { field, order: "asc" } };
+    }
+    if (current.order === "asc") {
+      return { ...vm, defaultSort: { field, order: "desc" } };
+    }
+    return { ...vm, defaultSort: undefined };
+  },
+
+  /** ページを設定 */
+  setPage: (vm: ListViewModel, page: number): ListViewModel => {
+    if (!vm.pagination) return vm;
+    return {
+      ...vm,
+      pagination: { ...vm.pagination, page },
+    };
+  },
+
+  /** ローディング状態を設定 */
+  setLoading: (vm: ListViewModel, isLoading: boolean): ListViewModel => ({
+    ...vm,
+    isLoading,
+  }),
+
+  /** エラーを設定 */
+  setError: (vm: ListViewModel, error: string | undefined): ListViewModel => ({
+    ...vm,
+    error,
+  }),
+
+  /** 行データを更新 */
+  setRows: (
+    vm: ListViewModel,
+    rows: RowVM[],
+    totalCount?: number,
+  ): ListViewModel => ({
+    ...vm,
+    rows,
+    pagination: vm.pagination
+      ? { ...vm.pagination, totalCount: totalCount ?? vm.pagination.totalCount }
+      : undefined,
+  }),
 };
