@@ -111,21 +111,9 @@
   }
 
   function handleFormAction(actionId: string) {
-    if (actionId === "cancel") {
-      currentView = "list";
-    } else if (actionId === "save") {
-      // 保存処理（実際のアプリではAPIを呼び出す）
+    if (actionId === "cancel" || actionId === "save") {
       currentView = "list";
     }
-  }
-
-  function handleFormChange(_name: string, _value: unknown) {
-    // フォームの値変更処理（実際のアプリではバリデーション等を行う）
-  }
-
-  function handleFormSubmit() {
-    // フォーム送信処理（実際のアプリではAPIを呼び出す）
-    currentView = "list";
   }
 
   function handleRowClick(rowId: string) {
@@ -168,8 +156,6 @@
       <FormView
         vm={formVM}
         onAction={handleFormAction}
-        onChange={handleFormChange}
-        onSubmit={handleFormSubmit}
       />
     {/if}
   </div>

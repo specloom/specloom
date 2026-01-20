@@ -13,8 +13,8 @@
 
   interface Props {
     vm: FormViewModel;
-    onChange: (name: string, value: unknown) => void;
-    onSubmit: () => void;
+    onChange?: (name: string, value: unknown) => void;
+    onSubmit?: () => void;
     onAction?: (actionId: string) => void;
     onOptionsSearch?: (resource: string, query: string) => Promise<RelationOption[]>;
     /** Timezone for date/datetime formatting (e.g., 'Asia/Tokyo', 'UTC'). undefined = local time */
@@ -25,8 +25,8 @@
 
   let {
     vm,
-    onChange,
-    onSubmit,
+    onChange = () => {},
+    onSubmit = () => {},
     onAction,
     onOptionsSearch,
     timeZone,
