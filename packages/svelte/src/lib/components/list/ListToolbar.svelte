@@ -2,6 +2,8 @@
   import type { Snippet } from "svelte";
   import { getListContext } from "./context.svelte.js";
   import { cn } from "$lib/utils.js";
+  import ListHeaderActions from "./ListHeaderActions.svelte";
+  import ListBulkActions from "./ListBulkActions.svelte";
 
   interface Props {
     class?: string;
@@ -20,6 +22,8 @@
       <span class="text-sm text-muted-foreground">
         {ctx.total}件
       </span>
+      <ListBulkActions />
     </div>
+    <ListHeaderActions />
   {/if}
 </div>

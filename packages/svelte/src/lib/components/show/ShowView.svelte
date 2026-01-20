@@ -4,6 +4,11 @@
   import { createShowContext } from "./context.svelte.js";
   import * as Card from "$lib/components/ui/card/index.js";
   import { cn } from "$lib/utils.js";
+  import ShowHeader from "./ShowHeader.svelte";
+  import ShowBody from "./ShowBody.svelte";
+  import ShowActions from "./ShowActions.svelte";
+  import ShowLoading from "./ShowLoading.svelte";
+  import ShowError from "./ShowError.svelte";
 
   interface Props {
     vm: ShowViewModel;
@@ -30,5 +35,19 @@
 <Card.Root class={cn(className)}>
   {#if children}
     {@render children()}
+  {:else}
+    <ShowHeader>
+      {#snippet children({ label })}
+        <Card.Title>{label}</Card.Title>
+        <ShowActions />
+      {/snippet}
+    </ShowHeader>
+    {#if vm.isLoading}
+      <ShowLoading />
+    {:else if vm.error}
+      <ShowError />
+    {:else}
+      <ShowBody />
+    {/if}
   {/if}
 </Card.Root>

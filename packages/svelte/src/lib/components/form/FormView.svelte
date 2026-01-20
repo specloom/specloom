@@ -4,6 +4,12 @@
   import { createFormContext, type RelationOption } from "./context.svelte.js";
   import * as Card from "$lib/components/ui/card/index.js";
   import { cn } from "$lib/utils.js";
+  import FormHeader from "./FormHeader.svelte";
+  import FormBody from "./FormBody.svelte";
+  import FormFooter from "./FormFooter.svelte";
+  import FormActions from "./FormActions.svelte";
+  import FormLoading from "./FormLoading.svelte";
+  import FormError from "./FormError.svelte";
 
   interface Props {
     vm: FormViewModel;
@@ -49,6 +55,21 @@
   <Card.Root class={cn(className)}>
     {#if children}
       {@render children()}
+    {:else}
+      <FormHeader>
+        {#snippet children({ label })}
+          <Card.Title>{label}</Card.Title>
+          <FormActions />
+        {/snippet}
+      </FormHeader>
+      {#if vm.isLoading}
+        <FormLoading />
+      {:else if vm.error}
+        <FormError />
+      {:else}
+        <FormBody />
+        <FormFooter />
+      {/if}
     {/if}
   </Card.Root>
 </form>
