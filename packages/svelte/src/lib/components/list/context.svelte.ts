@@ -112,7 +112,7 @@ export function createListContext(
       return ListHelpers.totalPages(options.vm());
     },
     get total() {
-      return options.vm().pagination?.totalCount ?? 0;
+      return options.vm().pagination?.totalCount ?? options.vm().rows.length;
     },
     get hasNext() {
       return ListHelpers.hasNextPage(options.vm());

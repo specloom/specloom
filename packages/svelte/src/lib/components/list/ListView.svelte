@@ -4,6 +4,12 @@
   import { createListContext } from "./context.svelte.js";
   import * as Card from "$lib/components/ui/card/index.js";
   import { cn } from "$lib/utils.js";
+  import ListToolbar from "./ListToolbar.svelte";
+  import ListTable from "./ListTable.svelte";
+  import ListPagination from "./ListPagination.svelte";
+  import ListLoading from "./ListLoading.svelte";
+  import ListError from "./ListError.svelte";
+  import ListEmpty from "./ListEmpty.svelte";
 
   interface Props {
     vm: ListViewModel;
@@ -45,5 +51,19 @@
 <Card.Root class={cn(className)}>
   {#if children}
     {@render children()}
+  {:else}
+    <ListToolbar />
+    {#if vm.isLoading}
+      <ListLoading />
+    {:else if vm.error}
+      <ListError />
+    {:else if vm.rows.length === 0}
+      <ListEmpty />
+    {:else}
+      <ListTable />
+      {#if vm.pagination}
+        <ListPagination />
+      {/if}
+    {/if}
   {/if}
 </Card.Root>
