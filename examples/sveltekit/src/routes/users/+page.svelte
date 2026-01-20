@@ -2,12 +2,16 @@
   import { ListView, ShowView, FormView } from "@specloom/svelte";
   import ArrowLeft from "@lucide/svelte/icons/arrow-left";
   import type { ListViewModel, ShowViewModel, FormViewModel } from "specloom";
-  import { usersListVM, usersShowVM, usersFormVM } from "$lib/data/users";
+  import {
+  createUsersListVM,
+  usersShowVM,
+  usersFormVM,
+} from "$lib/data/users";
 
   type View = "list" | "show" | "form";
 
   let currentView = $state<View>("list");
-  let listVM = $state<ListViewModel>(usersListVM);
+  let listVM = $state<ListViewModel>(createUsersListVM(1));
   let showVM = $state<ShowViewModel>(usersShowVM);
   let formVM = $state<FormViewModel>(usersFormVM);
 
@@ -33,6 +37,10 @@
     if (actionId === "create" || actionId === "edit") {
       currentView = "form";
     }
+  }
+
+  function handlePageChange(page: number) {
+    listVM = createUsersListVM(page);
   }
 
   function handleShowAction(actionId: string) {
@@ -86,6 +94,7 @@
         onAction={handleListAction}
         onSelect={handleSelect}
         onSelectAll={handleSelectAll}
+        onPageChange={handlePageChange}
         onRowClick={() => (currentView = "show")}
       />
     {:else if currentView === "show"}
