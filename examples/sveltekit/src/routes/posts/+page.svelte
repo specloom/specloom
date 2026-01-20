@@ -119,6 +119,15 @@
     }
   }
 
+  function handleFormChange(_name: string, _value: unknown) {
+    // フォームの値変更処理（実際のアプリではバリデーション等を行う）
+  }
+
+  function handleFormSubmit() {
+    // フォーム送信処理（実際のアプリではAPIを呼び出す）
+    currentView = "list";
+  }
+
   function handleRowClick(rowId: string) {
     currentPostId = rowId;
     currentView = "show";
@@ -159,6 +168,8 @@
       <FormView
         vm={formVM}
         onAction={handleFormAction}
+        onChange={handleFormChange}
+        onSubmit={handleFormSubmit}
       />
     {/if}
   </div>
