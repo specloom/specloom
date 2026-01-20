@@ -6,11 +6,14 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "tsp": "tsp compile spec/ && cp tsp-output/@specloom/typespec/spec.json src/lib/spec.json"
   },
   "dependencies": {
     "@lucide/svelte": "^0.561.0",
     "@specloom/svelte": "workspace:*",
+    "@specloom/typespec": "workspace:*",
+    "@typespec/compiler": "^0.64.0",
     "specloom": "workspace:*"
   },
   "devDependencies": {

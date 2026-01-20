@@ -3,8 +3,103 @@ import type {
   Model,
   ModelProperty,
   Type,
+  Value,
 } from "@typespec/compiler";
 import { StateKeys } from "./lib.js";
+
+// ============================================================
+// Value Extraction Helpers
+// ============================================================
+
+/**
+ * Extract primitive value from TypeSpec Value type
+ */
+function extractValue(val: Value | unknown): unknown {
+  if (val === null || val === undefined) {
+    return val;
+  }
+
+  // Check if it's a TypeSpec Value type
+  if (typeof val === "object" && val !== null && "valueKind" in val) {
+    const v = val as { valueKind: string; value?: unknown; values?: unknown[] };
+    switch (v.valueKind) {
+      case "StringValue":
+        return v.value;
+      case "NumericValue":
+        return v.value;
+      case "BooleanValue":
+        return v.value;
+      case "ArrayValue":
+        return (v.values ?? []).map(extractValue);
+      case "ObjectValue":
+        return extractObjectValue(v);
+      default:
+        return v.value;
+    }
+  }
+
+  // Check for legacy Type-based value format (entityKind: "Type")
+  if (typeof val === "object" && val !== null && "entityKind" in val) {
+    const t = val as { entityKind: string; kind: string; value?: unknown };
+    if (t.entityKind === "Type") {
+      if (t.kind === "String" || t.kind === "Number" || t.kind === "Boolean") {
+        return t.value;
+      }
+    }
+  }
+
+  // Already a primitive value
+  return val;
+}
+
+/**
+ * Extract object from TypeSpec ObjectValue
+ */
+function extractObjectValue(
+  obj:
+    | { valueKind: string; properties?: Map<string, { value: Value }> }
+    | unknown,
+): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  if (
+    typeof obj === "object" &&
+    obj !== null &&
+    "properties" in obj &&
+    obj.properties instanceof Map
+  ) {
+    for (const [key, prop] of obj.properties) {
+      result[key] = extractValue(prop.value);
+    }
+  }
+  return result;
+}
+
+/**
+ * Extract string value
+ */
+function extractString(val: unknown): string | undefined {
+  const extracted = extractValue(val);
+  return typeof extracted === "string" ? extracted : undefined;
+}
+
+/**
+ * Extract number value
+ */
+function extractNumber(val: unknown): number | undefined {
+  const extracted = extractValue(val);
+  return typeof extracted === "number" ? extracted : undefined;
+}
+
+/**
+ * Extract string array value
+ */
+function extractStringArray(val: unknown): string[] | undefined {
+  const extracted = extractValue(val);
+  if (Array.isArray(extracted)) {
+    return extracted.filter((v): v is string => typeof v === "string");
+  }
+  return undefined;
+}
 
 // ============================================================
 // Resource Decorators
@@ -16,9 +111,12 @@ import { StateKeys } from "./lib.js";
 export function $resource(
   context: DecoratorContext,
   target: Model,
-  name?: string
+  name?: unknown,
 ) {
-  context.program.stateMap(StateKeys.resource).set(target, name ?? target.name);
+  const extractedName = extractString(name);
+  context.program
+    .stateMap(StateKeys.resource)
+    .set(target, extractedName ?? target.name);
 }
 
 /**
@@ -27,9 +125,12 @@ export function $resource(
 export function $label(
   context: DecoratorContext,
   target: Model | ModelProperty,
-  label: string
+  label: unknown,
 ) {
-  context.program.stateMap(StateKeys.label).set(target, label);
+  const extractedLabel = extractString(label);
+  if (extractedLabel) {
+    context.program.stateMap(StateKeys.label).set(target, extractedLabel);
+  }
 }
 
 /**
@@ -38,9 +139,12 @@ export function $label(
 export function $kind(
   context: DecoratorContext,
   target: ModelProperty,
-  kind: string
+  kind: unknown,
 ) {
-  context.program.stateMap(StateKeys.kind).set(target, kind);
+  const extractedKind = extractString(kind);
+  if (extractedKind) {
+    context.program.stateMap(StateKeys.kind).set(target, extractedKind);
+  }
 }
 
 /**
@@ -49,9 +153,23 @@ export function $kind(
 export function $options(
   context: DecoratorContext,
   target: ModelProperty,
-  options: { value: string; label: string }[]
+  options: unknown,
 ) {
-  context.program.stateMap(StateKeys.options).set(target, options);
+  // Extract values from TypeSpec Value types
+  const extracted = extractValue(options);
+  const cleanOptions: { value: string; label: string }[] = [];
+
+  if (Array.isArray(extracted)) {
+    for (const opt of extracted) {
+      if (opt && typeof opt === "object" && "value" in opt && "label" in opt) {
+        cleanOptions.push({
+          value: String(opt.value),
+          label: String(opt.label),
+        });
+      }
+    }
+  }
+  context.program.stateMap(StateKeys.options).set(target, cleanOptions);
 }
 
 /**
@@ -61,11 +179,14 @@ export function $relation(
   context: DecoratorContext,
   target: ModelProperty,
   resource: Model,
-  options?: { labelField?: string }
+  options?: unknown,
 ) {
+  const extracted = extractValue(options) as
+    | { labelField?: string }
+    | undefined;
   context.program.stateMap(StateKeys.relation).set(target, {
     resource: resource.name,
-    labelField: options?.labelField,
+    labelField: extracted?.labelField,
   });
 }
 
@@ -75,17 +196,13 @@ export function $relation(
 export function $ui(
   context: DecoratorContext,
   target: ModelProperty | Model,
-  options: {
-    hint?: string;
-    inputHint?: string;
-    format?: string;
-    link?: boolean;
-    icon?: string;
-    variant?: string;
-    searchable?: boolean;
-  }
+  options: unknown,
 ) {
-  context.program.stateMap(StateKeys.ui).set(target, options);
+  // Extract values from TypeSpec Value types
+  const extracted = extractValue(options) as Record<string, unknown> | null;
+  if (extracted && typeof extracted === "object") {
+    context.program.stateMap(StateKeys.ui).set(target, extracted);
+  }
 }
 
 /**
@@ -108,9 +225,10 @@ export function $computed(context: DecoratorContext, target: ModelProperty) {
 export function $filter(
   context: DecoratorContext,
   target: ModelProperty,
-  operators?: string[]
+  operators?: unknown,
 ) {
-  context.program.stateMap(StateKeys.filter).set(target, operators ?? true);
+  const extracted = extractStringArray(operators);
+  context.program.stateMap(StateKeys.filter).set(target, extracted ?? true);
 }
 
 // ============================================================
@@ -124,11 +242,12 @@ export function $view(
   context: DecoratorContext,
   target: Model,
   resource: Model,
-  viewType: "list" | "form" | "show"
+  viewType: unknown,
 ) {
+  const extractedType = extractString(viewType);
   context.program.stateMap(StateKeys.view).set(target, {
     resource: resource.name,
-    type: viewType,
+    type: extractedType ?? "list",
   });
 }
 
@@ -138,9 +257,12 @@ export function $view(
 export function $columns(
   context: DecoratorContext,
   target: Model,
-  columns: string[]
+  columns: unknown,
 ) {
-  context.program.stateMap(StateKeys.columns).set(target, columns);
+  const extracted = extractStringArray(columns);
+  if (extracted) {
+    context.program.stateMap(StateKeys.columns).set(target, extracted);
+  }
 }
 
 /**
@@ -149,9 +271,12 @@ export function $columns(
 export function $fields(
   context: DecoratorContext,
   target: Model,
-  fields: string[]
+  fields: unknown,
 ) {
-  context.program.stateMap(StateKeys.fields).set(target, fields);
+  const extracted = extractStringArray(fields);
+  if (extracted) {
+    context.program.stateMap(StateKeys.fields).set(target, extracted);
+  }
 }
 
 /**
@@ -160,9 +285,12 @@ export function $fields(
 export function $searchable(
   context: DecoratorContext,
   target: Model,
-  fields: string[]
+  fields: unknown,
 ) {
-  context.program.stateMap(StateKeys.searchable).set(target, fields);
+  const extracted = extractStringArray(fields);
+  if (extracted) {
+    context.program.stateMap(StateKeys.searchable).set(target, extracted);
+  }
 }
 
 /**
@@ -171,9 +299,12 @@ export function $searchable(
 export function $sortable(
   context: DecoratorContext,
   target: Model,
-  fields: string[]
+  fields: unknown,
 ) {
-  context.program.stateMap(StateKeys.sortable).set(target, fields);
+  const extracted = extractStringArray(fields);
+  if (extracted) {
+    context.program.stateMap(StateKeys.sortable).set(target, extracted);
+  }
 }
 
 /**
@@ -182,10 +313,16 @@ export function $sortable(
 export function $defaultSort(
   context: DecoratorContext,
   target: Model,
-  field: string,
-  order: "asc" | "desc"
+  field: unknown,
+  order: unknown,
 ) {
-  context.program.stateMap(StateKeys.defaultSort).set(target, { field, order });
+  const extractedField = extractString(field);
+  const extractedOrder = extractString(order);
+  if (extractedField && extractedOrder) {
+    context.program
+      .stateMap(StateKeys.defaultSort)
+      .set(target, { field: extractedField, order: extractedOrder });
+  }
 }
 
 /**
@@ -194,9 +331,12 @@ export function $defaultSort(
 export function $clickAction(
   context: DecoratorContext,
   target: Model,
-  action: string
+  action: unknown,
 ) {
-  context.program.stateMap(StateKeys.clickAction).set(target, action);
+  const extracted = extractString(action);
+  if (extracted) {
+    context.program.stateMap(StateKeys.clickAction).set(target, extracted);
+  }
 }
 
 /**
@@ -205,9 +345,12 @@ export function $clickAction(
 export function $selection(
   context: DecoratorContext,
   target: Model,
-  mode: "none" | "single" | "multi"
+  mode: unknown,
 ) {
-  context.program.stateMap(StateKeys.selection).set(target, mode);
+  const extracted = extractString(mode);
+  if (extracted) {
+    context.program.stateMap(StateKeys.selection).set(target, extracted);
+  }
 }
 
 /**
@@ -216,9 +359,17 @@ export function $selection(
 export function $namedFilters(
   context: DecoratorContext,
   target: Model,
-  filters: { id: string; label: string; filter: unknown }[]
+  filters: unknown,
 ) {
-  context.program.stateMap(StateKeys.namedFilters).set(target, filters);
+  const extracted = extractValue(filters);
+  if (Array.isArray(extracted)) {
+    const cleanFilters = extracted.map((f) => ({
+      id: String((f as Record<string, unknown>).id ?? ""),
+      label: String((f as Record<string, unknown>).label ?? ""),
+      filter: (f as Record<string, unknown>).filter,
+    }));
+    context.program.stateMap(StateKeys.namedFilters).set(target, cleanFilters);
+  }
 }
 
 // ============================================================
@@ -231,9 +382,12 @@ export function $namedFilters(
 export function $action(
   context: DecoratorContext,
   target: ModelProperty,
-  id: string
+  id: unknown,
 ) {
-  context.program.stateMap(StateKeys.action).set(target, id);
+  const extracted = extractString(id);
+  if (extracted) {
+    context.program.stateMap(StateKeys.action).set(target, extracted);
+  }
 }
 
 /**
@@ -242,9 +396,12 @@ export function $action(
 export function $placement(
   context: DecoratorContext,
   target: ModelProperty,
-  placement: "header" | "row" | "bulk"
+  placement: unknown,
 ) {
-  context.program.stateMap(StateKeys.placement).set(target, placement);
+  const extracted = extractString(placement);
+  if (extracted) {
+    context.program.stateMap(StateKeys.placement).set(target, extracted);
+  }
 }
 
 /**
@@ -253,9 +410,12 @@ export function $placement(
 export function $allowedWhen(
   context: DecoratorContext,
   target: ModelProperty,
-  expression: string
+  expression: unknown,
 ) {
-  context.program.stateMap(StateKeys.allowedWhen).set(target, expression);
+  const extracted = extractString(expression);
+  if (extracted) {
+    context.program.stateMap(StateKeys.allowedWhen).set(target, extracted);
+  }
 }
 
 /**
@@ -264,9 +424,12 @@ export function $allowedWhen(
 export function $confirm(
   context: DecoratorContext,
   target: ModelProperty,
-  message: string
+  message: unknown,
 ) {
-  context.program.stateMap(StateKeys.confirm).set(target, message);
+  const extracted = extractString(message);
+  if (extracted) {
+    context.program.stateMap(StateKeys.confirm).set(target, extracted);
+  }
 }
 
 // ============================================================
@@ -286,9 +449,12 @@ export function $required(context: DecoratorContext, target: ModelProperty) {
 export function $minLength(
   context: DecoratorContext,
   target: ModelProperty,
-  value: number
+  value: unknown,
 ) {
-  context.program.stateMap(StateKeys.minLength).set(target, value);
+  const extracted = extractNumber(value);
+  if (extracted !== undefined) {
+    context.program.stateMap(StateKeys.minLength).set(target, extracted);
+  }
 }
 
 /**
@@ -297,9 +463,12 @@ export function $minLength(
 export function $maxLength(
   context: DecoratorContext,
   target: ModelProperty,
-  value: number
+  value: unknown,
 ) {
-  context.program.stateMap(StateKeys.maxLength).set(target, value);
+  const extracted = extractNumber(value);
+  if (extracted !== undefined) {
+    context.program.stateMap(StateKeys.maxLength).set(target, extracted);
+  }
 }
 
 /**
@@ -308,9 +477,12 @@ export function $maxLength(
 export function $min(
   context: DecoratorContext,
   target: ModelProperty,
-  value: number
+  value: unknown,
 ) {
-  context.program.stateMap(StateKeys.min).set(target, value);
+  const extracted = extractNumber(value);
+  if (extracted !== undefined) {
+    context.program.stateMap(StateKeys.min).set(target, extracted);
+  }
 }
 
 /**
@@ -319,9 +491,12 @@ export function $min(
 export function $max(
   context: DecoratorContext,
   target: ModelProperty,
-  value: number
+  value: unknown,
 ) {
-  context.program.stateMap(StateKeys.max).set(target, value);
+  const extracted = extractNumber(value);
+  if (extracted !== undefined) {
+    context.program.stateMap(StateKeys.max).set(target, extracted);
+  }
 }
 
 /**
@@ -330,9 +505,12 @@ export function $max(
 export function $pattern(
   context: DecoratorContext,
   target: ModelProperty,
-  pattern: string
+  pattern: unknown,
 ) {
-  context.program.stateMap(StateKeys.pattern).set(target, pattern);
+  const extracted = extractString(pattern);
+  if (extracted) {
+    context.program.stateMap(StateKeys.pattern).set(target, extracted);
+  }
 }
 
 /**
@@ -341,9 +519,12 @@ export function $pattern(
 export function $minItems(
   context: DecoratorContext,
   target: ModelProperty,
-  value: number
+  value: unknown,
 ) {
-  context.program.stateMap(StateKeys.minItems).set(target, value);
+  const extracted = extractNumber(value);
+  if (extracted !== undefined) {
+    context.program.stateMap(StateKeys.minItems).set(target, extracted);
+  }
 }
 
 /**
@@ -352,9 +533,12 @@ export function $minItems(
 export function $maxItems(
   context: DecoratorContext,
   target: ModelProperty,
-  value: number
+  value: unknown,
 ) {
-  context.program.stateMap(StateKeys.maxItems).set(target, value);
+  const extracted = extractNumber(value);
+  if (extracted !== undefined) {
+    context.program.stateMap(StateKeys.maxItems).set(target, extracted);
+  }
 }
 
 // ============================================================
@@ -363,210 +547,210 @@ export function $maxItems(
 
 export function getResourceName(
   program: DecoratorContext["program"],
-  target: Model
+  target: Model,
 ): string | undefined {
   return program.stateMap(StateKeys.resource).get(target);
 }
 
 export function getLabel(
   program: DecoratorContext["program"],
-  target: Type
+  target: Type,
 ): string | undefined {
   return program.stateMap(StateKeys.label).get(target);
 }
 
 export function getKind(
   program: DecoratorContext["program"],
-  target: ModelProperty
+  target: ModelProperty,
 ): string | undefined {
   return program.stateMap(StateKeys.kind).get(target);
 }
 
 export function getOptions(
   program: DecoratorContext["program"],
-  target: ModelProperty
+  target: ModelProperty,
 ): { value: string; label: string }[] | undefined {
   return program.stateMap(StateKeys.options).get(target);
 }
 
 export function getRelation(
   program: DecoratorContext["program"],
-  target: ModelProperty
+  target: ModelProperty,
 ): { resource: string; labelField?: string } | undefined {
   return program.stateMap(StateKeys.relation).get(target);
 }
 
 export function getUI(
   program: DecoratorContext["program"],
-  target: Type
+  target: Type,
 ): Record<string, unknown> | undefined {
   return program.stateMap(StateKeys.ui).get(target);
 }
 
 export function isReadonly(
   program: DecoratorContext["program"],
-  target: ModelProperty
+  target: ModelProperty,
 ): boolean {
   return program.stateSet(StateKeys.readonly).has(target);
 }
 
 export function isComputed(
   program: DecoratorContext["program"],
-  target: ModelProperty
+  target: ModelProperty,
 ): boolean {
   return program.stateSet(StateKeys.computed).has(target);
 }
 
 export function isRequired(
   program: DecoratorContext["program"],
-  target: ModelProperty
+  target: ModelProperty,
 ): boolean {
   return program.stateSet(StateKeys.required).has(target);
 }
 
 export function getFilter(
   program: DecoratorContext["program"],
-  target: ModelProperty
+  target: ModelProperty,
 ): string[] | true | undefined {
   return program.stateMap(StateKeys.filter).get(target);
 }
 
 export function getView(
   program: DecoratorContext["program"],
-  target: Model
+  target: Model,
 ): { resource: string; type: string } | undefined {
   return program.stateMap(StateKeys.view).get(target);
 }
 
 export function getColumns(
   program: DecoratorContext["program"],
-  target: Model
+  target: Model,
 ): string[] | undefined {
   return program.stateMap(StateKeys.columns).get(target);
 }
 
 export function getFields(
   program: DecoratorContext["program"],
-  target: Model
+  target: Model,
 ): string[] | undefined {
   return program.stateMap(StateKeys.fields).get(target);
 }
 
 export function getSearchable(
   program: DecoratorContext["program"],
-  target: Model
+  target: Model,
 ): string[] | undefined {
   return program.stateMap(StateKeys.searchable).get(target);
 }
 
 export function getSortable(
   program: DecoratorContext["program"],
-  target: Model
+  target: Model,
 ): string[] | undefined {
   return program.stateMap(StateKeys.sortable).get(target);
 }
 
 export function getDefaultSort(
   program: DecoratorContext["program"],
-  target: Model
+  target: Model,
 ): { field: string; order: string } | undefined {
   return program.stateMap(StateKeys.defaultSort).get(target);
 }
 
 export function getClickAction(
   program: DecoratorContext["program"],
-  target: Model
+  target: Model,
 ): string | undefined {
   return program.stateMap(StateKeys.clickAction).get(target);
 }
 
 export function getSelection(
   program: DecoratorContext["program"],
-  target: Model
+  target: Model,
 ): string | undefined {
   return program.stateMap(StateKeys.selection).get(target);
 }
 
 export function getNamedFilters(
   program: DecoratorContext["program"],
-  target: Model
+  target: Model,
 ): { id: string; label: string; filter: unknown }[] | undefined {
   return program.stateMap(StateKeys.namedFilters).get(target);
 }
 
 export function getAction(
   program: DecoratorContext["program"],
-  target: ModelProperty
+  target: ModelProperty,
 ): string | undefined {
   return program.stateMap(StateKeys.action).get(target);
 }
 
 export function getPlacement(
   program: DecoratorContext["program"],
-  target: ModelProperty
+  target: ModelProperty,
 ): string | undefined {
   return program.stateMap(StateKeys.placement).get(target);
 }
 
 export function getAllowedWhen(
   program: DecoratorContext["program"],
-  target: ModelProperty
+  target: ModelProperty,
 ): string | undefined {
   return program.stateMap(StateKeys.allowedWhen).get(target);
 }
 
 export function getConfirm(
   program: DecoratorContext["program"],
-  target: ModelProperty
+  target: ModelProperty,
 ): string | undefined {
   return program.stateMap(StateKeys.confirm).get(target);
 }
 
 export function getMinLength(
   program: DecoratorContext["program"],
-  target: ModelProperty
+  target: ModelProperty,
 ): number | undefined {
   return program.stateMap(StateKeys.minLength).get(target);
 }
 
 export function getMaxLength(
   program: DecoratorContext["program"],
-  target: ModelProperty
+  target: ModelProperty,
 ): number | undefined {
   return program.stateMap(StateKeys.maxLength).get(target);
 }
 
 export function getMin(
   program: DecoratorContext["program"],
-  target: ModelProperty
+  target: ModelProperty,
 ): number | undefined {
   return program.stateMap(StateKeys.min).get(target);
 }
 
 export function getMax(
   program: DecoratorContext["program"],
-  target: ModelProperty
+  target: ModelProperty,
 ): number | undefined {
   return program.stateMap(StateKeys.max).get(target);
 }
 
 export function getPattern(
   program: DecoratorContext["program"],
-  target: ModelProperty
+  target: ModelProperty,
 ): string | undefined {
   return program.stateMap(StateKeys.pattern).get(target);
 }
 
 export function getMinItems(
   program: DecoratorContext["program"],
-  target: ModelProperty
+  target: ModelProperty,
 ): number | undefined {
   return program.stateMap(StateKeys.minItems).get(target);
 }
 
 export function getMaxItems(
   program: DecoratorContext["program"],
-  target: ModelProperty
+  target: ModelProperty,
 ): number | undefined {
   return program.stateMap(StateKeys.maxItems).get(target);
 }

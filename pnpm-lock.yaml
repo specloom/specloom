@@ -88,6 +88,12 @@ importers:
       '@specloom/svelte':
         specifier: workspace:*
         version: link:../../packages/svelte
+      '@specloom/typespec':
+        specifier: workspace:*
+        version: link:../../packages/typespec
+      '@typespec/compiler':
+        specifier: ^0.64.0
+        version: 0.64.0
       specloom:
         specifier: workspace:*
         version: link:../../packages/specloom
