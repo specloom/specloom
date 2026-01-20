@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import type { RowVM, ActionVM } from "specloom";
-  import { ActionHelpers } from "specloom";
+  import { ActionHelpers, ListVM } from "specloom";
   import { getListContext } from "./context.svelte.js";
   import * as Table from "$lib/components/ui/table/index.js";
   import { Checkbox } from "$lib/components/ui/checkbox/index.js";
@@ -57,7 +57,7 @@
     {/if}
     {#each ctx.fields as field}
       <Table.Cell>
-        {row.values[field.name] ?? ""}
+        {ListVM.formatCell(field, row.values[field.name])}
       </Table.Cell>
     {/each}
     <Table.Cell class="w-20 text-right" onclick={(e) => e.stopPropagation()}>

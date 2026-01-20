@@ -13,7 +13,7 @@ import type {
  */
 export function evaluateFilter(
   filter: FilterExpression,
-  data: Record<string, unknown>
+  data: Record<string, unknown>,
 ): boolean {
   // AND
   if ("and" in filter) {
@@ -39,7 +39,7 @@ export function evaluateFilter(
  */
 function evaluateCondition(
   condition: FilterCondition,
-  data: Record<string, unknown>
+  data: Record<string, unknown>,
 ): boolean {
   const { field, op, value } = condition;
   const fieldValue = getFieldValue(data, field);
@@ -74,7 +74,7 @@ function getFieldValue(data: Record<string, unknown>, path: string): unknown {
 function evaluateOperator(
   op: FilterOperator,
   fieldValue: unknown,
-  compareValue: unknown
+  compareValue: unknown,
 ): boolean {
   switch (op) {
     // 比較演算子
@@ -143,6 +143,13 @@ function evaluateOperator(
       } catch {
         return false;
       }
+
+    case "ilike":
+      return (
+        typeof fieldValue === "string" &&
+        typeof compareValue === "string" &&
+        fieldValue.toLowerCase().includes(compareValue.toLowerCase())
+      );
 
     // 集合演算子
     case "in":

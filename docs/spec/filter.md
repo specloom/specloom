@@ -141,6 +141,7 @@ model PostList {}
 | `in` | いずれかに一致 | すべて |
 | `notIn` | いずれにも一致しない | すべて |
 | `contains` | 部分一致 | string |
+| `ilike` | 部分一致（大文字小文字区別なし） | string |
 | `startsWith` | 前方一致 | string |
 | `endsWith` | 後方一致 | string |
 | `matches` | 正規表現 | string |

@@ -22,6 +22,9 @@
   const value = $derived(ctx.values[field.name]);
   const hasError = $derived(field.errors.length > 0);
 
+  // リレーション用の検索結果
+  let relationOptions = $state<Array<{ value: string; label: string }>>([]);
+
   function handleChange(newValue: unknown) {
     ctx.onChange(field.name, newValue);
   }
@@ -214,6 +217,53 @@
         disabled={field.readonly}
         oninput={(e) => handleChange(e.currentTarget.value)}
       />
+    {:else if field.kind === "relation"}
+      {@const relationValue = value as Record<string, unknown> | string | null}
+      {@const currentValue = typeof relationValue === 'object' && relationValue !== null ? String(relationValue.id ?? '') : relationValue}
+      {@const labelField = field.relation?.labelField ?? 'name'}
+      {@const currentLabel = typeof relationValue === 'object' && relationValue !== null
+        ? String(relationValue.label ?? relationValue[labelField] ?? '')
+        : field.options?.find(o => o.value === relationValue)?.label}
+      <Select.Root
+        type="single"
+        value={currentValue != null ? String(currentValue) : undefined}
+        onValueChange={(v) => handleChange(v)}
+        disabled={field.readonly}
+      >
+        <Select.Trigger id={field.name}>
+          <Select.Value placeholder={field.placeholder ?? labels.selectPlaceholder}>
+            {currentLabel ?? field.placeholder ?? labels.selectPlaceholder}
+          </Select.Value>
+        </Select.Trigger>
+        <Select.Content>
+          {#if ctx.onOptionsSearch && field.relation}
+            <div class="p-2 border-b border-border">
+              <Input
+                type="text"
+                placeholder="検索..."
+                class="h-8"
+                oninput={async (e) => {
+                  const query = e.currentTarget.value;
+                  if (ctx.onOptionsSearch && field.relation) {
+                    relationOptions = await ctx.onOptionsSearch(field.relation.resource, query);
+                  }
+                }}
+              />
+            </div>
+            {#each relationOptions as option}
+              <Select.Item value={option.value} label={option.label}>
+                {option.label}
+              </Select.Item>
+            {/each}
+          {:else}
+            {#each field.options ?? [] as option}
+              <Select.Item value={option.value} label={option.label}>
+                {option.label}
+              </Select.Item>
+            {/each}
+          {/if}
+        </Select.Content>
+      </Select.Root>
     {:else}
       <Input
         type="text"

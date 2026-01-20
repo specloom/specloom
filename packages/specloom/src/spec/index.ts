@@ -199,6 +199,7 @@ export type FilterOperator =
   | "startsWith"
   | "endsWith"
   | "matches"
+  | "ilike"
   // 集合
   | "in"
   | "notIn"

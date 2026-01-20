@@ -160,6 +160,29 @@ describe("filter", () => {
         };
         expect(evaluateFilter(filter2, data)).toBe(false);
       });
+
+      it("ilike: 大文字小文字を区別しない部分一致", () => {
+        const filter: FilterExpression = {
+          field: "title",
+          op: "ilike",
+          value: "hello",
+        };
+        expect(evaluateFilter(filter, data)).toBe(true);
+
+        const filter2: FilterExpression = {
+          field: "title",
+          op: "ilike",
+          value: "WORLD",
+        };
+        expect(evaluateFilter(filter2, data)).toBe(true);
+
+        const filter3: FilterExpression = {
+          field: "title",
+          op: "ilike",
+          value: "React",
+        };
+        expect(evaluateFilter(filter3, data)).toBe(false);
+      });
     });
 
     describe("集合演算子", () => {
