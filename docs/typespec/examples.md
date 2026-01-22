@@ -97,39 +97,35 @@ model Post {
 model PostList {
   @action("create")
   @label("新規作成")
-  @placement("header")
   @allowedWhen("role == 'admin' || role == 'editor'")
   @ui(#{ icon: "plus", variant: "primary" })
   create: never;
 
-  @action("show")
-  @label("詳細")
-  @placement("row")
-  @ui(#{ icon: "eye" })
-  show: never;
-
-  @action("edit")
-  @label("編集")
-  @placement("row")
-  @allowedWhen("role == 'admin' || role == 'editor'")
-  @ui(#{ icon: "pencil" })
-  edit: never;
-
-  @action("delete")
-  @label("削除")
-  @placement("row")
-  @allowedWhen("role == 'admin'")
-  @confirm("本当に削除しますか？")
-  @ui(#{ icon: "trash", variant: "danger" })
-  delete: never;
-
   @action("bulkDelete")
   @label("一括削除")
-  @placement("bulk")
+  @requiresSelection(true)
   @allowedWhen("role == 'admin'")
   @confirm
   @ui(#{ icon: "trash", variant: "danger" })
   bulkDelete: never;
+
+  @rowAction("show")
+  @label("詳細")
+  @ui(#{ icon: "eye" })
+  show: never;
+
+  @rowAction("edit")
+  @label("編集")
+  @allowedWhen("role == 'admin' || role == 'editor'")
+  @ui(#{ icon: "pencil" })
+  edit: never;
+
+  @rowAction("delete")
+  @label("削除")
+  @allowedWhen("role == 'admin'")
+  @confirm("本当に削除しますか？")
+  @ui(#{ icon: "trash", variant: "danger" })
+  delete: never;
 }
 ```
 
@@ -141,13 +137,12 @@ model PostList {
 model PostForm {
   @action("save")
   @label("保存")
-  @placement("header")
   @ui(#{ icon: "check", variant: "primary" })
   save: never;
 
   @action("cancel")
   @label("キャンセル")
-  @placement("header")
+  
   cancel: never;
 }
 ```
@@ -160,14 +155,12 @@ model PostForm {
 model PostShow {
   @action("edit")
   @label("編集")
-  @placement("header")
   @allowedWhen("role == 'admin' || role == 'editor'")
   @ui(#{ icon: "pencil" })
   edit: never;
 
   @action("delete")
   @label("削除")
-  @placement("header")
   @allowedWhen("role == 'admin'")
   @confirm("本当に削除しますか？")
   @ui(#{ icon: "trash", variant: "danger" })
@@ -175,20 +168,17 @@ model PostShow {
 
   @action("publish")
   @label("公開")
-  @placement("header")
   @allowedWhen("status == 'draft'")
   @ui(#{ icon: "globe", variant: "primary" })
   publish: never;
 
   @action("unpublish")
   @label("非公開")
-  @placement("header")
   @allowedWhen("status == 'published'")
   unpublish: never;
 
   @action("archive")
   @label("アーカイブ")
-  @placement("header")
   @allowedWhen("status == 'published'")
   @confirm
   archive: never;
@@ -267,19 +257,16 @@ model User {
 model UserList {
   @action("create")
   @label("新規作成")
-  @placement("header")
   @allowedWhen("role == 'admin'")
   @ui(#{ icon: "plus", variant: "primary" })
   create: never;
 
-  @action("show")
+  @rowAction("show")
   @label("詳細")
-  @placement("row")
   show: never;
 
-  @action("edit")
+  @rowAction("edit")
   @label("編集")
-  @placement("row")
   @allowedWhen("role == 'admin'")
   @ui(#{ icon: "pencil" })
   edit: never;
@@ -363,28 +350,24 @@ model Order {
 model OrderShow {
   @action("confirm")
   @label("確定")
-  @placement("header")
   @allowedWhen("status == 'pending'")
   @ui(#{ icon: "check", variant: "primary" })
   confirm: never;
 
   @action("ship")
   @label("発送")
-  @placement("header")
   @allowedWhen("status == 'confirmed'")
   @ui(#{ icon: "truck", variant: "primary" })
   ship: never;
 
   @action("deliver")
   @label("配達完了")
-  @placement("header")
   @allowedWhen("status == 'shipped'")
   @ui(#{ icon: "check", variant: "primary" })
   deliver: never;
 
   @action("cancel")
   @label("キャンセル")
-  @placement("header")
   @allowedWhen("status == 'pending' || status == 'confirmed'")
   @confirm("注文をキャンセルしますか？")
   @ui(#{ icon: "x", variant: "danger" })

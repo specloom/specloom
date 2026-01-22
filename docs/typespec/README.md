@@ -75,23 +75,22 @@ model Post {
 @defaultSort("createdAt", "desc")
 @clickAction("show")
 model PostList {
+  // Page action
   @action("create")
   @label("新規作成")
-  @placement("header")
   @allowedWhen("role == 'admin' || role == 'editor'")
   @ui(#{ icon: "plus", variant: "primary" })
   create: never;
 
-  @action("edit")
+  // Row actions
+  @rowAction("edit")
   @label("編集")
-  @placement("row")
   @allowedWhen("role == 'admin' || role == 'editor'")
   @ui(#{ icon: "pencil" })
   edit: never;
 
-  @action("delete")
+  @rowAction("delete")
   @label("削除")
-  @placement("row")
   @allowedWhen("role == 'admin'")
   @confirm("本当に削除しますか？")
   @ui(#{ icon: "trash", variant: "danger" })
@@ -104,13 +103,11 @@ model PostList {
 model PostForm {
   @action("save")
   @label("保存")
-  @placement("header")
   @ui(#{ icon: "check", variant: "primary" })
   save: never;
 
   @action("cancel")
   @label("キャンセル")
-  @placement("header")
   cancel: never;
 }
 
@@ -120,7 +117,6 @@ model PostForm {
 model PostShow {
   @action("edit")
   @label("編集")
-  @placement("header")
   @allowedWhen("role == 'admin' || role == 'editor'")
   @ui(#{ icon: "pencil" })
   edit: never;

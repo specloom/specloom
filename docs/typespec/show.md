@@ -58,14 +58,12 @@ model Post {
 model PostShow {
   @action("edit")
   @label("編集")
-  @placement("header")
   @allowedWhen("role == 'admin' || role == 'editor'")
   @ui(#{ icon: "pencil" })
   edit: never;
 
   @action("delete")
   @label("削除")
-  @placement("header")
   @allowedWhen("role == 'admin'")
   @confirm("本当に削除しますか？")
   @ui(#{ icon: "trash", variant: "danger" })
@@ -82,20 +80,17 @@ model PostShow {
 model PostShow {
   @action("publish")
   @label("公開")
-  @placement("header")
   @allowedWhen("status == 'draft'")
   @ui(#{ icon: "globe", variant: "primary" })
   publish: never;
 
   @action("unpublish")
   @label("非公開")
-  @placement("header")
   @allowedWhen("status == 'published'")
   unpublish: never;
 
   @action("archive")
   @label("アーカイブ")
-  @placement("header")
   @allowedWhen("status == 'published'")
   @confirm("アーカイブしますか？")
   archive: never;
@@ -111,14 +106,12 @@ model PostShow {
   // 基本アクション
   @action("edit")
   @label("編集")
-  @placement("header")
   @allowedWhen("role == 'admin' || role == 'editor'")
   @ui(#{ icon: "pencil" })
   edit: never;
 
   @action("delete")
   @label("削除")
-  @placement("header")
   @allowedWhen("role == 'admin'")
   @confirm("本当に削除しますか？")
   @ui(#{ icon: "trash", variant: "danger" })
@@ -127,14 +120,12 @@ model PostShow {
   // 状態遷移
   @action("publish")
   @label("公開")
-  @placement("header")
   @allowedWhen("status == 'draft'")
   @ui(#{ icon: "globe", variant: "primary" })
   publish: never;
 
   @action("archive")
   @label("アーカイブ")
-  @placement("header")
   @allowedWhen("status == 'published'")
   @confirm
   archive: never;

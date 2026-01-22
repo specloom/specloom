@@ -196,46 +196,24 @@ model PostList {}
 
 ## Actions
 
-一覧画面のアクションは `@placement` で配置を指定します。
+一覧画面のアクションは3種類あります。
 
-### Header Actions（画面上部）
+| 種類 | デコレーター | 説明 |
+|------|-------------|------|
+| Page action | `@action` | 画面上部に表示 |
+| Bulk action | `@action` + `@requiresSelection` | 複数選択時に有効 |
+| Row action | `@rowAction` | 各行に表示 |
+
+### Page Actions（画面上部）
 
 ```typespec
 @view(Post, "list")
 model PostList {
   @action("create")
   @label("新規作成")
-  @placement("header")
   @allowedWhen("role == 'admin' || role == 'editor'")
   @ui(#{ icon: "plus", variant: "primary" })
   create: never;
-}
-```
-
-### Row Actions（各行）
-
-```typespec
-@view(Post, "list")
-model PostList {
-  @action("show")
-  @label("詳細")
-  @placement("row")
-  show: never;
-
-  @action("edit")
-  @label("編集")
-  @placement("row")
-  @allowedWhen("role == 'admin' || role == 'editor'")
-  @ui(#{ icon: "pencil" })
-  edit: never;
-
-  @action("delete")
-  @label("削除")
-  @placement("row")
-  @allowedWhen("role == 'admin'")
-  @confirm("本当に削除しますか？")
-  @ui(#{ icon: "trash", variant: "danger" })
-  delete: never;
 }
 ```
 
@@ -249,7 +227,7 @@ model PostList {
 model PostList {
   @action("bulkDelete")
   @label("一括削除")
-  @placement("bulk")
+  @requiresSelection(true)
   @allowedWhen("role == 'admin'")
   @confirm("選択した項目を削除しますか？")
   @ui(#{ icon: "trash", variant: "danger" })
@@ -257,9 +235,33 @@ model PostList {
 
   @action("bulkPublish")
   @label("一括公開")
-  @placement("bulk")
+  @requiresSelection(true)
   @allowedWhen("role == 'admin' || role == 'editor'")
   bulkPublish: never;
+}
+```
+
+### Row Actions（各行）
+
+```typespec
+@view(Post, "list")
+model PostList {
+  @rowAction("show")
+  @label("詳細")
+  show: never;
+
+  @rowAction("edit")
+  @label("編集")
+  @allowedWhen("role == 'admin' || role == 'editor'")
+  @ui(#{ icon: "pencil" })
+  edit: never;
+
+  @rowAction("delete")
+  @label("削除")
+  @allowedWhen("role == 'admin'")
+  @confirm("本当に削除しますか？")
+  @ui(#{ icon: "trash", variant: "danger" })
+  delete: never;
 }
 ```
 
@@ -277,43 +279,39 @@ model PostList {
 @namedFilter("published", "公開中", #{ status: "published" })
 @namedFilter("draft", "下書き", #{ status: "draft" })
 model PostList {
-  // Header Actions
+  // Page Actions
   @action("create")
   @label("新規作成")
-  @placement("header")
   @allowedWhen("role == 'admin' || role == 'editor'")
   @ui(#{ icon: "plus", variant: "primary" })
   create: never;
 
-  // Row Actions
-  @action("show")
-  @label("詳細")
-  @placement("row")
-  show: never;
-
-  @action("edit")
-  @label("編集")
-  @placement("row")
-  @allowedWhen("role == 'admin' || role == 'editor'")
-  @ui(#{ icon: "pencil" })
-  edit: never;
-
-  @action("delete")
-  @label("削除")
-  @placement("row")
-  @allowedWhen("role == 'admin'")
-  @confirm("本当に削除しますか？")
-  @ui(#{ icon: "trash", variant: "danger" })
-  delete: never;
-
   // Bulk Actions
   @action("bulkDelete")
   @label("一括削除")
-  @placement("bulk")
+  @requiresSelection(true)
   @allowedWhen("role == 'admin'")
   @confirm
   @ui(#{ icon: "trash", variant: "danger" })
   bulkDelete: never;
+
+  // Row Actions
+  @rowAction("show")
+  @label("詳細")
+  show: never;
+
+  @rowAction("edit")
+  @label("編集")
+  @allowedWhen("role == 'admin' || role == 'editor'")
+  @ui(#{ icon: "pencil" })
+  edit: never;
+
+  @rowAction("delete")
+  @label("削除")
+  @allowedWhen("role == 'admin'")
+  @confirm("本当に削除しますか？")
+  @ui(#{ icon: "trash", variant: "danger" })
+  delete: never;
 }
 ```
 

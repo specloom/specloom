@@ -84,13 +84,11 @@ model Post {
 model PostForm {
   @action("save")
   @label("保存")
-  @placement("header")
   @ui(#{ icon: "check", variant: "primary" })
   save: never;
 
   @action("cancel")
   @label("キャンセル")
-  @placement("header")
   cancel: never;
 }
 ```
@@ -128,18 +126,15 @@ UI は `mode` を見て：
 model PostForm {
   @action("save")
   @label("保存")
-  @placement("header")
   @ui(#{ icon: "check", variant: "primary" })
   save: never;
 
   @action("cancel")
   @label("キャンセル")
-  @placement("header")
   cancel: never;
 
   @action("saveDraft")
   @label("下書き保存")
-  @placement("header")
   @allowedWhen("status == 'draft'")
   saveDraft: never;
 }
