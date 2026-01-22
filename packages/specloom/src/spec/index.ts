@@ -120,7 +120,7 @@ export interface ListView {
   searchable?: string[];
   sortable?: string[];
   defaultSort?: Sort;
-  selection?: "none" | "single" | "multi";
+  selectionMode?: "none" | "single" | "multi";
   clickAction?: string;
   namedFilters?: NamedFilter[];
   actions: Action[];
@@ -239,19 +239,19 @@ export interface ShowView {
 // ============================================================
 
 /**
- * 選択要件
- * - false/undefined: 選択不要（新規作成など）
- * - true/"selection": 選択した行が対象
- * - "query": 現在のフィルター条件に合う全件が対象
+ * アクションの対象選択
+ * - undefined: 選択不要（ページアクション）
+ * - "selected": 選択した行が対象（バルクアクション）
+ * - "query": 現在のフィルター条件に合う全件が対象（バルクアクション）
  */
-export type SelectionRequirement = boolean | "selection" | "query";
+export type ActionSelection = "selected" | "query";
 
 export interface Action {
   id: string;
   label: string;
   allowedWhen?: string;
-  /** headerActions のみ有効。選択行またはクエリ全体を対象とするか */
-  requiresSelection?: SelectionRequirement;
+  /** バルクアクションの対象。省略時はページアクション */
+  selection?: ActionSelection;
   confirm?: string;
   ui?: ActionUI;
 }

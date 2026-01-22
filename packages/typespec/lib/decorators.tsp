@@ -152,10 +152,10 @@ extern dec action(target: ModelProperty, id: valueof string);
 extern dec rowAction(target: ModelProperty, id: valueof string);
 
 /**
- * Set selection requirement for header actions
- * @param requirement Selection requirement (true/"selection" for selected rows, "query" for all filtered rows)
+ * Set selection requirement for bulk actions
+ * @param target Selection target ("selected" for selected rows, "query" for all filtered rows)
  */
-extern dec requiresSelection(target: ModelProperty, requirement: valueof boolean | "selection" | "query");
+extern dec requiresSelection(target: ModelProperty, selection: valueof "selected" | "query");
 
 /**
  * Set permission expression

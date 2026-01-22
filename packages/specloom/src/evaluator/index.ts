@@ -74,11 +74,11 @@ export function evaluateListView(options: EvaluateListOptions): ListViewModel {
   });
 
   const headerActions = view.actions
-    .filter((a) => !a.requiresSelection)
+    .filter((a) => !a.selection)
     .map((a) => toActionVM(a, context, {}));
 
   const bulkActions = view.actions
-    .filter((a) => a.requiresSelection)
+    .filter((a) => a.selection)
     .map((a) => toActionVM(a, context, {}));
 
   const rows = data.map((row) => toRowVM(row, view, resource, context));
@@ -284,7 +284,7 @@ function isFilterExpression(value: unknown): value is Filters["custom"] {
 
 function toSelection(view: ListView, selected?: string[]): Selection {
   return {
-    mode: view.selection ?? "none",
+    mode: view.selectionMode ?? "none",
     selected: selected ?? [],
   };
 }

@@ -56,13 +56,8 @@ delete: never;
 ```typespec
 // 選択した行に対して実行
 @action("bulkDelete")
-@requiresSelection(true)
+@requiresSelection("selected")
 bulkDelete: never;
-
-// "selection" も同様
-@action("bulkPublish")
-@requiresSelection("selection")
-bulkPublish: never;
 
 // クエリ全体に対して実行（フィルター条件に一致する全件）
 @action("exportAll")
@@ -70,10 +65,12 @@ bulkPublish: never;
 exportAll: never;
 ```
 
-| 値 | 説明 |
-|-----|------|
-| `true` / `"selection"` | 選択した行に対して実行 |
-| `"query"` | フィルター条件に一致する全件に対して実行 |
+| 値 | JSON出力 | 説明 |
+|-----|---------|------|
+| `"selected"` | `selection: "selected"` | 選択した行に対して実行 |
+| `"query"` | `selection: "query"` | フィルター条件に一致する全件に対して実行 |
+
+> **Note**: TypeSpec では `@requiresSelection`、JSON 出力では `selection` プロパティになります。
 
 ## アクションの配置
 
@@ -186,10 +183,10 @@ delete: never;
 
 // 一括操作
 @action("bulkDelete")
-@requiresSelection(true)
+@requiresSelection("selected")
 
 @action("bulkPublish")
-@requiresSelection(true)
+@requiresSelection("selected")
 ```
 
 ### 状態遷移アクション
@@ -228,7 +225,7 @@ export: never;
 ```typespec
 @action("bulkStatus")
 @label("ステータス変更")
-@requiresSelection(true)
+@requiresSelection("selected")
 @ui(#{ type: "menu" })
 @options(#[
   #{ value: "draft", label: "下書きに変更" },
@@ -259,7 +256,7 @@ model PostList {
   // Bulk actions
   @action("bulkDelete")
   @label("一括削除")
-  @requiresSelection(true)
+  @requiresSelection("selected")
   @allowedWhen("role == 'admin'")
   @confirm("選択した項目を削除しますか？")
   @ui(#{ icon: "trash", variant: "danger" })
@@ -267,7 +264,7 @@ model PostList {
 
   @action("bulkPublish")
   @label("一括公開")
-  @requiresSelection(true)
+  @requiresSelection("selected")
   @allowedWhen("role == 'admin' || role == 'editor'")
   bulkPublish: never;
 

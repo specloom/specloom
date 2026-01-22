@@ -433,14 +433,14 @@ export function $rowAction(
 }
 
 /**
- * @requiresSelection - Set selection requirement for header actions
+ * @requiresSelection - Set selection requirement for bulk actions
  */
 export function $requiresSelection(
   context: DecoratorContext,
   target: ModelProperty,
-  requirement: unknown,
+  selection: unknown,
 ) {
-  const extracted = extractValue(requirement);
+  const extracted = extractString(selection);
   if (extracted !== undefined) {
     context.program
       .stateMap(StateKeys.requiresSelection)
@@ -739,7 +739,7 @@ export function getRowAction(
 export function getRequiresSelection(
   program: DecoratorContext["program"],
   target: ModelProperty,
-): boolean | string | undefined {
+): string | undefined {
   return program.stateMap(StateKeys.requiresSelection).get(target);
 }
 

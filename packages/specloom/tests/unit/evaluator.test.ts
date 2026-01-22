@@ -146,7 +146,7 @@ describe("evaluator", () => {
       columns: ["title", "status", "author"],
       sortable: ["title"],
       searchable: ["title"],
-      selection: "multi",
+      selectionMode: "multi",
       namedFilters: [
         { id: "all", label: "すべて", filter: {} },
         { id: "draft", label: "下書き", filter: { status: "draft" } },
@@ -351,20 +351,20 @@ describe("evaluator", () => {
       const context = createContext("admin");
       const viewWithBulk: ListView = {
         ...listView,
-        selection: "multi",
+        selectionMode: "multi",
         actions: [
           ...listView.actions,
           {
             id: "bulkDelete",
             label: "一括削除",
-            requiresSelection: true,
+            selection: "selected",
             allowedWhen: "role == 'admin'",
             confirm: "選択した項目を削除しますか？",
           },
           {
             id: "bulkPublish",
             label: "一括公開",
-            requiresSelection: "selection",
+            selection: "selected",
           },
         ],
       };
@@ -480,7 +480,6 @@ describe("evaluator", () => {
         {
           id: "edit",
           label: "編集",
-          placement: "header",
           allowedWhen: "role == 'admin'",
         },
       ],
@@ -587,8 +586,8 @@ describe("evaluator", () => {
       type: "form",
       fields: ["title", "status", "author", "tags"],
       actions: [
-        { id: "save", label: "保存", placement: "header" },
-        { id: "cancel", label: "キャンセル", placement: "header" },
+        { id: "save", label: "保存" },
+        { id: "cancel", label: "キャンセル" },
       ],
     };
 

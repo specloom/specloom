@@ -78,10 +78,10 @@ const sampleSpecJson = `{
         {
           "id": "create",
           "label": "新規作成",
-          "placement": "header",
           "allowedWhen": "role == 'admin'"
         }
-      ]
+      ],
+      "rowActions": []
     },
     {
       "resource": "articles",
@@ -91,19 +91,16 @@ const sampleSpecJson = `{
         {
           "id": "edit",
           "label": "編集",
-          "placement": "header",
           "allowedWhen": "role == 'admin' || user_id == 'author_id'"
         },
         {
           "id": "delete",
           "label": "削除",
-          "placement": "header",
           "allowedWhen": "role == 'admin'"
         },
         {
           "id": "publish",
           "label": "公開",
-          "placement": "header",
           "allowedWhen": "status == 'draft' && role == 'admin'"
         }
       ]
@@ -115,13 +112,11 @@ const sampleSpecJson = `{
       "actions": [
         {
           "id": "save",
-          "label": "保存",
-          "placement": "header"
+          "label": "保存"
         },
         {
           "id": "cancel",
-          "label": "キャンセル",
-          "placement": "header"
+          "label": "キャンセル"
         }
       ]
     }

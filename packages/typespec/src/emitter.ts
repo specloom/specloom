@@ -86,7 +86,7 @@ interface View {
   sortable?: string[];
   defaultSort?: { field: string; order: string };
   clickAction?: string;
-  selection?: string;
+  selectionMode?: string;
   namedFilters?: { id: string; label: string; filter: unknown }[];
   actions: Action[];
   rowActions?: Action[];
@@ -95,7 +95,7 @@ interface View {
 interface Action {
   id: string;
   label: string;
-  requiresSelection?: boolean | "selection" | "query";
+  selection?: "selected" | "query";
   allowedWhen?: string;
   confirm?: string;
   ui?: Record<string, unknown>;
@@ -345,9 +345,9 @@ function buildView(program: Program, model: Model): View {
       view.clickAction = clickAction;
     }
 
-    const selection = getSelection(program, model);
-    if (selection) {
-      view.selection = selection;
+    const selectionMode = getSelection(program, model);
+    if (selectionMode) {
+      view.selectionMode = selectionMode;
     }
 
     const namedFilters = getNamedFilters(program, model);
@@ -381,10 +381,7 @@ function buildAction(
   };
 
   if (requiresSelection !== undefined) {
-    action.requiresSelection = requiresSelection as
-      | boolean
-      | "selection"
-      | "query";
+    action.selection = requiresSelection as "selected" | "query";
   }
 
   if (allowedWhen) {

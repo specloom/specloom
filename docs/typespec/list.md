@@ -51,7 +51,7 @@ model PostList {}
 
 ## @selection
 
-行選択モードを指定します。
+行選択モードを指定します。JSON では `selectionMode` として出力されます。
 
 ```typespec
 @view(Post, "list")
@@ -64,6 +64,8 @@ model PostList {}
 | none | 選択不可（default） |
 | single | 単一選択 |
 | multi | 複数選択 |
+
+> **Note**: TypeSpec では `@selection`、JSON 出力では `selectionMode` になります。
 
 ## @clickAction
 
@@ -227,7 +229,7 @@ model PostList {
 model PostList {
   @action("bulkDelete")
   @label("一括削除")
-  @requiresSelection(true)
+  @requiresSelection("selected")
   @allowedWhen("role == 'admin'")
   @confirm("選択した項目を削除しますか？")
   @ui(#{ icon: "trash", variant: "danger" })
@@ -235,7 +237,7 @@ model PostList {
 
   @action("bulkPublish")
   @label("一括公開")
-  @requiresSelection(true)
+  @requiresSelection("selected")
   @allowedWhen("role == 'admin' || role == 'editor'")
   bulkPublish: never;
 }
@@ -289,7 +291,7 @@ model PostList {
   // Bulk Actions
   @action("bulkDelete")
   @label("一括削除")
-  @requiresSelection(true)
+  @requiresSelection("selected")
   @allowedWhen("role == 'admin'")
   @confirm
   @ui(#{ icon: "trash", variant: "danger" })

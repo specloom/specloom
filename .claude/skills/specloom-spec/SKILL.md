@@ -198,7 +198,7 @@ model PostList {
   // Bulk action (requires selection)
   @Specloom.action("bulkDelete")
   @Specloom.label("一括削除")
-  @Specloom.requiresSelection(true)
+  @Specloom.requiresSelection("selected")
   @Specloom.allowedWhen("role == 'admin'")
   @Specloom.confirm("選択した項目を削除しますか？")
   bulkDelete: never;
@@ -314,7 +314,7 @@ model PostShow {
 |-----------|-------------|
 | `@action(id)` | Page-level action ID |
 | `@rowAction(id)` | Row-level action ID (for list views) |
-| `@requiresSelection(req)` | Bulk action: `true`, `"selection"`, or `"query"` |
+| `@requiresSelection(target)` | Bulk action: `"selected"` or `"query"` (JSON: `selection`) |
 | `@allowedWhen(expr)` | Permission expression |
 | `@confirm(msg)` | Confirmation dialog |
 | `@ui({icon, variant})` | Icon and style |
@@ -525,7 +525,7 @@ model PostList {
   // Bulk action
   @Specloom.action("bulkDelete")
   @Specloom.label("一括削除")
-  @Specloom.requiresSelection(true)
+  @Specloom.requiresSelection("selected")
   @Specloom.allowedWhen("role == 'admin'")
   @Specloom.confirm("選択した項目を削除しますか？")
   bulkDelete: never;
@@ -586,7 +586,7 @@ Before completing a spec:
 - [ ] Enum fields have `@kind("enum")` and `@options`
 - [ ] Relation fields have `@kind("relation")` and `@relation`
 - [ ] List views have `@columns`, `@action` for page actions, `@rowAction` for row actions
-- [ ] Bulk actions have `@requiresSelection(true)` or `@requiresSelection("selection")`
+- [ ] Bulk actions have `@requiresSelection("selected")` or `@requiresSelection("query")`
 - [ ] Form views have `@fields` and save/cancel actions
 - [ ] Actions have appropriate `@allowedWhen`
 - [ ] Destructive actions have `@confirm`

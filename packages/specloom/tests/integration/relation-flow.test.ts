@@ -93,10 +93,10 @@ const relationSpecJson = `{
         {
           "id": "create",
           "label": "新規作成",
-          "placement": "header",
           "allowedWhen": "role == 'admin'"
         }
-      ]
+      ],
+      "rowActions": []
     },
     {
       "resource": "articles",
@@ -106,7 +106,6 @@ const relationSpecJson = `{
         {
           "id": "edit",
           "label": "編集",
-          "placement": "header",
           "allowedWhen": "role == 'admin'"
         }
       ]
@@ -118,8 +117,7 @@ const relationSpecJson = `{
       "actions": [
         {
           "id": "save",
-          "label": "保存",
-          "placement": "header"
+          "label": "保存"
         }
       ]
     }
