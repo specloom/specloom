@@ -124,6 +124,7 @@ export interface ListView {
   clickAction?: string;
   namedFilters?: NamedFilter[];
   actions: Action[];
+  rowActions: Action[];
 }
 
 export interface Sort {
@@ -178,7 +179,7 @@ export interface FilterCondition {
   /** フィールドパス（例: "status", "author.name"） */
   field: string;
   /** 演算子 */
-  op: FilterOperator;
+  operator: FilterOperator;
   /** 比較値 */
   value: unknown;
 }
@@ -196,20 +197,20 @@ export type FilterOperator =
   | "lte"
   // 文字列
   | "contains"
-  | "startsWith"
-  | "endsWith"
+  | "starts_with"
+  | "ends_with"
   | "matches"
   | "ilike"
   // 集合
   | "in"
-  | "notIn"
+  | "not_in"
   // 存在
-  | "isNull"
-  | "isEmpty"
+  | "is_null"
+  | "is_empty"
   // 配列
-  | "hasAny"
-  | "hasAll"
-  | "hasNone";
+  | "has_any"
+  | "has_all"
+  | "has_none";
 
 // ============================================================
 // Form View
@@ -237,13 +238,20 @@ export interface ShowView {
 // Action
 // ============================================================
 
-export type ActionPlacement = "header" | "row" | "bulk";
+/**
+ * 選択要件
+ * - false/undefined: 選択不要（新規作成など）
+ * - true/"selection": 選択した行が対象
+ * - "query": 現在のフィルター条件に合う全件が対象
+ */
+export type SelectionRequirement = boolean | "selection" | "query";
 
 export interface Action {
   id: string;
   label: string;
-  placement: ActionPlacement;
   allowedWhen?: string;
+  /** headerActions のみ有効。選択行またはクエリ全体を対象とするか */
+  requiresSelection?: SelectionRequirement;
   confirm?: string;
   ui?: ActionUI;
 }

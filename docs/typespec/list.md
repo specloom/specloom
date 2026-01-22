@@ -113,33 +113,33 @@ AND/OR/NOT や各種演算子を使った複雑な条件も定義できます。
 @view(Post, "list")
 // 単純な条件
 @namedFilter("published", "公開中", #{ 
-  field: "status", op: "eq", value: "published" 
+  field: "status", operator: "eq", value: "published" 
 })
 
 // AND 条件: 公開中 かつ 最近7日以内
 @namedFilter("recent_published", "最近の公開記事", #{
   and: [
-    { field: "status", op: "eq", value: "published" },
-    { field: "createdAt", op: "gte", value: "@relative(-7d)" }
+    { field: "status", operator: "eq", value: "published" },
+    { field: "createdAt", operator: "gte", value: "@relative(-7d)" }
   ]
 })
 
 // OR 条件: 下書き または レビュー中
 @namedFilter("unpublished", "未公開", #{
   or: [
-    { field: "status", op: "eq", value: "draft" },
-    { field: "status", op: "eq", value: "review" }
+    { field: "status", operator: "eq", value: "draft" },
+    { field: "status", operator: "eq", value: "review" }
   ]
 })
 
 // コンテキスト参照: 自分の記事
 @namedFilter("my_posts", "自分の記事", #{
-  field: "author.id", op: "eq", value: "@context.user.id"
+  field: "author.id", operator: "eq", value: "@context.user.id"
 })
 
 // IN 演算子
 @namedFilter("active", "アクティブ", #{
-  field: "status", op: "in", value: ["draft", "review", "published"]
+  field: "status", operator: "in", value: ["draft", "review", "published"]
 })
 model PostList {}
 ```
@@ -148,14 +148,14 @@ model PostList {}
 
 | 演算子 | 説明 | 例 |
 |--------|------|-----|
-| `eq` | 等しい | `{ field: "status", op: "eq", value: "published" }` |
-| `ne` | 等しくない | `{ field: "status", op: "ne", value: "archived" }` |
-| `gt`, `gte` | より大きい、以上 | `{ field: "price", op: "gte", value: 1000 }` |
-| `lt`, `lte` | より小さい、以下 | `{ field: "stock", op: "lt", value: 10 }` |
-| `in` | いずれかに一致 | `{ field: "status", op: "in", value: ["a", "b"] }` |
-| `contains` | 部分一致 | `{ field: "title", op: "contains", value: "React" }` |
-| `startsWith` | 前方一致 | `{ field: "code", op: "startsWith", value: "PRD-" }` |
-| `hasAny` | 配列がいずれかを含む | `{ field: "tags", op: "hasAny", value: ["tech"] }` |
+| `eq` | 等しい | `{ field: "status", operator: "eq", value: "published" }` |
+| `ne` | 等しくない | `{ field: "status", operator: "ne", value: "archived" }` |
+| `gt`, `gte` | より大きい、以上 | `{ field: "price", operator: "gte", value: 1000 }` |
+| `lt`, `lte` | より小さい、以下 | `{ field: "stock", operator: "lt", value: 10 }` |
+| `in` | いずれかに一致 | `{ field: "status", operator: "in", value: ["a", "b"] }` |
+| `contains` | 部分一致 | `{ field: "title", operator: "contains", value: "React" }` |
+| `starts_with` | 前方一致 | `{ field: "code", operator: "starts_with", value: "PRD-" }` |
+| `has_any` | 配列がいずれかを含む | `{ field: "tags", operator: "has_any", value: ["tech"] }` |
 
 詳細は [Filter Spec](../spec/filter.md) を参照。
 

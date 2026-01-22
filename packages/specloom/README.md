@@ -171,13 +171,13 @@ vm = ListVM.clearFilters(vm);
 // カスタムフィルター（動的なフィルター条件）
 vm = ListVM.setCustomFilter(vm, {
   field: "name",
-  op: "ilike",
+  operator: "ilike",
   value: "田中",
 });
 vm = ListVM.setCustomFilter(vm, {
   and: [
-    { field: "status", op: "eq", value: "active" },
-    { field: "price", op: "gte", value: 1000 },
+    { field: "status", operator: "eq", value: "active" },
+    { field: "price", operator: "gte", value: 1000 },
   ],
 });
 vm = ListVM.clearCustomFilter(vm);
@@ -436,30 +436,30 @@ const data = {
 };
 
 // 単純な条件
-evaluateFilter({ field: "status", op: "eq", value: "active" }, data);
+evaluateFilter({ field: "status", operator: "eq", value: "active" }, data);
 // → true
 
 // 比較演算子
-evaluateFilter({ field: "price", op: "gte", value: 1000 }, data);
+evaluateFilter({ field: "price", operator: "gte", value: 1000 }, data);
 // → true
 
 // 文字列演算子
-evaluateFilter({ field: "author.name", op: "contains", value: "田" }, data);
+evaluateFilter({ field: "author.name", operator: "contains", value: "田" }, data);
 // → true（ドット記法でネストアクセス）
 
 // 大文字小文字を無視した部分一致
-evaluateFilter({ field: "status", op: "ilike", value: "ACTIVE" }, data);
+evaluateFilter({ field: "status", operator: "ilike", value: "ACTIVE" }, data);
 // → true
 
 // 配列演算子
-evaluateFilter({ field: "tags", op: "hasAny", value: ["sale", "hot"] }, data);
+evaluateFilter({ field: "tags", operator: "has_any", value: ["sale", "hot"] }, data);
 // → true
 
 // AND条件
 evaluateFilter({
   and: [
-    { field: "status", op: "eq", value: "active" },
-    { field: "price", op: "lt", value: 2000 },
+    { field: "status", operator: "eq", value: "active" },
+    { field: "price", operator: "lt", value: 2000 },
   ]
 }, data);
 // → true
@@ -467,15 +467,15 @@ evaluateFilter({
 // OR条件
 evaluateFilter({
   or: [
-    { field: "status", op: "eq", value: "draft" },
-    { field: "price", op: "gte", value: 1000 },
+    { field: "status", operator: "eq", value: "draft" },
+    { field: "price", operator: "gte", value: 1000 },
   ]
 }, data);
 // → true
 
 // NOT条件
 evaluateFilter({
-  not: { field: "status", op: "eq", value: "deleted" }
+  not: { field: "status", operator: "eq", value: "deleted" }
 }, data);
 // → true
 
@@ -489,24 +489,24 @@ if (isFilterExpression(userInput)) {
 
 | 演算子 | 説明 | 例 |
 |--------|------|-----|
-| `eq` | 等しい | `{ field: "status", op: "eq", value: "active" }` |
-| `ne` | 等しくない | `{ field: "status", op: "ne", value: "deleted" }` |
-| `gt` | より大きい | `{ field: "price", op: "gt", value: 100 }` |
-| `gte` | 以上 | `{ field: "price", op: "gte", value: 100 }` |
-| `lt` | より小さい | `{ field: "price", op: "lt", value: 1000 }` |
-| `lte` | 以下 | `{ field: "price", op: "lte", value: 1000 }` |
-| `contains` | 含む（文字列） | `{ field: "name", op: "contains", value: "田" }` |
-| `startsWith` | 前方一致 | `{ field: "name", op: "startsWith", value: "山" }` |
-| `endsWith` | 後方一致 | `{ field: "name", op: "endsWith", value: "郎" }` |
-| `matches` | 正規表現 | `{ field: "email", op: "matches", value: "^[a-z]+@" }` |
-| `ilike` | 大文字小文字無視の部分一致 | `{ field: "name", op: "ilike", value: "JOHN" }` |
-| `in` | 配列に含まれる | `{ field: "status", op: "in", value: ["a", "b"] }` |
-| `notIn` | 配列に含まれない | `{ field: "status", op: "notIn", value: ["x"] }` |
-| `isNull` | null/undefined | `{ field: "deletedAt", op: "isNull", value: true }` |
-| `isEmpty` | 空値 | `{ field: "tags", op: "isEmpty", value: true }` |
-| `hasAny` | いずれかを含む（配列） | `{ field: "tags", op: "hasAny", value: ["a", "b"] }` |
-| `hasAll` | すべてを含む（配列） | `{ field: "tags", op: "hasAll", value: ["a", "b"] }` |
-| `hasNone` | いずれも含まない（配列） | `{ field: "tags", op: "hasNone", value: ["x"] }` |
+| `eq` | 等しい | `{ field: "status", operator: "eq", value: "active" }` |
+| `ne` | 等しくない | `{ field: "status", operator: "ne", value: "deleted" }` |
+| `gt` | より大きい | `{ field: "price", operator: "gt", value: 100 }` |
+| `gte` | 以上 | `{ field: "price", operator: "gte", value: 100 }` |
+| `lt` | より小さい | `{ field: "price", operator: "lt", value: 1000 }` |
+| `lte` | 以下 | `{ field: "price", operator: "lte", value: 1000 }` |
+| `contains` | 含む（文字列） | `{ field: "name", operator: "contains", value: "田" }` |
+| `starts_with` | 前方一致 | `{ field: "name", operator: "starts_with", value: "山" }` |
+| `ends_with` | 後方一致 | `{ field: "name", operator: "ends_with", value: "郎" }` |
+| `matches` | 正規表現 | `{ field: "email", operator: "matches", value: "^[a-z]+@" }` |
+| `ilike` | 大文字小文字無視の部分一致 | `{ field: "name", operator: "ilike", value: "JOHN" }` |
+| `in` | 配列に含まれる | `{ field: "status", operator: "in", value: ["a", "b"] }` |
+| `not_in` | 配列に含まれない | `{ field: "status", operator: "not_in", value: ["x"] }` |
+| `is_null` | null/undefined | `{ field: "deletedAt", operator: "is_null", value: true }` |
+| `is_empty` | 空値 | `{ field: "tags", operator: "is_empty", value: true }` |
+| `has_any` | いずれかを含む（配列） | `{ field: "tags", operator: "has_any", value: ["a", "b"] }` |
+| `has_all` | すべてを含む（配列） | `{ field: "tags", operator: "has_all", value: ["a", "b"] }` |
+| `has_none` | いずれも含まない（配列） | `{ field: "tags", operator: "has_none", value: ["x"] }` |
 
 ---
 

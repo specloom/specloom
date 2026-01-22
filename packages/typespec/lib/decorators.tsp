@@ -127,21 +127,35 @@ extern dec selection(target: Model, mode: valueof "none" | "single" | "multi");
  */
 extern dec namedFilters(target: Model, filters: valueof {id: string, label: string, filter: unknown}[]);
 
+/**
+ * Add a named filter
+ * @param id Filter ID
+ * @param label Display label
+ * @param filter Filter condition
+ */
+extern dec namedFilter(target: Model, id: valueof string, label: valueof string, filter: valueof unknown);
+
 // ============================================================
 // Action Decorators
 // ============================================================
 
 /**
- * Define an action
+ * Define an action (for page-level actions)
  * @param id Action ID
  */
 extern dec action(target: ModelProperty, id: valueof string);
 
 /**
- * Set action placement
- * @param placement Placement (header, row, bulk)
+ * Define a row action (for list view row actions)
+ * @param id Action ID
  */
-extern dec placement(target: ModelProperty, placement: valueof "header" | "row" | "bulk");
+extern dec rowAction(target: ModelProperty, id: valueof string);
+
+/**
+ * Set selection requirement for header actions
+ * @param requirement Selection requirement (true/"selection" for selected rows, "query" for all filtered rows)
+ */
+extern dec requiresSelection(target: ModelProperty, requirement: valueof boolean | "selection" | "query");
 
 /**
  * Set permission expression

@@ -39,7 +39,10 @@ export const $lib = createTypeSpecLibrary({
     selection: { description: "State for @selection decorator" },
     namedFilters: { description: "State for @namedFilters decorator" },
     action: { description: "State for @action decorator" },
-    placement: { description: "State for @placement decorator" },
+    rowAction: { description: "State for @rowAction decorator" },
+    requiresSelection: {
+      description: "State for @requiresSelection decorator",
+    },
     allowedWhen: { description: "State for @allowedWhen decorator" },
     confirm: { description: "State for @confirm decorator" },
     // Validation decorators

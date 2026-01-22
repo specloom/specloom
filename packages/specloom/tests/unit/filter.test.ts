@@ -23,14 +23,14 @@ describe("filter", () => {
       it("eq: 等しい", () => {
         const filter: FilterExpression = {
           field: "status",
-          op: "eq",
+          operator: "eq",
           value: "published",
         };
         expect(evaluateFilter(filter, data)).toBe(true);
 
         const filter2: FilterExpression = {
           field: "status",
-          op: "eq",
+          operator: "eq",
           value: "draft",
         };
         expect(evaluateFilter(filter2, data)).toBe(false);
@@ -39,14 +39,14 @@ describe("filter", () => {
       it("ne: 等しくない", () => {
         const filter: FilterExpression = {
           field: "status",
-          op: "ne",
+          operator: "ne",
           value: "draft",
         };
         expect(evaluateFilter(filter, data)).toBe(true);
 
         const filter2: FilterExpression = {
           field: "status",
-          op: "ne",
+          operator: "ne",
           value: "published",
         };
         expect(evaluateFilter(filter2, data)).toBe(false);
@@ -55,14 +55,14 @@ describe("filter", () => {
       it("gt: より大きい", () => {
         const filter: FilterExpression = {
           field: "price",
-          op: "gt",
+          operator: "gt",
           value: 500,
         };
         expect(evaluateFilter(filter, data)).toBe(true);
 
         const filter2: FilterExpression = {
           field: "price",
-          op: "gt",
+          operator: "gt",
           value: 1000,
         };
         expect(evaluateFilter(filter2, data)).toBe(false);
@@ -71,14 +71,14 @@ describe("filter", () => {
       it("gte: 以上", () => {
         const filter: FilterExpression = {
           field: "price",
-          op: "gte",
+          operator: "gte",
           value: 1000,
         };
         expect(evaluateFilter(filter, data)).toBe(true);
 
         const filter2: FilterExpression = {
           field: "price",
-          op: "gte",
+          operator: "gte",
           value: 1001,
         };
         expect(evaluateFilter(filter2, data)).toBe(false);
@@ -87,7 +87,7 @@ describe("filter", () => {
       it("lt: より小さい", () => {
         const filter: FilterExpression = {
           field: "count",
-          op: "lt",
+          operator: "lt",
           value: 10,
         };
         expect(evaluateFilter(filter, data)).toBe(true);
@@ -96,7 +96,7 @@ describe("filter", () => {
       it("lte: 以下", () => {
         const filter: FilterExpression = {
           field: "count",
-          op: "lte",
+          operator: "lte",
           value: 5,
         };
         expect(evaluateFilter(filter, data)).toBe(true);
@@ -107,39 +107,39 @@ describe("filter", () => {
       it("contains: 部分一致", () => {
         const filter: FilterExpression = {
           field: "title",
-          op: "contains",
+          operator: "contains",
           value: "World",
         };
         expect(evaluateFilter(filter, data)).toBe(true);
 
         const filter2: FilterExpression = {
           field: "title",
-          op: "contains",
+          operator: "contains",
           value: "React",
         };
         expect(evaluateFilter(filter2, data)).toBe(false);
       });
 
-      it("startsWith: 前方一致", () => {
+      it("starts_with: 前方一致", () => {
         const filter: FilterExpression = {
           field: "title",
-          op: "startsWith",
+          operator: "starts_with",
           value: "Hello",
         };
         expect(evaluateFilter(filter, data)).toBe(true);
 
         const filter2: FilterExpression = {
           field: "title",
-          op: "startsWith",
+          operator: "starts_with",
           value: "World",
         };
         expect(evaluateFilter(filter2, data)).toBe(false);
       });
 
-      it("endsWith: 後方一致", () => {
+      it("ends_with: 後方一致", () => {
         const filter: FilterExpression = {
           field: "title",
-          op: "endsWith",
+          operator: "ends_with",
           value: "World",
         };
         expect(evaluateFilter(filter, data)).toBe(true);
@@ -148,14 +148,14 @@ describe("filter", () => {
       it("matches: 正規表現", () => {
         const filter: FilterExpression = {
           field: "title",
-          op: "matches",
+          operator: "matches",
           value: "^Hello.*$",
         };
         expect(evaluateFilter(filter, data)).toBe(true);
 
         const filter2: FilterExpression = {
           field: "title",
-          op: "matches",
+          operator: "matches",
           value: "^Goodbye.*$",
         };
         expect(evaluateFilter(filter2, data)).toBe(false);
@@ -164,21 +164,21 @@ describe("filter", () => {
       it("ilike: 大文字小文字を区別しない部分一致", () => {
         const filter: FilterExpression = {
           field: "title",
-          op: "ilike",
+          operator: "ilike",
           value: "hello",
         };
         expect(evaluateFilter(filter, data)).toBe(true);
 
         const filter2: FilterExpression = {
           field: "title",
-          op: "ilike",
+          operator: "ilike",
           value: "WORLD",
         };
         expect(evaluateFilter(filter2, data)).toBe(true);
 
         const filter3: FilterExpression = {
           field: "title",
-          op: "ilike",
+          operator: "ilike",
           value: "React",
         };
         expect(evaluateFilter(filter3, data)).toBe(false);
@@ -189,30 +189,30 @@ describe("filter", () => {
       it("in: いずれかに一致", () => {
         const filter: FilterExpression = {
           field: "status",
-          op: "in",
+          operator: "in",
           value: ["draft", "published", "archived"],
         };
         expect(evaluateFilter(filter, data)).toBe(true);
 
         const filter2: FilterExpression = {
           field: "status",
-          op: "in",
+          operator: "in",
           value: ["draft", "archived"],
         };
         expect(evaluateFilter(filter2, data)).toBe(false);
       });
 
-      it("notIn: いずれにも一致しない", () => {
+      it("not_in: いずれにも一致しない", () => {
         const filter: FilterExpression = {
           field: "status",
-          op: "notIn",
+          operator: "not_in",
           value: ["draft", "archived"],
         };
         expect(evaluateFilter(filter, data)).toBe(true);
 
         const filter2: FilterExpression = {
           field: "status",
-          op: "notIn",
+          operator: "not_in",
           value: ["published", "archived"],
         };
         expect(evaluateFilter(filter2, data)).toBe(false);
@@ -220,47 +220,47 @@ describe("filter", () => {
     });
 
     describe("存在演算子", () => {
-      it("isNull: null である", () => {
+      it("is_null: null である", () => {
         const filter: FilterExpression = {
           field: "description",
-          op: "isNull",
+          operator: "is_null",
           value: true,
         };
         expect(evaluateFilter(filter, data)).toBe(true);
 
         const filter2: FilterExpression = {
           field: "title",
-          op: "isNull",
+          operator: "is_null",
           value: true,
         };
         expect(evaluateFilter(filter2, data)).toBe(false);
 
         const filter3: FilterExpression = {
           field: "title",
-          op: "isNull",
+          operator: "is_null",
           value: false,
         };
         expect(evaluateFilter(filter3, data)).toBe(true);
       });
 
-      it("isEmpty: 空である", () => {
+      it("is_empty: 空である", () => {
         const filter: FilterExpression = {
           field: "items",
-          op: "isEmpty",
+          operator: "is_empty",
           value: true,
         };
         expect(evaluateFilter(filter, data)).toBe(true);
 
         const filter2: FilterExpression = {
           field: "tags",
-          op: "isEmpty",
+          operator: "is_empty",
           value: true,
         };
         expect(evaluateFilter(filter2, data)).toBe(false);
 
         const filter3: FilterExpression = {
           field: "tags",
-          op: "isEmpty",
+          operator: "is_empty",
           value: false,
         };
         expect(evaluateFilter(filter3, data)).toBe(true);
@@ -268,49 +268,49 @@ describe("filter", () => {
     });
 
     describe("配列演算子", () => {
-      it("hasAny: いずれかを含む", () => {
+      it("has_any: いずれかを含む", () => {
         const filter: FilterExpression = {
           field: "tags",
-          op: "hasAny",
+          operator: "has_any",
           value: ["tech", "sports"],
         };
         expect(evaluateFilter(filter, data)).toBe(true);
 
         const filter2: FilterExpression = {
           field: "tags",
-          op: "hasAny",
+          operator: "has_any",
           value: ["sports", "music"],
         };
         expect(evaluateFilter(filter2, data)).toBe(false);
       });
 
-      it("hasAll: すべてを含む", () => {
+      it("has_all: すべてを含む", () => {
         const filter: FilterExpression = {
           field: "tags",
-          op: "hasAll",
+          operator: "has_all",
           value: ["tech", "news"],
         };
         expect(evaluateFilter(filter, data)).toBe(true);
 
         const filter2: FilterExpression = {
           field: "tags",
-          op: "hasAll",
+          operator: "has_all",
           value: ["tech", "sports"],
         };
         expect(evaluateFilter(filter2, data)).toBe(false);
       });
 
-      it("hasNone: いずれも含まない", () => {
+      it("has_none: いずれも含まない", () => {
         const filter: FilterExpression = {
           field: "tags",
-          op: "hasNone",
+          operator: "has_none",
           value: ["sports", "music"],
         };
         expect(evaluateFilter(filter, data)).toBe(true);
 
         const filter2: FilterExpression = {
           field: "tags",
-          op: "hasNone",
+          operator: "has_none",
           value: ["tech", "music"],
         };
         expect(evaluateFilter(filter2, data)).toBe(false);
@@ -321,16 +321,16 @@ describe("filter", () => {
       it("and: すべて満たす", () => {
         const filter: FilterExpression = {
           and: [
-            { field: "status", op: "eq", value: "published" },
-            { field: "price", op: "gte", value: 500 },
+            { field: "status", operator: "eq", value: "published" },
+            { field: "price", operator: "gte", value: 500 },
           ],
         };
         expect(evaluateFilter(filter, data)).toBe(true);
 
         const filter2: FilterExpression = {
           and: [
-            { field: "status", op: "eq", value: "published" },
-            { field: "price", op: "gte", value: 2000 },
+            { field: "status", operator: "eq", value: "published" },
+            { field: "price", operator: "gte", value: 2000 },
           ],
         };
         expect(evaluateFilter(filter2, data)).toBe(false);
@@ -339,16 +339,16 @@ describe("filter", () => {
       it("or: いずれかを満たす", () => {
         const filter: FilterExpression = {
           or: [
-            { field: "status", op: "eq", value: "draft" },
-            { field: "price", op: "gte", value: 500 },
+            { field: "status", operator: "eq", value: "draft" },
+            { field: "price", operator: "gte", value: 500 },
           ],
         };
         expect(evaluateFilter(filter, data)).toBe(true);
 
         const filter2: FilterExpression = {
           or: [
-            { field: "status", op: "eq", value: "draft" },
-            { field: "price", op: "gte", value: 2000 },
+            { field: "status", operator: "eq", value: "draft" },
+            { field: "price", operator: "gte", value: 2000 },
           ],
         };
         expect(evaluateFilter(filter2, data)).toBe(false);
@@ -356,12 +356,12 @@ describe("filter", () => {
 
       it("not: 否定", () => {
         const filter: FilterExpression = {
-          not: { field: "status", op: "eq", value: "draft" },
+          not: { field: "status", operator: "eq", value: "draft" },
         };
         expect(evaluateFilter(filter, data)).toBe(true);
 
         const filter2: FilterExpression = {
-          not: { field: "status", op: "eq", value: "published" },
+          not: { field: "status", operator: "eq", value: "published" },
         };
         expect(evaluateFilter(filter2, data)).toBe(false);
       });
@@ -369,11 +369,11 @@ describe("filter", () => {
       it("複合条件: 公開中 かつ (tech タグ または 高価格)", () => {
         const filter: FilterExpression = {
           and: [
-            { field: "status", op: "eq", value: "published" },
+            { field: "status", operator: "eq", value: "published" },
             {
               or: [
-                { field: "tags", op: "hasAny", value: ["tech"] },
-                { field: "price", op: "gte", value: 5000 },
+                { field: "tags", operator: "has_any", value: ["tech"] },
+                { field: "price", operator: "gte", value: 5000 },
               ],
             },
           ],
@@ -386,21 +386,21 @@ describe("filter", () => {
       it("ドット記法でネストした値を参照できる", () => {
         const filter: FilterExpression = {
           field: "author.role",
-          op: "eq",
+          operator: "eq",
           value: "admin",
         };
         expect(evaluateFilter(filter, data)).toBe(true);
 
         const filter2: FilterExpression = {
           field: "author.name",
-          op: "contains",
+          operator: "contains",
           value: "田中",
         };
         expect(evaluateFilter(filter2, data)).toBe(true);
 
         const filter3: FilterExpression = {
           field: "author.id",
-          op: "eq",
+          operator: "eq",
           value: "user-1",
         };
         expect(evaluateFilter(filter3, data)).toBe(true);
@@ -409,14 +409,14 @@ describe("filter", () => {
       it("存在しないパスは undefined として扱う", () => {
         const filter: FilterExpression = {
           field: "author.email",
-          op: "isNull",
+          operator: "is_null",
           value: true,
         };
         expect(evaluateFilter(filter, data)).toBe(true);
 
         const filter2: FilterExpression = {
           field: "nonexistent.field",
-          op: "eq",
+          operator: "eq",
           value: "test",
         };
         expect(evaluateFilter(filter2, data)).toBe(false);
@@ -427,7 +427,11 @@ describe("filter", () => {
   describe("isFilterExpression", () => {
     it("有効な FilterCondition を検出する", () => {
       expect(
-        isFilterExpression({ field: "status", op: "eq", value: "published" }),
+        isFilterExpression({
+          field: "status",
+          operator: "eq",
+          value: "published",
+        }),
       ).toBe(true);
     });
 
@@ -435,8 +439,8 @@ describe("filter", () => {
       expect(
         isFilterExpression({
           and: [
-            { field: "status", op: "eq", value: "published" },
-            { field: "price", op: "gte", value: 100 },
+            { field: "status", operator: "eq", value: "published" },
+            { field: "price", operator: "gte", value: 100 },
           ],
         }),
       ).toBe(true);
@@ -446,8 +450,8 @@ describe("filter", () => {
       expect(
         isFilterExpression({
           or: [
-            { field: "status", op: "eq", value: "draft" },
-            { field: "status", op: "eq", value: "published" },
+            { field: "status", operator: "eq", value: "draft" },
+            { field: "status", operator: "eq", value: "published" },
           ],
         }),
       ).toBe(true);
@@ -456,7 +460,7 @@ describe("filter", () => {
     it("有効な NOT 式を検出する", () => {
       expect(
         isFilterExpression({
-          not: { field: "status", op: "eq", value: "archived" },
+          not: { field: "status", operator: "eq", value: "archived" },
         }),
       ).toBe(true);
     });
@@ -468,18 +472,20 @@ describe("filter", () => {
       expect(isFilterExpression(123)).toBe(false);
       expect(isFilterExpression({})).toBe(false);
       expect(isFilterExpression({ field: "status" })).toBe(false);
-      expect(isFilterExpression({ field: "status", op: "eq" })).toBe(false);
+      expect(isFilterExpression({ field: "status", operator: "eq" })).toBe(
+        false,
+      );
     });
 
     it("ネストした式を検証する", () => {
       expect(
         isFilterExpression({
           and: [
-            { field: "status", op: "eq", value: "published" },
+            { field: "status", operator: "eq", value: "published" },
             {
               or: [
-                { field: "category", op: "eq", value: "news" },
-                { field: "featured", op: "eq", value: true },
+                { field: "category", operator: "eq", value: "news" },
+                { field: "featured", operator: "eq", value: true },
               ],
             },
           ],
@@ -489,7 +495,10 @@ describe("filter", () => {
       // 不正なネスト
       expect(
         isFilterExpression({
-          and: [{ field: "status", op: "eq", value: "published" }, "invalid"],
+          and: [
+            { field: "status", operator: "eq", value: "published" },
+            "invalid",
+          ],
         }),
       ).toBe(false);
     });
@@ -510,7 +519,7 @@ describe("filter", () => {
     it("matches: 不正な正規表現は false を返す", () => {
       const filter: FilterExpression = {
         field: "title",
-        op: "matches",
+        operator: "matches",
         value: "[invalid(",
       };
       expect(evaluateFilter(filter, data)).toBe(false);
@@ -519,7 +528,7 @@ describe("filter", () => {
     it("matches: 非文字列フィールドは false を返す", () => {
       const filter: FilterExpression = {
         field: "nested",
-        op: "matches",
+        operator: "matches",
         value: ".*",
       };
       expect(evaluateFilter(filter, data)).toBe(false);
@@ -528,7 +537,7 @@ describe("filter", () => {
     it("matches: 非文字列パターンは false を返す", () => {
       const filter: FilterExpression = {
         field: "title",
-        op: "matches",
+        operator: "matches",
         value: 123 as unknown as string,
       };
       expect(evaluateFilter(filter, data)).toBe(false);
@@ -537,7 +546,7 @@ describe("filter", () => {
     it("深くネストしたパスを解決できる", () => {
       const filter: FilterExpression = {
         field: "nested.deep.value",
-        op: "eq",
+        operator: "eq",
         value: 42,
       };
       expect(evaluateFilter(filter, data)).toBe(true);
@@ -549,14 +558,14 @@ describe("filter", () => {
       };
       const filter: FilterExpression = {
         field: "items.0.name",
-        op: "eq",
+        operator: "eq",
         value: "first",
       };
       expect(evaluateFilter(filter, dataWithArray)).toBe(true);
 
       const filter2: FilterExpression = {
         field: "items.1.name",
-        op: "eq",
+        operator: "eq",
         value: "second",
       };
       expect(evaluateFilter(filter2, dataWithArray)).toBe(true);
@@ -565,7 +574,9 @@ describe("filter", () => {
     it("未知の演算子は false を返す", () => {
       const filter = {
         field: "status",
-        op: "unknown" as FilterExpression extends { op: infer O } ? O : never,
+        operator: "unknown" as FilterExpression extends { operator: infer O }
+          ? O
+          : never,
         value: "published",
       } as FilterExpression;
       expect(evaluateFilter(filter, data)).toBe(false);
@@ -574,7 +585,7 @@ describe("filter", () => {
     it("プリミティブ値の途中でネストアクセスすると undefined を返す", () => {
       const filter: FilterExpression = {
         field: "status.nested.value",
-        op: "eq",
+        operator: "eq",
         value: "something",
       };
       expect(evaluateFilter(filter, data)).toBe(false);

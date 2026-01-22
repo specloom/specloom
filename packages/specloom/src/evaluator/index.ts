@@ -74,11 +74,11 @@ export function evaluateListView(options: EvaluateListOptions): ListViewModel {
   });
 
   const headerActions = view.actions
-    .filter((a) => a.placement === "header")
+    .filter((a) => !a.requiresSelection)
     .map((a) => toActionVM(a, context, {}));
 
   const bulkActions = view.actions
-    .filter((a) => a.placement === "bulk")
+    .filter((a) => a.requiresSelection)
     .map((a) => toActionVM(a, context, {}));
 
   const rows = data.map((row) => toRowVM(row, view, resource, context));
@@ -228,9 +228,9 @@ function toRowVM(
     values[colName] = row[colName];
   }
 
-  const rowActions = view.actions
-    .filter((a) => a.placement === "row")
-    .map((a) => toActionVM(a, context, row));
+  const rowActions = (view.rowActions ?? []).map((a) =>
+    toActionVM(a, context, row),
+  );
 
   return {
     id,

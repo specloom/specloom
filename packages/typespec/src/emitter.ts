@@ -29,7 +29,8 @@ import {
   getSelection,
   getNamedFilters,
   getAction,
-  getPlacement,
+  getRowAction,
+  getRequiresSelection,
   getAllowedWhen,
   getConfirm,
   getMinLength,
@@ -88,12 +89,13 @@ interface View {
   selection?: string;
   namedFilters?: { id: string; label: string; filter: unknown }[];
   actions: Action[];
+  rowActions?: Action[];
 }
 
 interface Action {
   id: string;
   label: string;
-  placement: string;
+  requiresSelection?: boolean | "selection" | "query";
   allowedWhen?: string;
   confirm?: string;
   ui?: Record<string, unknown>;
@@ -292,11 +294,16 @@ function buildValidation(
 function buildView(program: Program, model: Model): View {
   const viewInfo = getView(program, model)!;
   const actions: Action[] = [];
+  const rowActions: Action[] = [];
 
   // Collect actions from model properties
   for (const [, prop] of model.properties) {
     const actionId = getAction(program, prop);
-    if (actionId) {
+    const rowActionId = getRowAction(program, prop);
+
+    if (rowActionId) {
+      rowActions.push(buildAction(program, prop, rowActionId));
+    } else if (actionId) {
       actions.push(buildAction(program, prop, actionId));
     }
   }
@@ -306,6 +313,11 @@ function buildView(program: Program, model: Model): View {
     type: viewInfo.type as View["type"],
     actions,
   };
+
+  // Only include rowActions for list views
+  if (viewInfo.type === "list" && rowActions.length > 0) {
+    view.rowActions = rowActions;
+  }
 
   if (viewInfo.type === "list") {
     const columns = getColumns(program, model);
@@ -358,7 +370,7 @@ function buildAction(
   actionId: string,
 ): Action {
   const label = getLabel(program, prop);
-  const placement = getPlacement(program, prop);
+  const requiresSelection = getRequiresSelection(program, prop);
   const allowedWhen = getAllowedWhen(program, prop);
   const confirm = getConfirm(program, prop);
   const ui = getUI(program, prop);
@@ -366,8 +378,14 @@ function buildAction(
   const action: Action = {
     id: actionId,
     label: label ?? actionId,
-    placement: placement ?? "header",
   };
+
+  if (requiresSelection !== undefined) {
+    action.requiresSelection = requiresSelection as
+      | boolean
+      | "selection"
+      | "query";
+  }
 
   if (allowedWhen) {
     action.allowedWhen = allowedWhen;

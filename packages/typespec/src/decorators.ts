@@ -372,12 +372,40 @@ export function $namedFilters(
   }
 }
 
+/**
+ * @namedFilter - Add a named filter (singular form, accumulates)
+ */
+export function $namedFilter(
+  context: DecoratorContext,
+  target: Model,
+  id: unknown,
+  label: unknown,
+  filter: unknown,
+) {
+  const extractedId = extractString(id);
+  const extractedLabel = extractString(label);
+  const extractedFilter = extractValue(filter);
+
+  if (extractedId && extractedLabel) {
+    const existing: { id: string; label: string; filter: unknown }[] =
+      context.program.stateMap(StateKeys.namedFilters).get(target) ?? [];
+    const newFilter = {
+      id: extractedId,
+      label: extractedLabel,
+      filter: extractedFilter,
+    };
+    context.program
+      .stateMap(StateKeys.namedFilters)
+      .set(target, [...existing, newFilter]);
+  }
+}
+
 // ============================================================
 // Action Decorators
 // ============================================================
 
 /**
- * @action - Define an action
+ * @action - Define an action (page-level)
  */
 export function $action(
   context: DecoratorContext,
@@ -391,16 +419,32 @@ export function $action(
 }
 
 /**
- * @placement - Set action placement
+ * @rowAction - Define a row action (list view)
  */
-export function $placement(
+export function $rowAction(
   context: DecoratorContext,
   target: ModelProperty,
-  placement: unknown,
+  id: unknown,
 ) {
-  const extracted = extractString(placement);
+  const extracted = extractString(id);
   if (extracted) {
-    context.program.stateMap(StateKeys.placement).set(target, extracted);
+    context.program.stateMap(StateKeys.rowAction).set(target, extracted);
+  }
+}
+
+/**
+ * @requiresSelection - Set selection requirement for header actions
+ */
+export function $requiresSelection(
+  context: DecoratorContext,
+  target: ModelProperty,
+  requirement: unknown,
+) {
+  const extracted = extractValue(requirement);
+  if (extracted !== undefined) {
+    context.program
+      .stateMap(StateKeys.requiresSelection)
+      .set(target, extracted);
   }
 }
 
@@ -685,11 +729,18 @@ export function getAction(
   return program.stateMap(StateKeys.action).get(target);
 }
 
-export function getPlacement(
+export function getRowAction(
   program: DecoratorContext["program"],
   target: ModelProperty,
 ): string | undefined {
-  return program.stateMap(StateKeys.placement).get(target);
+  return program.stateMap(StateKeys.rowAction).get(target);
+}
+
+export function getRequiresSelection(
+  program: DecoratorContext["program"],
+  target: ModelProperty,
+): boolean | string | undefined {
+  return program.stateMap(StateKeys.requiresSelection).get(target);
 }
 
 export function getAllowedWhen(

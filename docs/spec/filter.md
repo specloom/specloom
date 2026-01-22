@@ -51,8 +51,8 @@ status: string;
 ```typespec
 @view(Post, "list")
 @namedFilter("all", "すべて", #{})
-@namedFilter("published", "公開中", #{ field: "status", op: "eq", value: "published" })
-@namedFilter("draft", "下書き", #{ field: "status", op: "eq", value: "draft" })
+@namedFilter("published", "公開中", #{ field: "status", operator: "eq", value: "published" })
+@namedFilter("draft", "下書き", #{ field: "status", operator: "eq", value: "draft" })
 model PostList {}
 ```
 
@@ -61,8 +61,8 @@ model PostList {}
 ```typespec
 @namedFilter("recent_published", "最近の公開記事", #{
   and: [
-    { field: "status", op: "eq", value: "published" },
-    { field: "createdAt", op: "gte", value: "@relative(-7d)" }
+    { field: "status", operator: "eq", value: "published" },
+    { field: "createdAt", operator: "gte", value: "@relative(-7d)" }
   ]
 })
 ```
@@ -72,8 +72,8 @@ model PostList {}
 ```typespec
 @namedFilter("unpublished", "未公開", #{
   or: [
-    { field: "status", op: "eq", value: "draft" },
-    { field: "status", op: "eq", value: "review" }
+    { field: "status", operator: "eq", value: "draft" },
+    { field: "status", operator: "eq", value: "review" }
   ]
 })
 ```
@@ -82,7 +82,7 @@ model PostList {}
 
 ```typespec
 @namedFilter("active", "アクティブ", #{
-  not: { field: "status", op: "eq", value: "archived" }
+  not: { field: "status", operator: "eq", value: "archived" }
 })
 ```
 
@@ -92,11 +92,11 @@ model PostList {}
 // 公開中 かつ (ニュース または 注目記事)
 @namedFilter("featured_news", "注目ニュース", #{
   and: [
-    { field: "status", op: "eq", value: "published" },
+    { field: "status", operator: "eq", value: "published" },
     {
       or: [
-        { field: "category", op: "eq", value: "news" },
-        { field: "featured", op: "eq", value: true }
+        { field: "category", operator: "eq", value: "news" },
+        { field: "featured", operator: "eq", value: true }
       ]
     }
   ]
@@ -108,14 +108,14 @@ model PostList {}
 ```typespec
 // 自分の記事
 @namedFilter("my_posts", "自分の記事", #{
-  field: "author.id", op: "eq", value: "@context.user.id"
+  field: "author.id", operator: "eq", value: "@context.user.id"
 })
 
 // 自分の下書き
 @namedFilter("my_drafts", "自分の下書き", #{
   and: [
-    { field: "status", op: "eq", value: "draft" },
-    { field: "author.id", op: "eq", value: "@context.user.id" }
+    { field: "status", operator: "eq", value: "draft" },
+    { field: "author.id", operator: "eq", value: "@context.user.id" }
   ]
 })
 ```
@@ -126,7 +126,7 @@ model PostList {}
 
 ```typespec
 @namedFilter("admin_posts", "管理者の記事", #{
-  field: "author.role", op: "eq", value: "admin"
+  field: "author.role", operator: "eq", value: "admin"
 })
 ```
 
@@ -139,17 +139,17 @@ model PostList {}
 | `gt`, `gte` | より大きい、以上 | number, date |
 | `lt`, `lte` | より小さい、以下 | number, date |
 | `in` | いずれかに一致 | すべて |
-| `notIn` | いずれにも一致しない | すべて |
+| `not_in` | いずれにも一致しない | すべて |
 | `contains` | 部分一致 | string |
 | `ilike` | 部分一致（大文字小文字区別なし） | string |
-| `startsWith` | 前方一致 | string |
-| `endsWith` | 後方一致 | string |
+| `starts_with` | 前方一致 | string |
+| `ends_with` | 後方一致 | string |
 | `matches` | 正規表現 | string |
-| `isNull` | null 判定 | すべて |
-| `isEmpty` | 空判定 | string, array |
-| `hasAny` | いずれかを含む | array |
-| `hasAll` | すべてを含む | array |
-| `hasNone` | いずれも含まない | array |
+| `is_null` | null 判定 | すべて |
+| `is_empty` | 空判定 | string, array |
+| `has_any` | いずれかを含む | array |
+| `has_all` | すべてを含む | array |
+| `has_none` | いずれも含まない | array |
 
 ## 特殊な値
 
@@ -157,7 +157,7 @@ model PostList {}
 
 ```typespec
 @namedFilter("recent", "最近", #{
-  field: "createdAt", op: "gte", value: "@relative(-7d)"
+  field: "createdAt", operator: "gte", value: "@relative(-7d)"
 })
 ```
 
@@ -190,8 +190,8 @@ TypeSpec からコンパイルされる JSON 形式：
       "label": "最近の公開記事",
       "filter": {
         "and": [
-          { "field": "status", "op": "eq", "value": "published" },
-          { "field": "createdAt", "op": "gte", "value": "@relative(-7d)" }
+          { "field": "status", "operator": "eq", "value": "published" },
+          { "field": "createdAt", "operator": "gte", "value": "@relative(-7d)" }
         ]
       }
     }

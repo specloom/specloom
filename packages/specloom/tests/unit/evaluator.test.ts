@@ -155,14 +155,14 @@ describe("evaluator", () => {
         {
           id: "create",
           label: "新規作成",
-          placement: "header",
           allowedWhen: "role == 'admin'",
         },
-        { id: "edit", label: "編集", placement: "row" },
+      ],
+      rowActions: [
+        { id: "edit", label: "編集" },
         {
           id: "delete",
           label: "削除",
-          placement: "row",
           allowedWhen: "role == 'admin'",
           confirm: "削除しますか？",
         },
@@ -357,14 +357,14 @@ describe("evaluator", () => {
           {
             id: "bulkDelete",
             label: "一括削除",
-            placement: "bulk",
+            requiresSelection: true,
             allowedWhen: "role == 'admin'",
             confirm: "選択した項目を削除しますか？",
           },
           {
             id: "bulkPublish",
             label: "一括公開",
-            placement: "bulk",
+            requiresSelection: "selection",
           },
         ],
       };

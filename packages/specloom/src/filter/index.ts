@@ -41,10 +41,10 @@ function evaluateCondition(
   condition: FilterCondition,
   data: Record<string, unknown>,
 ): boolean {
-  const { field, op, value } = condition;
+  const { field, operator, value } = condition;
   const fieldValue = getFieldValue(data, field);
 
-  return evaluateOperator(op, fieldValue, value);
+  return evaluateOperator(operator, fieldValue, value);
 }
 
 /**
@@ -120,14 +120,14 @@ function evaluateOperator(
         fieldValue.includes(compareValue)
       );
 
-    case "startsWith":
+    case "starts_with":
       return (
         typeof fieldValue === "string" &&
         typeof compareValue === "string" &&
         fieldValue.startsWith(compareValue)
       );
 
-    case "endsWith":
+    case "ends_with":
       return (
         typeof fieldValue === "string" &&
         typeof compareValue === "string" &&
@@ -155,16 +155,16 @@ function evaluateOperator(
     case "in":
       return Array.isArray(compareValue) && compareValue.includes(fieldValue);
 
-    case "notIn":
+    case "not_in":
       return Array.isArray(compareValue) && !compareValue.includes(fieldValue);
 
     // 存在演算子
-    case "isNull":
+    case "is_null":
       return compareValue
         ? fieldValue === null || fieldValue === undefined
         : fieldValue !== null && fieldValue !== undefined;
 
-    case "isEmpty":
+    case "is_empty":
       if (compareValue) {
         return (
           fieldValue === "" ||
@@ -181,21 +181,21 @@ function evaluateOperator(
       );
 
     // 配列演算子
-    case "hasAny":
+    case "has_any":
       return (
         Array.isArray(fieldValue) &&
         Array.isArray(compareValue) &&
         compareValue.some((v) => fieldValue.includes(v))
       );
 
-    case "hasAll":
+    case "has_all":
       return (
         Array.isArray(fieldValue) &&
         Array.isArray(compareValue) &&
         compareValue.every((v) => fieldValue.includes(v))
       );
 
-    case "hasNone":
+    case "has_none":
       return (
         Array.isArray(fieldValue) &&
         Array.isArray(compareValue) &&
@@ -237,9 +237,9 @@ export function isFilterExpression(value: unknown): value is FilterExpression {
   // FilterCondition
   return (
     "field" in obj &&
-    "op" in obj &&
+    "operator" in obj &&
     "value" in obj &&
     typeof obj.field === "string" &&
-    typeof obj.op === "string"
+    typeof obj.operator === "string"
   );
 }
