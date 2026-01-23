@@ -68,6 +68,7 @@ export interface Field {
   kind?: FieldKind;
   required?: boolean;
   readonly?: boolean;
+  createOnly?: boolean;
   validation?: FieldValidation;
   options?: Option[];
   relation?: Relation;

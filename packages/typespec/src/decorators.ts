@@ -220,6 +220,13 @@ export function $computed(context: DecoratorContext, target: ModelProperty) {
 }
 
 /**
+ * @createOnly - Mark field as create-only (only shown on create form)
+ */
+export function $createOnly(context: DecoratorContext, target: ModelProperty) {
+  context.program.stateSet(StateKeys.createOnly).add(target);
+}
+
+/**
  * @filter - Make field filterable
  */
 export function $filter(
@@ -703,6 +710,13 @@ export function isComputed(
   target: ModelProperty,
 ): boolean {
   return program.stateSet(StateKeys.computed).has(target);
+}
+
+export function isCreateOnly(
+  program: DecoratorContext["program"],
+  target: ModelProperty,
+): boolean {
+  return program.stateSet(StateKeys.createOnly).has(target);
 }
 
 export function isRequired(

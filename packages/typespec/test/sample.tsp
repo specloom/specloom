@@ -13,6 +13,13 @@ model User {
   @S.label("名前")
   @S.required
   name: string;
+
+  @S.label("パスワード")
+  @S.kind("password")
+  @S.required
+  @S.createOnly
+  @S.minLength(8)
+  password: string;
 }
 
 @S.resource

@@ -28,6 +28,7 @@ export const $lib = createTypeSpecLibrary({
     ui: { description: "State for @ui decorator" },
     readonly: { description: "State for @readonly decorator" },
     computed: { description: "State for @computed decorator" },
+    createOnly: { description: "State for @createOnly decorator" },
     filter: { description: "State for @filter decorator" },
     view: { description: "State for @view decorator" },
     columns: { description: "State for @columns decorator" },

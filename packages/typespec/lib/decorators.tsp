@@ -62,6 +62,11 @@ extern dec readonly(target: ModelProperty);
 extern dec computed(target: ModelProperty);
 
 /**
+ * Mark field as create-only (only shown on create form, hidden on edit)
+ */
+extern dec createOnly(target: ModelProperty);
+
+/**
  * Make field filterable
  * @param operators Optional list of allowed operators
  */

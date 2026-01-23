@@ -19,6 +19,7 @@ import {
   getUI,
   isReadonly,
   isComputed,
+  isCreateOnly,
   isRequired,
   getFilter,
   getView,
@@ -67,6 +68,7 @@ interface Field {
   required?: boolean;
   readonly?: boolean;
   computed?: boolean;
+  createOnly?: boolean;
   options?: { value: string; label: string }[];
   relation?: { resource: string; labelField?: string };
   validation?: {
@@ -278,6 +280,11 @@ function buildField(program: Program, prop: ModelProperty): Field {
   const readonly = isReadonly(program, prop);
   if (readonly) {
     field.readonly = true;
+  }
+
+  const createOnly = isCreateOnly(program, prop);
+  if (createOnly) {
+    field.createOnly = true;
   }
 
   // Manual options override auto-generated enum options
