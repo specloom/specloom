@@ -176,7 +176,7 @@ export class ListVM {
 
   /** 選択中の行 */
   get selectedRows(): RowVM[] {
-    return this.data.rows.filter((r) =>
+    return (this.data.rows ?? []).filter((r) =>
       this.data.selection.selected.includes(r.id),
     );
   }
@@ -184,8 +184,8 @@ export class ListVM {
   /** 全選択か */
   get isAllSelected(): boolean {
     return (
-      this.data.rows.length > 0 &&
-      this.data.selection.selected.length === this.data.rows.length
+      (this.data.rows ?? []).length > 0 &&
+      this.data.selection.selected.length === (this.data.rows ?? []).length
     );
   }
 
@@ -193,14 +193,14 @@ export class ListVM {
   get isIndeterminate(): boolean {
     return (
       this.data.selection.selected.length > 0 &&
-      this.data.selection.selected.length < this.data.rows.length
+      this.data.selection.selected.length < (this.data.rows ?? []).length
     );
   }
 
   /** 選択状態: "none" | "some" | "all" */
   get selectionState(): "none" | "some" | "all" {
     if (this.data.selection.selected.length === 0) return "none";
-    if (this.data.selection.selected.length === this.data.rows.length)
+    if (this.data.selection.selected.length === (this.data.rows ?? []).length)
       return "all";
     return "some";
   }
@@ -216,32 +216,32 @@ export class ListVM {
 
   /** フィルター一覧 */
   get filters() {
-    return this.data.filters.named;
+    return this.data.filters?.named ?? [];
   }
 
   /** フィルターが存在するか */
   get hasFilters(): boolean {
-    return this.data.filters.named.length > 0;
+    return (this.data.filters?.named?.length ?? 0) > 0;
   }
 
   /** アクティブなフィルター */
   get activeFilters() {
-    return this.data.filters.named.filter((f) => f.active);
+    return (this.data.filters?.named ?? []).filter((f) => f.active);
   }
 
   /** カスタムフィルター */
   get customFilter(): FilterExpression | undefined {
-    return this.data.filters.custom;
+    return this.data.filters?.custom;
   }
 
   /** フィルターがアクティブか */
   isFilterActive(id: string): boolean {
-    return this.data.filters.named.find((f) => f.id === id)?.active ?? false;
+    return (this.data.filters?.named ?? []).find((f) => f.id === id)?.active ?? false;
   }
 
   /** 指定したフィルターの条件式を取得 */
   getFilterExpression(filterId: string): FilterExpression | undefined {
-    return this.data.filters.named.find((f) => f.id === filterId)?.filter;
+    return (this.data.filters?.named ?? []).find((f) => f.id === filterId)?.filter;
   }
 
   /**
@@ -249,10 +249,10 @@ export class ListVM {
    * 複数のフィルターがアクティブな場合はANDで結合
    */
   get activeFilterExpression(): FilterExpression | undefined {
-    const activeFilters = this.data.filters.named.filter(
+    const activeFilters = (this.data.filters?.named ?? []).filter(
       (f) => f.active && f.filter,
     );
-    const customFilter = this.data.filters.custom;
+    const customFilter = this.data.filters?.custom;
 
     const expressions: FilterExpression[] = [];
     for (const f of activeFilters) {
@@ -275,8 +275,8 @@ export class ListVM {
   /** アクティブなフィルター条件で行をフィルタリング（クライアントサイド） */
   filterRows(): RowVM[] {
     const filter = this.activeFilterExpression;
-    if (!filter) return this.data.rows;
-    return this.data.rows.filter((row) =>
+    if (!filter) return this.data.rows ?? [];
+    return (this.data.rows ?? []).filter((row) =>
       evaluateFilter(filter, row.values as Record<string, unknown>),
     );
   }
@@ -292,12 +292,12 @@ export class ListVM {
 
   /** ページサイズ */
   get pageSize(): number {
-    return this.data.pagination?.pageSize ?? this.data.rows.length;
+    return this.data.pagination?.pageSize ?? (this.data.rows ?? []).length;
   }
 
   /** 総件数 */
   get total(): number {
-    return this.data.pagination?.totalCount ?? this.data.rows.length;
+    return this.data.pagination?.totalCount ?? (this.data.rows ?? []).length;
   }
 
   /** 総ページ数 */
@@ -351,22 +351,22 @@ export class ListVM {
 
   /** ページアクション（選択不要） */
   get pageActions(): ActionVM[] {
-    return this.data.pageActions;
+    return this.data.pageActions ?? [];
   }
 
   /** 許可されたページアクション */
   get allowedPageActions(): ActionVM[] {
-    return this.data.pageActions.filter((a) => a.allowed);
+    return (this.data.pageActions ?? []).filter((a) => a.allowed);
   }
 
   /** バルクアクション */
   get bulkActions(): ActionVM[] {
-    return this.data.bulkActions;
+    return this.data.bulkActions ?? [];
   }
 
   /** 許可されたバルクアクション */
   get allowedBulkActions(): ActionVM[] {
-    return this.data.bulkActions.filter((a) => a.allowed);
+    return (this.data.bulkActions ?? []).filter((a) => a.allowed);
   }
 
   /** 行アクションを取得 */
@@ -385,22 +385,22 @@ export class ListVM {
 
   /** 行一覧 */
   get rows(): RowVM[] {
-    return this.data.rows;
+    return this.data.rows ?? [];
   }
 
   /** 特定の行を取得 */
   row(id: string): RowVM | undefined {
-    return this.data.rows.find((r) => r.id === id);
+    return (this.data.rows ?? []).find((r) => r.id === id);
   }
 
   /** 行数 */
   get rowCount(): number {
-    return this.data.rows.length;
+    return (this.data.rows ?? []).length;
   }
 
   /** 空か */
   get isEmpty(): boolean {
-    return this.data.rows.length === 0;
+    return (this.data.rows ?? []).length === 0;
   }
 
   // ============================================================
@@ -530,7 +530,7 @@ export class ListVM {
       ...this.data,
       filters: {
         ...this.data.filters,
-        named: this.data.filters.named.map((f) =>
+        named: (this.data.filters?.named ?? []).map((f) =>
           f.id === filterId ? { ...f, active: !f.active } : f,
         ),
       },
@@ -543,7 +543,7 @@ export class ListVM {
       ...this.data,
       filters: {
         ...this.data.filters,
-        named: this.data.filters.named.map((f) =>
+        named: (this.data.filters?.named ?? []).map((f) =>
           f.id === filterId ? { ...f, active } : f,
         ),
       },
@@ -556,7 +556,7 @@ export class ListVM {
       ...this.data,
       filters: {
         ...this.data.filters,
-        named: this.data.filters.named.map((f) => ({ ...f, active: false })),
+        named: (this.data.filters?.named ?? []).map((f) => ({ ...f, active: false })),
         custom: undefined,
       },
     });
@@ -598,13 +598,13 @@ export class ListVM {
   /** 全選択/全解除 */
   toggleSelectAll(): ListVM {
     const allSelected =
-      this.data.rows.length > 0 &&
-      this.data.selection.selected.length === this.data.rows.length;
+      (this.data.rows ?? []).length > 0 &&
+      this.data.selection.selected.length === (this.data.rows ?? []).length;
     return new ListVM({
       ...this.data,
       selection: {
         ...this.data.selection,
-        selected: allSelected ? [] : this.data.rows.map((r) => r.id),
+        selected: allSelected ? [] : (this.data.rows ?? []).map((r) => r.id),
       },
     });
   }
@@ -952,7 +952,7 @@ export class ListVM {
     }
 
     // フィルター（アクティブなnamed filter）
-    const activeFilters = this.data.filters.named.filter((f) => f.active);
+    const activeFilters = (this.data.filters?.named ?? []).filter((f) => f.active);
     if (activeFilters.length > 0) {
       params.filter = activeFilters.map((f) => f.id).join(",");
     }
