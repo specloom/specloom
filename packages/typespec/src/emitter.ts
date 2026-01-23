@@ -2,11 +2,13 @@ import {
   emitFile,
   resolvePath,
   navigateProgram,
+  getSourceLocation,
   type EmitContext,
   type Model,
   type ModelProperty,
   type Program,
 } from "@typespec/compiler";
+
 import type { SpecloomEmitterOptions } from "./lib.js";
 import {
   getResourceName,
@@ -136,51 +138,82 @@ export async function $onEmit(context: EmitContext<SpecloomEmitterOptions>) {
     return;
   }
 
-  const spec = buildSpec(context.program);
-  const outputFile = context.options["output-file"] ?? "spec.json";
+  const specs = buildSpecsBySourceFile(context.program);
 
-  await emitFile(context.program, {
-    path: resolvePath(context.emitterOutputDir, outputFile),
-    content: JSON.stringify(spec, null, 2) + "\n",
-  });
+  for (const [sourceFile, spec] of specs) {
+    // Skip empty specs
+    if (spec.resources.length === 0 && spec.views.length === 0) {
+      continue;
+    }
+
+    // Convert .tsp to .json
+    const outputFile = sourceFile.replace(/\.tsp$/, ".json");
+
+    await emitFile(context.program, {
+      path: resolvePath(context.emitterOutputDir, outputFile),
+      content: JSON.stringify(spec, null, 2) + "\n",
+    });
+  }
 }
 
-function buildSpec(program: Program): Spec {
-  const resources: Resource[] = [];
-  const views: View[] = [];
-  const resourceModels: Model[] = [];
-  const viewModels: Model[] = [];
+function getSourceFileName(model: Model): string | undefined {
+  const location = getSourceLocation(model);
+  if (!location?.file) {
+    return undefined;
+  }
+  // Get just the filename from the full path
+  const path = location.file.path;
+  const lastSlash = path.lastIndexOf("/");
+  return lastSlash >= 0 ? path.slice(lastSlash + 1) : path;
+}
 
-  // First pass: collect resources and views
+function buildSpecsBySourceFile(program: Program): Map<string, Spec> {
+  const specsByFile = new Map<
+    string,
+    { resources: Resource[]; views: View[] }
+  >();
+
+  // Collect resources and views grouped by source file
   navigateProgram(program, {
     model(model) {
+      const sourceFile = getSourceFileName(model);
+      if (!sourceFile) {
+        return;
+      }
+
+      // Skip library files (from node_modules or lib folder)
+      if (sourceFile.includes("node_modules") || sourceFile.endsWith(".d.ts")) {
+        return;
+      }
+
+      if (!specsByFile.has(sourceFile)) {
+        specsByFile.set(sourceFile, { resources: [], views: [] });
+      }
+      const spec = specsByFile.get(sourceFile)!;
+
       const resourceName = getResourceName(program, model);
       if (resourceName) {
-        resourceModels.push(model);
+        spec.resources.push(buildResource(program, model));
       }
 
       const viewInfo = getView(program, model);
       if (viewInfo) {
-        viewModels.push(model);
+        spec.views.push(buildView(program, model));
       }
     },
   });
 
-  // Build resources
-  for (const model of resourceModels) {
-    resources.push(buildResource(program, model));
+  // Convert to Spec format
+  const result = new Map<string, Spec>();
+  for (const [file, data] of specsByFile) {
+    result.set(file, {
+      version: "0.1",
+      resources: data.resources,
+      views: data.views,
+    });
   }
 
-  // Build views
-  for (const model of viewModels) {
-    views.push(buildView(program, model));
-  }
-
-  return {
-    version: "0.1",
-    resources,
-    views,
-  };
+  return result;
 }
 
 function buildResource(program: Program, model: Model): Resource {
