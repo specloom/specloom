@@ -33,6 +33,9 @@ import {
   getRequiresSelection,
   getAllowedWhen,
   getConfirm,
+  getDialog,
+  getApi,
+  getMatch,
   getMinLength,
   getMaxLength,
   getMin,
@@ -99,6 +102,33 @@ interface Action {
   allowedWhen?: string;
   confirm?: string;
   ui?: Record<string, unknown>;
+  dialog?: {
+    title?: string;
+    description?: string;
+    fields: DialogField[];
+  };
+  api?: {
+    path: string;
+    method: string;
+    params?: unknown;
+    body?: string[];
+    query?: unknown;
+  };
+}
+
+interface DialogField {
+  name: string;
+  label?: string;
+  kind?: string;
+  validation?: {
+    required?: boolean;
+    minLength?: number;
+    maxLength?: number;
+    min?: number;
+    max?: number;
+    pattern?: string;
+    match?: string;
+  };
 }
 
 export async function $onEmit(context: EmitContext<SpecloomEmitterOptions>) {
@@ -374,6 +404,8 @@ function buildAction(
   const allowedWhen = getAllowedWhen(program, prop);
   const confirm = getConfirm(program, prop);
   const ui = getUI(program, prop);
+  const dialog = getDialog(program, prop);
+  const api = getApi(program, prop);
 
   const action: Action = {
     id: actionId,
@@ -396,7 +428,99 @@ function buildAction(
     action.ui = ui;
   }
 
+  if (dialog) {
+    action.dialog = {
+      title: dialog.title,
+      description: dialog.description,
+      fields: buildDialogFields(program, dialog.model),
+    };
+  }
+
+  if (api) {
+    action.api = {
+      path: api.path,
+      method: api.method,
+      params: api.params,
+      body: api.body,
+      query: api.query,
+    };
+  }
+
   return action;
+}
+
+function buildDialogFields(program: Program, model: Model): DialogField[] {
+  const fields: DialogField[] = [];
+
+  for (const [, prop] of model.properties) {
+    const field: DialogField = {
+      name: prop.name,
+    };
+
+    const label = getLabel(program, prop);
+    if (label) {
+      field.label = label;
+    }
+
+    const kind = getKind(program, prop);
+    if (kind) {
+      field.kind = kind;
+    }
+
+    // Build validation for dialog field
+    const validation = buildDialogFieldValidation(program, prop);
+    if (validation && Object.keys(validation).length > 0) {
+      field.validation = validation;
+    }
+
+    fields.push(field);
+  }
+
+  return fields;
+}
+
+function buildDialogFieldValidation(
+  program: Program,
+  prop: ModelProperty,
+): DialogField["validation"] {
+  const validation: NonNullable<DialogField["validation"]> = {};
+
+  const required = isRequired(program, prop);
+  if (required) {
+    validation.required = true;
+  }
+
+  const minLength = getMinLength(program, prop);
+  if (minLength !== undefined) {
+    validation.minLength = minLength;
+  }
+
+  const maxLength = getMaxLength(program, prop);
+  if (maxLength !== undefined) {
+    validation.maxLength = maxLength;
+  }
+
+  const min = getMin(program, prop);
+  if (min !== undefined) {
+    validation.min = min;
+  }
+
+  const max = getMax(program, prop);
+  if (max !== undefined) {
+    validation.max = max;
+  }
+
+  const pattern = getPattern(program, prop);
+  if (pattern !== undefined) {
+    validation.pattern = pattern;
+  }
+
+  const match = getMatch(program, prop);
+  if (match !== undefined) {
+    validation.match = match;
+  }
+
+  return validation;
 }
 
 function getTypeString(prop: ModelProperty): string {

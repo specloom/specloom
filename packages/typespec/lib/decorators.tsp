@@ -169,6 +169,34 @@ extern dec allowedWhen(target: ModelProperty, expression: valueof string);
  */
 extern dec confirm(target: ModelProperty, message: valueof string);
 
+/**
+ * Define a dialog for an action
+ * @param dialogModel Dialog fields model
+ * @param options Dialog options (title, description)
+ */
+extern dec dialog(target: ModelProperty, dialogModel: Model, options?: valueof {
+  title?: string,
+  description?: string
+});
+
+/**
+ * Define API endpoint for an action
+ * @param options API options (path, method, params, body, query)
+ */
+extern dec api(target: ModelProperty, options: valueof {
+  path: string,
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
+  params?: unknown,
+  body?: string[],
+  query?: unknown
+});
+
+/**
+ * Set field match validation (for confirm password, etc.)
+ * @param field Field name to match
+ */
+extern dec match(target: ModelProperty, field: valueof string);
+
 // ============================================================
 // Validation Decorators
 // ============================================================

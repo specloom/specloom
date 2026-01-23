@@ -45,6 +45,9 @@ export const $lib = createTypeSpecLibrary({
     },
     allowedWhen: { description: "State for @allowedWhen decorator" },
     confirm: { description: "State for @confirm decorator" },
+    dialog: { description: "State for @dialog decorator" },
+    api: { description: "State for @api decorator" },
+    match: { description: "State for @match decorator" },
     // Validation decorators
     required: { description: "State for @required decorator" },
     minLength: { description: "State for @minLength decorator" },

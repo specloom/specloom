@@ -254,6 +254,31 @@ export interface Action {
   selection?: ActionSelection;
   confirm?: string;
   ui?: ActionUI;
+  /** ダイアログ設定 */
+  dialog?: ActionDialog;
+  /** API エンドポイント設定 */
+  api?: ActionApi;
+}
+
+export interface ActionDialog {
+  title?: string;
+  description?: string;
+  fields: DialogField[];
+}
+
+export interface DialogField {
+  name: string;
+  label?: string;
+  kind?: string;
+  validation?: FieldValidation;
+}
+
+export interface ActionApi {
+  path: string;
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  params?: Record<string, string>;
+  body?: string[];
+  query?: Record<string, string>;
 }
 
 export interface ActionUI {

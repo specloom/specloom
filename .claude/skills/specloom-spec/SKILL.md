@@ -258,6 +258,83 @@ model PostShow {
 }
 ```
 
+### 7. Action with Dialog (Form Input)
+
+ダイアログでユーザー入力を受け取るアクション（例: パスワード変更）を定義できます。
+
+```typespec
+// ダイアログのフィールドを定義するモデル
+model ChangePasswordDialog {
+  @S.label("新しいパスワード")
+  @S.kind("password")
+  @S.required
+  @S.minLength(8)
+  password: string;
+
+  @S.label("パスワード（確認）")
+  @S.kind("password")
+  @S.required
+  @S.minLength(8)
+  @S.match("password")  // passwordフィールドと一致することを検証
+  confirm_password: string;
+}
+
+@S.view(User, "show")
+@S.fields(#["name", "email"])
+model UserShow {
+  @S.action("edit")
+  @S.label("編集")
+  edit: never;
+
+  // ダイアログ付きアクション
+  @S.action("changePassword")
+  @S.label("パスワード変更")
+  @S.ui(#{ icon: "key" })
+  @S.dialog(ChangePasswordDialog, #{
+    title: "パスワード変更",
+    description: "新しいパスワードを入力してください（8文字以上）"
+  })
+  @S.api(#{
+    path: "/{id}/password",
+    method: "PUT",
+    body: #["password"]  // ダイアログのどのフィールドをbodyに含めるか
+  })
+  changePassword: never;
+}
+```
+
+**出力されるJSON:**
+```json
+{
+  "id": "changePassword",
+  "label": "パスワード変更",
+  "ui": { "icon": "key" },
+  "dialog": {
+    "title": "パスワード変更",
+    "description": "新しいパスワードを入力してください（8文字以上）",
+    "fields": [
+      {
+        "name": "password",
+        "label": "新しいパスワード",
+        "kind": "password",
+        "validation": { "required": true, "minLength": 8 }
+      },
+      {
+        "name": "confirm_password",
+        "label": "パスワード（確認）",
+        "kind": "password",
+        "validation": { "required": true, "minLength": 8, "match": "password" }
+      }
+    ]
+  },
+  "api": {
+    "path": "/{id}/password",
+    "method": "PUT",
+    "body": ["password"]
+  }
+}
+```
+
 ## Decorator Reference
 
 ### Resource Decorators
@@ -318,6 +395,16 @@ model PostShow {
 | `@allowedWhen(expr)` | Permission expression |
 | `@confirm(msg)` | Confirmation dialog |
 | `@ui({icon, variant})` | Icon and style |
+| `@dialog(Model, opts)` | Dialog with form fields (opts: title, description) |
+| `@api({...})` | API endpoint config (path, method, params, body, query) |
+
+### Dialog/API Decorators
+
+| Decorator | Description |
+|-----------|-------------|
+| `@dialog(Model, {title?, description?})` | Define dialog with form fields from Model |
+| `@api({path, method?, params?, body?, query?})` | Define API endpoint for action |
+| `@match(field)` | Field validation: must match another field's value |
 
 ## UI Options Reference
 
@@ -591,6 +678,9 @@ Before completing a spec:
 - [ ] Actions have appropriate `@allowedWhen`
 - [ ] Destructive actions have `@confirm`
 - [ ] Filterable fields have `@filter`
+- [ ] Actions with user input have `@dialog` with form model
+- [ ] Actions with API calls have `@api` with endpoint config
+- [ ] Password confirm fields use `@match("password")`
 
 ## Compile
 

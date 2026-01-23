@@ -477,6 +477,65 @@ export function $confirm(
   }
 }
 
+/**
+ * @dialog - Define a dialog for an action
+ */
+export function $dialog(
+  context: DecoratorContext,
+  target: ModelProperty,
+  model: Model,
+  options?: unknown,
+) {
+  const extractedOptions = extractValue(options) as
+    | { title?: string; description?: string }
+    | undefined;
+  context.program.stateMap(StateKeys.dialog).set(target, {
+    model: model,
+    title: extractedOptions?.title,
+    description: extractedOptions?.description,
+  });
+}
+
+/**
+ * @api - Define API endpoint for an action
+ */
+export function $api(
+  context: DecoratorContext,
+  target: ModelProperty,
+  options: unknown,
+) {
+  const extracted = extractValue(options) as {
+    path: string;
+    method?: string;
+    params?: unknown;
+    body?: string[];
+    query?: unknown;
+  } | null;
+  if (extracted && extracted.path) {
+    context.program.stateMap(StateKeys.api).set(target, {
+      path: extracted.path,
+      method: extracted.method ?? "POST",
+      params: extracted.params,
+      body: extracted.body,
+      query: extracted.query,
+    });
+  }
+}
+
+/**
+ * @match - Set field match validation
+ */
+export function $match(
+  context: DecoratorContext,
+  target: ModelProperty,
+  field: unknown,
+) {
+  const extracted = extractString(field);
+  if (extracted) {
+    context.program.stateMap(StateKeys.match).set(target, extracted);
+  }
+}
+
 // ============================================================
 // Validation Decorators
 // ============================================================
@@ -805,4 +864,33 @@ export function getMaxItems(
   target: ModelProperty,
 ): number | undefined {
   return program.stateMap(StateKeys.maxItems).get(target);
+}
+
+export function getDialog(
+  program: DecoratorContext["program"],
+  target: ModelProperty,
+): { model: Model; title?: string; description?: string } | undefined {
+  return program.stateMap(StateKeys.dialog).get(target);
+}
+
+export function getApi(
+  program: DecoratorContext["program"],
+  target: ModelProperty,
+):
+  | {
+      path: string;
+      method: string;
+      params?: unknown;
+      body?: string[];
+      query?: unknown;
+    }
+  | undefined {
+  return program.stateMap(StateKeys.api).get(target);
+}
+
+export function getMatch(
+  program: DecoratorContext["program"],
+  target: ModelProperty,
+): string | undefined {
+  return program.stateMap(StateKeys.match).get(target);
 }

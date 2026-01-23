@@ -184,3 +184,48 @@ model PostShow {
   @S.ui(#{ icon: "trash", variant: "danger" })
   delete: never;
 }
+
+// ============================================================
+// Dialog Model for Password Change
+// ============================================================
+
+model ChangePasswordDialog {
+  @S.label("新しいパスワード")
+  @S.kind("password")
+  @S.required
+  @S.minLength(8)
+  password: string;
+
+  @S.label("パスワード（確認）")
+  @S.kind("password")
+  @S.required
+  @S.minLength(8)
+  @S.match("password")
+  confirm_password: string;
+}
+
+// ============================================================
+// User Show View with Dialog Action
+// ============================================================
+
+@S.view(User, "show")
+@S.fields(#["name"])
+model UserShow {
+  @S.action("edit")
+  @S.label("編集")
+  edit: never;
+
+  @S.action("changePassword")
+  @S.label("パスワード変更")
+  @S.ui(#{ icon: "key" })
+  @S.dialog(ChangePasswordDialog, #{
+    title: "パスワード変更",
+    description: "新しいパスワードを入力してください（8文字以上）"
+  })
+  @S.api(#{
+    path: "/{id}/password",
+    method: "PUT",
+    body: #["password"]
+  })
+  changePassword: never;
+}
