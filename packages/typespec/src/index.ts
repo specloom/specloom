@@ -39,7 +39,7 @@ import {
 } from "./decorators.js";
 
 export const $decorators = {
-  Specloom: {
+  S: {
     resource: $resource,
     label: $label,
     kind: $kind,

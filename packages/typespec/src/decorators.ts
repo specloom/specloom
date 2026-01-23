@@ -394,9 +394,10 @@ export function $namedFilter(
       label: extractedLabel,
       filter: extractedFilter,
     };
+    // TypeSpec processes decorators bottom-to-top, so prepend to maintain source order
     context.program
       .stateMap(StateKeys.namedFilters)
-      .set(target, [...existing, newFilter]);
+      .set(target, [newFilter, ...existing]);
   }
 }
 

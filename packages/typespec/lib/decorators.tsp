@@ -1,6 +1,6 @@
 using TypeSpec.Reflection;
 
-namespace Specloom;
+namespace S;
 
 // ============================================================
 // Resource Decorators

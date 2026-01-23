@@ -96,26 +96,26 @@ options:
 ```typespec
 import "@specloom/typespec";
 
-@Specloom.resource
-@Specloom.label("投稿")
+@S.resource
+@S.label("投稿")
 model Post {
-  @Specloom.readonly
+  @S.readonly
   id: string;
 
-  @Specloom.label("タイトル")
-  @Specloom.kind("text")
-  @Specloom.required
-  @Specloom.maxLength(100)
+  @S.label("タイトル")
+  @S.kind("text")
+  @S.required
+  @S.maxLength(100)
   title: string;
 
-  @Specloom.label("本文")
-  @Specloom.kind("longText")
-  @Specloom.ui(#{ inputHint: "richtext" })
+  @S.label("本文")
+  @S.kind("longText")
+  @S.ui(#{ inputHint: "richtext" })
   body: string;
 
-  @Specloom.label("作成日時")
-  @Specloom.kind("datetime")
-  @Specloom.readonly
+  @S.label("作成日時")
+  @S.kind("datetime")
+  @S.readonly
   createdAt: utcDateTime;
 }
 ```
@@ -129,16 +129,16 @@ enum PostStatus {
   archived,
 }
 
-@Specloom.resource
+@S.resource
 model Post {
-  @Specloom.label("状態")
-  @Specloom.kind("enum")
-  @Specloom.options(#[
+  @S.label("状態")
+  @S.kind("enum")
+  @S.options(#[
     #{ value: "draft", label: "下書き" },
     #{ value: "published", label: "公開中" },
     #{ value: "archived", label: "アーカイブ" }
   ])
-  @Specloom.ui(#{ hint: "badge", inputHint: "select" })
+  @S.ui(#{ hint: "badge", inputHint: "select" })
   status: PostStatus;
 }
 ```
@@ -146,33 +146,33 @@ model Post {
 ### 3. Relation Field
 
 ```typespec
-@Specloom.resource
-@Specloom.label("ユーザー")
+@S.resource
+@S.label("ユーザー")
 model User {
-  @Specloom.readonly
+  @S.readonly
   id: string;
 
-  @Specloom.label("名前")
-  @Specloom.required
+  @S.label("名前")
+  @S.required
   name: string;
 }
 
-@Specloom.resource
+@S.resource
 model Post {
   // Single relation
-  @Specloom.label("著者")
-  @Specloom.kind("relation")
-  @Specloom.relation(User, #{ labelField: "name" })
-  @Specloom.ui(#{ hint: "avatar", inputHint: "autocomplete" })
-  @Specloom.required
+  @S.label("著者")
+  @S.kind("relation")
+  @S.relation(User, #{ labelField: "name" })
+  @S.ui(#{ hint: "avatar", inputHint: "autocomplete" })
+  @S.required
   author: User;
 
   // Multiple relations
-  @Specloom.label("タグ")
-  @Specloom.kind("relation")
-  @Specloom.relation(Tag, #{ labelField: "name" })
-  @Specloom.minItems(1)
-  @Specloom.maxItems(5)
+  @S.label("タグ")
+  @S.kind("relation")
+  @S.relation(Tag, #{ labelField: "name" })
+  @S.minItems(1)
+  @S.maxItems(5)
   tags: Tag[];
 }
 ```
@@ -180,42 +180,42 @@ model Post {
 ### 4. List View
 
 ```typespec
-@Specloom.view(Post, "list")
-@Specloom.columns(#["title", "status", "author", "createdAt"])
-@Specloom.searchable(#["title"])
-@Specloom.sortable(#["title", "createdAt"])
-@Specloom.defaultSort("createdAt", "desc")
-@Specloom.selection("multi")
-@Specloom.clickAction("show")
+@S.view(Post, "list")
+@S.columns(#["title", "status", "author", "createdAt"])
+@S.searchable(#["title"])
+@S.sortable(#["title", "createdAt"])
+@S.defaultSort("createdAt", "desc")
+@S.selection("multi")
+@S.clickAction("show")
 model PostList {
-  // Page action (header)
-  @Specloom.action("create")
-  @Specloom.label("新規作成")
-  @Specloom.allowedWhen("role == 'admin' || role == 'editor'")
-  @Specloom.ui(#{ icon: "plus", variant: "primary" })
+  // Page action
+  @S.action("create")
+  @S.label("新規作成")
+  @S.allowedWhen("role == 'admin' || role == 'editor'")
+  @S.ui(#{ icon: "plus", variant: "primary" })
   create: never;
 
   // Bulk action (requires selection)
-  @Specloom.action("bulkDelete")
-  @Specloom.label("一括削除")
-  @Specloom.requiresSelection("selected")
-  @Specloom.allowedWhen("role == 'admin'")
-  @Specloom.confirm("選択した項目を削除しますか？")
+  @S.action("bulkDelete")
+  @S.label("一括削除")
+  @S.requiresSelection("selected")
+  @S.allowedWhen("role == 'admin'")
+  @S.confirm("選択した項目を削除しますか？")
   bulkDelete: never;
 
   // Row action
-  @Specloom.rowAction("edit")
-  @Specloom.label("編集")
-  @Specloom.allowedWhen("role == 'admin' || role == 'editor'")
-  @Specloom.ui(#{ icon: "pencil" })
+  @S.rowAction("edit")
+  @S.label("編集")
+  @S.allowedWhen("role == 'admin' || role == 'editor'")
+  @S.ui(#{ icon: "pencil" })
   edit: never;
 
   // Row action with confirm
-  @Specloom.rowAction("delete")
-  @Specloom.label("削除")
-  @Specloom.allowedWhen("role == 'admin'")
-  @Specloom.confirm("本当に削除しますか？")
-  @Specloom.ui(#{ icon: "trash", variant: "danger" })
+  @S.rowAction("delete")
+  @S.label("削除")
+  @S.allowedWhen("role == 'admin'")
+  @S.confirm("本当に削除しますか？")
+  @S.ui(#{ icon: "trash", variant: "danger" })
   delete: never;
 }
 ```
@@ -223,16 +223,16 @@ model PostList {
 ### 5. Form View
 
 ```typespec
-@Specloom.view(Post, "form")
-@Specloom.fields(#["title", "body", "status", "author", "tags"])
+@S.view(Post, "form")
+@S.fields(#["title", "body", "status", "author", "tags"])
 model PostForm {
-  @Specloom.action("save")
-  @Specloom.label("保存")
-  @Specloom.ui(#{ icon: "check", variant: "primary" })
+  @S.action("save")
+  @S.label("保存")
+  @S.ui(#{ icon: "check", variant: "primary" })
   save: never;
 
-  @Specloom.action("cancel")
-  @Specloom.label("キャンセル")
+  @S.action("cancel")
+  @S.label("キャンセル")
   cancel: never;
 }
 ```
@@ -240,20 +240,20 @@ model PostForm {
 ### 6. Show View
 
 ```typespec
-@Specloom.view(Post, "show")
-@Specloom.fields(#["title", "body", "status", "author", "tags", "createdAt"])
+@S.view(Post, "show")
+@S.fields(#["title", "body", "status", "author", "tags", "createdAt"])
 model PostShow {
-  @Specloom.action("edit")
-  @Specloom.label("編集")
-  @Specloom.allowedWhen("role == 'admin' || role == 'editor'")
-  @Specloom.ui(#{ icon: "pencil" })
+  @S.action("edit")
+  @S.label("編集")
+  @S.allowedWhen("role == 'admin' || role == 'editor'")
+  @S.ui(#{ icon: "pencil" })
   edit: never;
 
-  @Specloom.action("delete")
-  @Specloom.label("削除")
-  @Specloom.allowedWhen("role == 'admin'")
-  @Specloom.confirm("本当に削除しますか？")
-  @Specloom.ui(#{ icon: "trash", variant: "danger" })
+  @S.action("delete")
+  @S.label("削除")
+  @S.allowedWhen("role == 'admin'")
+  @S.confirm("本当に削除しますか？")
+  @S.ui(#{ icon: "trash", variant: "danger" })
   delete: never;
 }
 ```
@@ -387,8 +387,8 @@ model PostShow {
 ## Named Filters
 
 ```typespec
-@Specloom.view(Post, "list")
-@Specloom.namedFilters(#[
+@S.view(Post, "list")
+@S.namedFilters(#[
   #{ id: "all", label: "すべて", filter: #{} },
   #{ id: "published", label: "公開中", filter: #{ field: "status", operator: "eq", value: "published" } },
   #{ id: "recent", label: "最近", filter: #{
@@ -432,19 +432,19 @@ import "@specloom/typespec";
 // Models (Resources)
 // ============================================================
 
-@Specloom.resource
-@Specloom.label("ユーザー")
+@S.resource
+@S.label("ユーザー")
 model User {
-  @Specloom.readonly
+  @S.readonly
   id: string;
 
-  @Specloom.label("名前")
-  @Specloom.required
+  @S.label("名前")
+  @S.required
   name: string;
 
-  @Specloom.label("メール")
-  @Specloom.kind("email")
-  @Specloom.required
+  @S.label("メール")
+  @S.kind("email")
+  @S.required
   email: string;
 }
 
@@ -454,47 +454,47 @@ enum PostStatus {
   archived,
 }
 
-@Specloom.resource
-@Specloom.label("投稿")
+@S.resource
+@S.label("投稿")
 model Post {
-  @Specloom.readonly
+  @S.readonly
   id: string;
 
-  @Specloom.label("タイトル")
-  @Specloom.kind("text")
-  @Specloom.required
-  @Specloom.maxLength(100)
-  @Specloom.filter
+  @S.label("タイトル")
+  @S.kind("text")
+  @S.required
+  @S.maxLength(100)
+  @S.filter
   title: string;
 
-  @Specloom.label("本文")
-  @Specloom.kind("longText")
-  @Specloom.ui(#{ inputHint: "richtext" })
+  @S.label("本文")
+  @S.kind("longText")
+  @S.ui(#{ inputHint: "richtext" })
   body: string;
 
-  @Specloom.label("状態")
-  @Specloom.kind("enum")
-  @Specloom.options(#[
+  @S.label("状態")
+  @S.kind("enum")
+  @S.options(#[
     #{ value: "draft", label: "下書き" },
     #{ value: "published", label: "公開中" },
     #{ value: "archived", label: "アーカイブ" }
   ])
-  @Specloom.ui(#{ hint: "badge", inputHint: "select" })
-  @Specloom.filter
+  @S.ui(#{ hint: "badge", inputHint: "select" })
+  @S.filter
   status: PostStatus;
 
-  @Specloom.label("著者")
-  @Specloom.kind("relation")
-  @Specloom.relation(User, #{ labelField: "name" })
-  @Specloom.ui(#{ hint: "avatar", inputHint: "autocomplete" })
-  @Specloom.required
-  @Specloom.filter
+  @S.label("著者")
+  @S.kind("relation")
+  @S.relation(User, #{ labelField: "name" })
+  @S.ui(#{ hint: "avatar", inputHint: "autocomplete" })
+  @S.required
+  @S.filter
   author: User;
 
-  @Specloom.label("作成日時")
-  @Specloom.kind("datetime")
-  @Specloom.readonly
-  @Specloom.filter(#["gte", "lte"])
+  @S.label("作成日時")
+  @S.kind("datetime")
+  @S.readonly
+  @S.filter(#["gte", "lte"])
   createdAt: utcDateTime;
 }
 
@@ -502,76 +502,76 @@ model Post {
 // Views
 // ============================================================
 
-@Specloom.view(Post, "list")
-@Specloom.columns(#["title", "status", "author", "createdAt"])
-@Specloom.searchable(#["title"])
-@Specloom.sortable(#["title", "createdAt"])
-@Specloom.defaultSort("createdAt", "desc")
-@Specloom.selection("multi")
-@Specloom.clickAction("show")
-@Specloom.namedFilters(#[
+@S.view(Post, "list")
+@S.columns(#["title", "status", "author", "createdAt"])
+@S.searchable(#["title"])
+@S.sortable(#["title", "createdAt"])
+@S.defaultSort("createdAt", "desc")
+@S.selection("multi")
+@S.clickAction("show")
+@S.namedFilters(#[
   #{ id: "all", label: "すべて", filter: #{} },
   #{ id: "published", label: "公開中", filter: #{ field: "status", operator: "eq", value: "published" } },
   #{ id: "draft", label: "下書き", filter: #{ field: "status", operator: "eq", value: "draft" } }
 ])
 model PostList {
   // Page action
-  @Specloom.action("create")
-  @Specloom.label("新規作成")
-  @Specloom.allowedWhen("role == 'admin' || role == 'editor'")
-  @Specloom.ui(#{ icon: "plus", variant: "primary" })
+  @S.action("create")
+  @S.label("新規作成")
+  @S.allowedWhen("role == 'admin' || role == 'editor'")
+  @S.ui(#{ icon: "plus", variant: "primary" })
   create: never;
 
   // Bulk action
-  @Specloom.action("bulkDelete")
-  @Specloom.label("一括削除")
-  @Specloom.requiresSelection("selected")
-  @Specloom.allowedWhen("role == 'admin'")
-  @Specloom.confirm("選択した項目を削除しますか？")
+  @S.action("bulkDelete")
+  @S.label("一括削除")
+  @S.requiresSelection("selected")
+  @S.allowedWhen("role == 'admin'")
+  @S.confirm("選択した項目を削除しますか？")
   bulkDelete: never;
 
   // Row actions
-  @Specloom.rowAction("edit")
-  @Specloom.label("編集")
-  @Specloom.allowedWhen("role == 'admin' || role == 'editor'")
-  @Specloom.ui(#{ icon: "pencil" })
+  @S.rowAction("edit")
+  @S.label("編集")
+  @S.allowedWhen("role == 'admin' || role == 'editor'")
+  @S.ui(#{ icon: "pencil" })
   edit: never;
 
-  @Specloom.rowAction("delete")
-  @Specloom.label("削除")
-  @Specloom.allowedWhen("role == 'admin'")
-  @Specloom.confirm("本当に削除しますか？")
-  @Specloom.ui(#{ icon: "trash", variant: "danger" })
+  @S.rowAction("delete")
+  @S.label("削除")
+  @S.allowedWhen("role == 'admin'")
+  @S.confirm("本当に削除しますか？")
+  @S.ui(#{ icon: "trash", variant: "danger" })
   delete: never;
 }
 
-@Specloom.view(Post, "form")
-@Specloom.fields(#["title", "body", "status", "author"])
+@S.view(Post, "form")
+@S.fields(#["title", "body", "status", "author"])
 model PostForm {
-  @Specloom.action("save")
-  @Specloom.label("保存")
-  @Specloom.ui(#{ icon: "check", variant: "primary" })
+  @S.action("save")
+  @S.label("保存")
+  @S.ui(#{ icon: "check", variant: "primary" })
   save: never;
 
-  @Specloom.action("cancel")
-  @Specloom.label("キャンセル")
+  @S.action("cancel")
+  @S.label("キャンセル")
   cancel: never;
 }
 
-@Specloom.view(Post, "show")
-@Specloom.fields(#["title", "body", "status", "author", "createdAt"])
+@S.view(Post, "show")
+@S.fields(#["title", "body", "status", "author", "createdAt"])
 model PostShow {
-  @Specloom.action("edit")
-  @Specloom.label("編集")
-  @Specloom.allowedWhen("role == 'admin' || role == 'editor'")
-  @Specloom.ui(#{ icon: "pencil" })
+  @S.action("edit")
+  @S.label("編集")
+  @S.allowedWhen("role == 'admin' || role == 'editor'")
+  @S.ui(#{ icon: "pencil" })
   edit: never;
 
-  @Specloom.action("delete")
-  @Specloom.label("削除")
-  @Specloom.allowedWhen("role == 'admin'")
-  @Specloom.confirm("本当に削除しますか？")
-  @Specloom.ui(#{ icon: "trash", variant: "danger" })
+  @S.action("delete")
+  @S.label("削除")
+  @S.allowedWhen("role == 'admin'")
+  @S.confirm("本当に削除しますか？")
+  @S.ui(#{ icon: "trash", variant: "danger" })
   delete: never;
 }
 ```
