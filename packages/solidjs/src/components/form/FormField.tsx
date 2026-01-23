@@ -1,6 +1,5 @@
 import { type Component, Show, For } from "solid-js";
 import type { FormFieldVM } from "specloom";
-import { FormVM } from "specloom";
 import { useForm } from "./context.jsx";
 import { FieldInput } from "../shared/FieldInput.jsx";
 
@@ -17,8 +16,8 @@ export const FormField: Component<FormFieldProps> = (props) => {
   const { vm, values, onChange, onOptionsSearch } = useForm();
 
   const fieldValue = () => props.value ?? values()[props.field.name];
-  const hasError = () => FormVM.hasError(vm(), props.field.name);
-  const errors = () => FormVM.fieldErrors(vm(), props.field.name);
+  const hasError = () => vm().hasError(props.field.name);
+  const errors = () => vm().fieldErrors(props.field.name);
 
   return (
     <div class={props.class ?? "space-y-2"}>

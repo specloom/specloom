@@ -1,4 +1,9 @@
-import { type Component, type JSX, children as resolveChildren, Show } from "solid-js";
+import {
+  type Component,
+  type JSX,
+  children as resolveChildren,
+  Show,
+} from "solid-js";
 import type { ListViewModel } from "specloom";
 import { ListProvider } from "./context.jsx";
 import { ListToolbar } from "./ListToolbar.jsx";
@@ -43,7 +48,9 @@ export const ListView: Component<ListViewProps> = (props) => {
   // children が指定されていない場合はデフォルト構成を使用
   const hasChildren = () => {
     const c = resolved();
-    return c !== undefined && c !== null && (Array.isArray(c) ? c.length > 0 : true);
+    return (
+      c !== undefined && c !== null && (Array.isArray(c) ? c.length > 0 : true)
+    );
   };
 
   return (

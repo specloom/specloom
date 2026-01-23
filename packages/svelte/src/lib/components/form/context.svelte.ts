@@ -5,7 +5,7 @@ import type {
   ActionVM,
   FieldGroup,
 } from "specloom";
-import { FormHelpers, ActionHelpers } from "specloom";
+import { FormVM } from "specloom";
 
 const FORM_CONTEXT_KEY = Symbol("form-context");
 
@@ -64,6 +64,9 @@ export interface CreateFormContextOptions {
 export function createFormContext(
   options: CreateFormContextOptions,
 ): FormContextValue {
+  // Wrap plain data in FormVM instance
+  const getVM = () => new FormVM(options.vm());
+
   const context: FormContextValue = {
     get vm() {
       return options.vm();
@@ -76,48 +79,48 @@ export function createFormContext(
       return options.timeZone?.();
     },
 
-    // Derived - 直接プロパティアクセス
+    // Derived - OOP style via FormVM
     get fields() {
-      return options.vm().fields;
+      return getVM().fields;
     },
     get visibleFields() {
-      return FormHelpers.visibleFields(options.vm());
+      return getVM().visibleFields;
     },
     get groups() {
-      return options.vm().groups ?? [];
+      return getVM().groups;
     },
     get actions() {
-      return options.vm().actions;
+      return getVM().actions;
     },
     get allowedActions() {
-      return FormHelpers.allowedActions(options.vm());
+      return getVM().allowedActions;
     },
     get values() {
-      return FormHelpers.values(options.vm());
+      return getVM().values;
     },
     get valid() {
-      return options.vm().isValid;
+      return getVM().isValid;
     },
     get dirty() {
-      return options.vm().isDirty;
+      return getVM().isDirty;
     },
     get canSubmit() {
-      return FormHelpers.canSubmit(options.vm());
+      return getVM().canSubmit;
     },
     get loading() {
-      return options.vm().isLoading ?? false;
+      return getVM().isLoading;
     },
     get submitting() {
-      return options.vm().isSubmitting ?? false;
+      return getVM().isSubmitting;
     },
     get error() {
-      return options.vm().error;
+      return getVM().error;
     },
     get label() {
-      return options.vm().label;
+      return getVM().label;
     },
     get mode() {
-      return options.vm().mode;
+      return getVM().mode;
     },
   };
 

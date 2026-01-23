@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import type { FieldGroup, ShowFieldVM } from "specloom";
-  import { ShowHelpers } from "specloom";
+  import { ShowVM } from "specloom";
   import { getShowContext } from "./context.svelte.js";
   import { cn } from "$lib/utils.js";
   import ShowField from "./ShowField.svelte";
@@ -14,8 +14,9 @@
 
   let { group, class: className, children }: Props = $props();
   const ctx = getShowContext();
+  const getVM = () => new ShowVM(ctx.vm);
 
-  const groupFields = $derived(ShowHelpers.fieldsInGroup(ctx.vm, group.id));
+  const groupFields = $derived(getVM().fieldsInGroup(group.id));
 </script>
 
 {#if children}

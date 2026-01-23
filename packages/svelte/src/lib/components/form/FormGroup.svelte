@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import type { FieldGroup, FormFieldVM } from "specloom";
-  import { FormHelpers } from "specloom";
+  import { FormVM } from "specloom";
   import { getFormContext } from "./context.svelte.js";
   import { cn } from "$lib/utils.js";
   import FormField from "./FormField.svelte";
@@ -14,8 +14,9 @@
 
   let { group, class: className, children }: Props = $props();
   const ctx = getFormContext();
+  const getVM = () => new FormVM(ctx.vm);
 
-  const groupFields = $derived(FormHelpers.fieldsInGroup(ctx.vm, group.id));
+  const groupFields = $derived(getVM().fieldsInGroup(group.id));
 </script>
 
 {#if children}

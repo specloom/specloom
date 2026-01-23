@@ -172,7 +172,7 @@ Spec + Context → ViewModel 変換（allowedWhen 評価等）。
 | | `hasNext(vm)` | 次ページあるか |
 | | `hasPrev(vm)` | 前ページあるか |
 | **アクション** | | |
-| | `headerActions(vm)` | ヘッダーアクション |
+| | `pageActions(vm)` | ページアクション |
 | | `bulkActions(vm)` | バルクアクション |
 | | `rowActions(row)` | 行アクション |
 | | `allowedActions(actions)` | 許可されたもののみ |

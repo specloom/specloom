@@ -16,9 +16,9 @@
 
 <div class={cn("flex items-center gap-2", className)}>
   {#if children}
-    {@render children({ actions: ctx.allowedHeaderActions })}
+    {@render children({ actions: ctx.allowedPageActions })}
   {:else}
-    {#each ctx.allowedHeaderActions as action}
+    {#each ctx.allowedPageActions as action}
       <Button
         variant={action.ui?.variant === "primary" ? "default" : "outline"}
         onclick={() => ctx.onAction?.(action.id)}

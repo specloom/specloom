@@ -63,10 +63,10 @@ export interface ListHeaderActionsProps {
 }
 
 /**
- * ListHeaderActions - ヘッダーアクションボタン
+ * ListHeaderActions - ページアクションボタン
  */
 export const ListHeaderActions: Component<ListHeaderActionsProps> = (props) => {
-  const { headerActions, onAction } = useList();
+  const { pageActions, onAction } = useList();
   const resolved = resolveChildren(() => props.children);
 
   const hasChildren = () => {
@@ -76,7 +76,7 @@ export const ListHeaderActions: Component<ListHeaderActionsProps> = (props) => {
     );
   };
 
-  const allowedActions = () => ActionVMHelper.allowed(headerActions());
+  const allowedActions = () => ActionVMHelper.allowed(pageActions());
 
   return (
     <Show when={allowedActions().length > 0}>

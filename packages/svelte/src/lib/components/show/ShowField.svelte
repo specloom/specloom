@@ -13,9 +13,10 @@
 
   let { field, class: className, children }: Props = $props();
   const ctx = getShowContext();
+  const getVM = () => new ShowVM(ctx.vm);
 
-  const value = $derived(ShowVM.value(ctx.vm, field.name));
-  const formatted = $derived(ShowVM.formatValue(field, value));
+  const value = $derived(getVM().value(field.name));
+  const formatted = $derived(getVM().formatValue(field, value));
 </script>
 
 {#if children}

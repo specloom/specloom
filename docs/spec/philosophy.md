@@ -212,7 +212,7 @@ ViewModel (評価結果):
     { "name": "title", "kind": "text" },
     { "name": "createdAt", "kind": "datetime" }
   ],
-  "headerActions": [
+  "pageActions": [
     { "id": "create", "allowed": true }
   ]
 }

@@ -256,7 +256,7 @@ describe("evaluator", () => {
       expect(row.values.author).toEqual({ id: "user-1", name: "田中太郎" });
     });
 
-    it("headerActions の allowed を評価する", () => {
+    it("pageActions の allowed を評価する", () => {
       const resource = createResource();
       const data: Record<string, unknown>[] = [];
 
@@ -267,7 +267,7 @@ describe("evaluator", () => {
         context: createContext("admin"),
         data,
       });
-      expect(adminVm.headerActions[0].allowed).toBe(true);
+      expect(adminVm.pageActions[0].allowed).toBe(true);
 
       // editor の場合
       const editorVm = evaluateListView({
@@ -276,7 +276,7 @@ describe("evaluator", () => {
         context: createContext("editor"),
         data,
       });
-      expect(editorVm.headerActions[0].allowed).toBe(false);
+      expect(editorVm.pageActions[0].allowed).toBe(false);
     });
 
     it("行ごとのアクションを評価する", () => {

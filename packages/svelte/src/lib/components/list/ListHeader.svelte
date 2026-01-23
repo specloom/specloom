@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import type { ListFieldVM } from "specloom";
-  import { ListHelpers } from "specloom";
+  import { ListVM } from "specloom";
   import { getListContext } from "./context.svelte.js";
   import * as Table from "$lib/components/ui/table/index.js";
   import { Checkbox } from "$lib/components/ui/checkbox/index.js";
@@ -15,6 +15,7 @@
 
   let { class: className, children }: Props = $props();
   const ctx = getListContext();
+  const getVM = () => new ListVM(ctx.vm);
 
   function handleSort(field: ListFieldVM) {
     if (field.sortable && ctx.onSort) {
@@ -46,7 +47,7 @@
           <div class="flex items-center gap-1">
             <span>{field.label}</span>
             {#if field.sortable}
-              <span class="text-xs">{ListHelpers.sortIcon(ctx.vm, field.name)}</span>
+              <span class="text-xs">{getVM().sortIcon(field.name)}</span>
             {/if}
           </div>
         </Table.Head>

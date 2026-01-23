@@ -1,99 +1,186 @@
 // ============================================================
-// ShowVM - Show ViewModel 操作関数
+// ShowVM - Show ViewModel Class (Immutable OOP Style)
 // ============================================================
 
 import type { ShowViewModel, ShowFieldVM, ActionVM } from "./types.js";
 import { Format, type FormatOptions } from "../format/index.js";
 
-export const ShowVM = {
+/**
+ * ShowVM - Immutable ViewModel class for show/detail views
+ *
+ * All setter methods return a new instance, preserving immutability.
+ * Method chaining is supported for fluent API usage.
+ *
+ * @example
+ * ```typescript
+ * const show = new ShowVM(data)
+ *
+ * // Getters
+ * show.fields
+ * show.label
+ * show.value("title")
+ *
+ * // Method chaining
+ * const updated = show
+ *   .setLoading(true)
+ *   .setFieldValue("status", "published")
+ * ```
+ */
+export class ShowVM {
+  constructor(public readonly data: ShowViewModel) {}
+
+  // ============================================================
+  // Static Factory
+  // ============================================================
+
+  /**
+   * Create a new ShowVM from plain data
+   */
+  static from(data: ShowViewModel): ShowVM {
+    return new ShowVM(data);
+  }
+
   // ============================================================
   // フィールド
   // ============================================================
-  fields: (vm: ShowViewModel) => vm.fields,
-  field: (vm: ShowViewModel, name: string) =>
-    vm.fields.find((f) => f.name === name),
+
+  /** フィールド一覧 */
+  get fields(): ShowFieldVM[] {
+    return this.data.fields;
+  }
+
+  /** 特定のフィールドを取得 */
+  field(name: string): ShowFieldVM | undefined {
+    return this.data.fields.find((f) => f.name === name);
+  }
 
   // ============================================================
   // 値
   // ============================================================
-  value: (vm: ShowViewModel, name: string) =>
-    vm.fields.find((f) => f.name === name)?.value,
-  formatValue: (
+
+  /** フィールドの値を取得 */
+  value(name: string): unknown {
+    return this.field(name)?.value;
+  }
+
+  /** フィールド値をフォーマット */
+  formatValue(
     field: ShowFieldVM,
     value: unknown,
     options?: FormatOptions,
-  ): string => Format.field(value, field, options),
+  ): string {
+    return Format.field(value, field, options);
+  }
 
   // ============================================================
   // グループ
   // ============================================================
-  groups: (vm: ShowViewModel) => vm.groups ?? [],
-  fieldsInGroup: (vm: ShowViewModel, groupId: string) => {
-    const group = vm.groups?.find((g) => g.id === groupId);
+
+  /** フィールドグループ一覧 */
+  get groups() {
+    return this.data.groups ?? [];
+  }
+
+  /** 指定グループのフィールドを取得 */
+  fieldsInGroup(groupId: string): ShowFieldVM[] {
+    const group = this.data.groups?.find((g) => g.id === groupId);
     if (!group) return [];
-    return vm.fields.filter((f) => group.fields.includes(f.name));
-  },
+    return this.data.fields.filter((f) => group.fields.includes(f.name));
+  }
 
   // ============================================================
   // アクション
   // ============================================================
-  actions: (vm: ShowViewModel) => vm.actions,
-  allowedActions: (vm: ShowViewModel) => vm.actions.filter((a) => a.allowed),
+
+  /** アクション一覧 */
+  get actions(): ActionVM[] {
+    return this.data.actions;
+  }
+
+  /** 許可されたアクションのみ取得 */
+  get allowedActions(): ActionVM[] {
+    return this.data.actions.filter((a) => a.allowed);
+  }
 
   // ============================================================
   // 状態
   // ============================================================
-  loading: (vm: ShowViewModel) => vm.isLoading ?? false,
-  error: (vm: ShowViewModel) => vm.error,
+
+  /** ローディング中か */
+  get isLoading(): boolean {
+    return this.data.isLoading ?? false;
+  }
+
+  /** エラーメッセージ */
+  get error(): string | undefined {
+    return this.data.error;
+  }
 
   // ============================================================
   // メタ
   // ============================================================
-  label: (vm: ShowViewModel) => vm.label,
-  resource: (vm: ShowViewModel) => vm.resource,
-  id: (vm: ShowViewModel) => vm.id,
+
+  /** ラベル */
+  get label(): string {
+    return this.data.label;
+  }
+
+  /** リソース名 */
+  get resource(): string {
+    return this.data.resource;
+  }
+
+  /** レコードID */
+  get id(): string {
+    return this.data.id;
+  }
 
   // ============================================================
-  // 状態更新（イミュータブル）
+  // 状態更新（イミュータブル）- 新しいインスタンスを返す
   // ============================================================
 
   /** ローディング状態を設定 */
-  setLoading: (vm: ShowViewModel, isLoading: boolean): ShowViewModel => ({
-    ...vm,
-    isLoading,
-  }),
+  setLoading(isLoading: boolean): ShowVM {
+    return new ShowVM({
+      ...this.data,
+      isLoading,
+    });
+  }
 
   /** エラーを設定 */
-  setError: (vm: ShowViewModel, error: string | undefined): ShowViewModel => ({
-    ...vm,
-    error,
-  }),
+  setError(error: string | undefined): ShowVM {
+    return new ShowVM({
+      ...this.data,
+      error,
+    });
+  }
 
-  /** フィールドデータを更新 */
-  setData: (
-    vm: ShowViewModel,
-    data: Record<string, unknown>,
-  ): ShowViewModel => ({
-    ...vm,
-    fields: vm.fields.map((f) => ({
-      ...f,
-      value: f.name in data ? data[f.name] : f.value,
-    })),
-  }),
+  /** フィールドデータを一括更新 */
+  setData(data: Record<string, unknown>): ShowVM {
+    return new ShowVM({
+      ...this.data,
+      fields: this.data.fields.map((f) => ({
+        ...f,
+        value: f.name in data ? data[f.name] : f.value,
+      })),
+    });
+  }
 
   /** 単一フィールド値を更新 */
-  setFieldValue: (
-    vm: ShowViewModel,
-    name: string,
-    value: unknown,
-  ): ShowViewModel => ({
-    ...vm,
-    fields: vm.fields.map((f) => (f.name === name ? { ...f, value } : f)),
-  }),
+  setFieldValue(name: string, value: unknown): ShowVM {
+    return new ShowVM({
+      ...this.data,
+      fields: this.data.fields.map((f) =>
+        f.name === name ? { ...f, value } : f,
+      ),
+    });
+  }
 
   /** IDを更新 */
-  setId: (vm: ShowViewModel, id: string): ShowViewModel => ({
-    ...vm,
-    id,
-  }),
-};
+  setId(id: string): ShowVM {
+    return new ShowVM({
+      ...this.data,
+      id,
+    });
+  }
+}

@@ -264,7 +264,7 @@ const {
   vm,           // ListViewModel
   rows,         // 行データ
   fields,       // フィールド定義
-  headerActions,// ヘッダーアクション
+  pageActions,  // ページアクション
   bulkActions,  // 一括アクション
   selectedIds,  // 選択中のID
   loading,      // ローディング中か

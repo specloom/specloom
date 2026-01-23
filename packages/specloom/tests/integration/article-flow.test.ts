@@ -160,7 +160,7 @@ describe("統合テスト: 記事管理", () => {
       expect(vm.fields).toHaveLength(3);
       expect(vm.fields.map((f) => f.name)).toEqual(["id", "title", "status"]);
 
-      const createAction = vm.headerActions.find((a) => a.id === "create");
+      const createAction = vm.pageActions.find((a) => a.id === "create");
       expect(createAction?.allowed).toBe(true);
     });
 
@@ -179,7 +179,7 @@ describe("統合テスト: 記事管理", () => {
         data: [],
       });
 
-      const createAction = vm.headerActions.find((a) => a.id === "create");
+      const createAction = vm.pageActions.find((a) => a.id === "create");
       expect(createAction?.allowed).toBe(false);
     });
   });
@@ -361,7 +361,7 @@ describe("統合テスト: 記事管理", () => {
         context,
         data: [],
       });
-      const canCreate = listVm.headerActions.find(
+      const canCreate = listVm.pageActions.find(
         (a) => a.id === "create",
       )?.allowed;
       expect(canCreate).toBe(true);

@@ -6,7 +6,7 @@ import {
   children as resolveChildren,
 } from "solid-js";
 import type { ListFieldVM, RowVM } from "specloom";
-import { ListVM, ActionVMHelper } from "specloom";
+import { ActionVMHelper } from "specloom";
 import { useList } from "./context.jsx";
 import { ActionButton } from "../shared/ActionButton.jsx";
 import { FieldDisplay } from "../shared/FieldDisplay.jsx";
@@ -126,7 +126,7 @@ export const ListTableHeaderCell: Component<ListTableHeaderCellProps> = (
 ) => {
   const { vm, onSort } = useList();
   const sortable = () => props.field.sortable ?? false;
-  const sortIcon = () => ListVM.sortIcon(vm(), props.field.name);
+  const sortIcon = () => vm().sortIcon(props.field.name);
 
   const handleClick = () => {
     if (sortable() && onSort) {
@@ -227,7 +227,7 @@ export const ListTableRow: Component<ListTableRowProps> = (props) => {
     );
   };
 
-  const selected = () => ListVM.selected(vm(), props.row.id);
+  const selected = () => vm().isSelected(props.row.id);
   const clickable = () => !!vm().clickAction;
   const allowedActions = () => ActionVMHelper.allowed(props.row.actions);
 

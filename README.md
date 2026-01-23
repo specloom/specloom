@@ -131,7 +131,7 @@ const vm = evaluateListView({
     { "name": "status", "kind": "enum", "label": "状態", "options": [...], "ui": { "hint": "badge" } },
     { "name": "author", "kind": "relation", "label": "著者" }
   ],
-  "headerActions": [],
+  "pageActions": [],
   "rows": [
     {
       "id": "1",
@@ -175,12 +175,64 @@ const vm = evaluateListView({
 
 **UI に権限ロジックがない。`allowed` を見るだけ。**
 
+## ViewModel Classes (OOP Style)
+
+評価された ViewModel を操作するための OOP スタイルのクラス：
+
+```typescript
+import { ListVM, ShowVM, FormVM } from "specloom";
+
+// ListVM - イミュータブルなリスト操作
+const list = new ListVM(listData);
+
+// Getters
+list.fields;          // フィールド一覧
+list.rows;            // 行一覧
+list.pageActions;     // ページアクション（選択不要）
+list.bulkActions;     // バルクアクション（選択必須）
+list.searchQuery;     // 検索クエリ
+list.isLoading;       // ローディング状態
+list.selectedCount;   // 選択数
+
+// Methods
+list.field("title");           // 特定のフィールドを取得
+list.isSelected("row-1");      // 行が選択されているか
+list.sortIcon("title");        // ソートアイコン (▲/▼/−)
+list.formatCell(field, value); // セル値をフォーマット
+list.rowActions(row);          // 行アクション（row.actionsから取得）
+
+// Immutable Setters (メソッドチェーン対応)
+const updated = list
+  .setSearchQuery("test")
+  .toggleFilter("active")
+  .setPage(2);
+// 元の list は変更されない
+
+// ShowVM - 詳細画面
+const show = new ShowVM(showData);
+show.value("title");              // フィールド値を取得
+show.formatValue(field, value);   // フォーマット済み値
+
+// FormVM - フォーム操作
+const form = new FormVM(formData);
+form.value("title");              // フィールド値
+form.isValid;                     // バリデーション状態
+form.hasError("email");           // エラーがあるか
+
+const updated = form
+  .setValue("title", "New Title")
+  .setFieldErrors("email", ["必須です"])
+  .setSubmitting(true);
+```
+
 ## Packages
 
 | Package | Description | Status |
 |---------|-------------|--------|
-| `specloom` | Loader, Validator, Evaluator | ✅ 実装済み |
+| `specloom` | Loader, Validator, Evaluator, ViewModel Classes | ✅ 実装済み |
 | `@specloom/typespec` | TypeSpec デコレーター + JSON Spec エミッター | ✅ 実装済み |
+| `@specloom/solidjs` | SolidJS UI コンポーネント | ✅ 実装済み |
+| `@specloom/svelte` | Svelte UI コンポーネント | ✅ 実装済み |
 | `@specloom/api` | OpenAPI 定義 | ✅ 実装済み |
 
 ## Features
@@ -279,10 +331,12 @@ npx tsp compile sample.tsp
 | JSON Spec v0.1 | ✅ |
 | Loader / Validator | ✅ |
 | Evaluator (ListView, FormView, ShowView) | ✅ |
+| ViewModel Classes (ListVM, ShowVM, FormVM) | ✅ |
 | Filter (client-side) | ✅ |
 | TypeSpec デコレーター | ✅ |
 | TypeSpec エミッター | ✅ |
-| SolidJS コンポーネント | 🚧 Next |
+| SolidJS コンポーネント | ✅ |
+| Svelte コンポーネント | ✅ |
 | React コンポーネント | 📋 Planned |
 | CLI ツール | 📋 Planned |
 

@@ -299,8 +299,8 @@ interface ListViewModel {
   label: string;
   fields: ListFieldVM[];
   rows: RowVM[];
-  headerActions: ActionVM[];
-  bulkActions: ActionVM[];
+  pageActions: ActionVM[];   // ページレベルアクション（選択不要）
+  bulkActions: ActionVM[];   // バルクアクション（選択必須）
   filters: { named: NamedFilterVM[]; custom?: FilterExpression };
   selection: { mode: "none" | "single" | "multi"; selected: string[] };
   search: { fields: string[]; query: string };

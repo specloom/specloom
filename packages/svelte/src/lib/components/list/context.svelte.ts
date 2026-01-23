@@ -1,6 +1,6 @@
 import { getContext, setContext } from "svelte";
 import type { ListViewModel, ListFieldVM, RowVM, ActionVM } from "specloom";
-import { ListHelpers, ActionHelpers } from "specloom";
+import { ListVM } from "specloom";
 
 const LIST_CONTEXT_KEY = Symbol("list-context");
 
@@ -21,9 +21,9 @@ export interface ListContextValue {
   // Derived values
   readonly fields: ListFieldVM[];
   readonly rows: RowVM[];
-  readonly headerActions: ActionVM[];
+  readonly pageActions: ActionVM[];
   readonly bulkActions: ActionVM[];
-  readonly allowedHeaderActions: ActionVM[];
+  readonly allowedPageActions: ActionVM[];
   readonly allowedBulkActions: ActionVM[];
   readonly selectedIds: string[];
   readonly selectedCount: number;
@@ -60,6 +60,9 @@ export interface CreateListContextOptions {
 export function createListContext(
   options: CreateListContextOptions,
 ): ListContextValue {
+  // Wrap plain data in ListVM instance
+  const getVM = () => new ListVM(options.vm());
+
   const context: ListContextValue = {
     get vm() {
       return options.vm();
@@ -73,78 +76,78 @@ export function createListContext(
     onSearch: options.onSearch,
     onFilterToggle: options.onFilterToggle,
 
-    // Derived - 直接プロパティアクセス
+    // Derived - OOP style via ListVM
     get fields() {
-      return options.vm().fields;
+      return getVM().fields;
     },
     get rows() {
-      return options.vm().rows;
+      return getVM().rows;
     },
-    get headerActions() {
-      return options.vm().headerActions;
+    get pageActions() {
+      return getVM().pageActions;
     },
     get bulkActions() {
-      return options.vm().bulkActions;
+      return getVM().bulkActions;
     },
-    get allowedHeaderActions() {
-      return ActionHelpers.allowed(options.vm().headerActions);
+    get allowedPageActions() {
+      return getVM().allowedPageActions;
     },
     get allowedBulkActions() {
-      return ActionHelpers.allowed(options.vm().bulkActions);
+      return getVM().allowedBulkActions;
     },
     get selectedIds() {
-      return options.vm().selection.selected;
+      return getVM().selectedIds;
     },
     get selectedCount() {
-      return options.vm().selection.selected.length;
+      return getVM().selectedCount;
     },
     get selectable() {
-      return options.vm().selection.mode !== "none";
+      return getVM().isSelectable;
     },
     get multiSelect() {
-      return options.vm().selection.mode === "multi";
+      return getVM().isMultiSelect;
     },
     get allSelected() {
-      return ListHelpers.allSelected(options.vm());
+      return getVM().isAllSelected;
     },
     get loading() {
-      return options.vm().isLoading ?? false;
+      return getVM().isLoading;
     },
     get error() {
-      return options.vm().error;
+      return getVM().error;
     },
     get empty() {
-      return options.vm().rows.length === 0;
+      return getVM().isEmpty;
     },
     get page() {
-      return options.vm().pagination?.page ?? 1;
+      return getVM().page;
     },
     get totalPages() {
-      return ListHelpers.totalPages(options.vm());
+      return getVM().totalPages;
     },
     get total() {
-      return options.vm().pagination?.totalCount ?? options.vm().rows.length;
+      return getVM().total;
     },
     get hasNext() {
-      return ListHelpers.hasNextPage(options.vm());
+      return getVM().hasNextPage;
     },
     get hasPrev() {
-      return ListHelpers.hasPrevPage(options.vm());
+      return getVM().hasPrevPage;
     },
     get searchQuery() {
-      return options.vm().search.query;
+      return getVM().searchQuery;
     },
     get searchFields() {
-      return options.vm().search.fields;
+      return getVM().searchFields;
     },
     get searchable() {
-      return options.vm().search.fields.length > 0;
+      return getVM().isSearchable;
     },
     get filters() {
-      return options.vm().filters.named;
+      return getVM().filters;
     },
     get hasFilters() {
-      return options.vm().filters.named.length > 0;
+      return getVM().hasFilters;
     },
   };
 

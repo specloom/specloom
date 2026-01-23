@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import type { RowVM, ActionVM } from "specloom";
-  import { ActionHelpers, ListVM } from "specloom";
+  import { ListVM, ActionVMHelper } from "specloom";
   import { getListContext } from "./context.svelte.js";
   import * as Table from "$lib/components/ui/table/index.js";
   import { Checkbox } from "$lib/components/ui/checkbox/index.js";
@@ -16,9 +16,10 @@
 
   let { row, class: className, children }: Props = $props();
   const ctx = getListContext();
+  const getVM = () => new ListVM(ctx.vm);
 
-  const selected = $derived(ctx.vm.selection.selected.includes(row.id));
-  const rowActions = $derived(ActionHelpers.allowed(row.actions));
+  const selected = $derived(getVM().isSelected(row.id));
+  const rowActions = $derived(ActionVMHelper.allowed(row.actions));
 
   function handleRowClick() {
     if (ctx.vm.clickAction && ctx.onRowClick) {
@@ -57,7 +58,7 @@
     {/if}
     {#each ctx.fields as field}
       <Table.Cell>
-        {ListVM.formatCell(field, row.values[field.name])}
+        {getVM().formatCell(field, row.values[field.name])}
       </Table.Cell>
     {/each}
     <Table.Cell class="w-20 text-right" onclick={(e) => e.stopPropagation()}>

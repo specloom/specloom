@@ -9,14 +9,17 @@ import { FormVM } from "specloom";
 import type { RelationOption } from "../shared/FieldInput.jsx";
 
 export interface FormContextValue {
-  // ViewModel
-  vm: Accessor<FormViewModel>;
+  // ViewModel (OOP instance)
+  vm: Accessor<FormVM>;
 
   // Callbacks
   onChange: (name: string, value: unknown) => void;
   onSubmit: () => void;
   onAction?: (actionId: string) => void;
-  onOptionsSearch?: (resource: string, query: string) => Promise<RelationOption[]>;
+  onOptionsSearch?: (
+    resource: string,
+    query: string,
+  ) => Promise<RelationOption[]>;
 
   // Derived values
   fields: Accessor<FormFieldVM[]>;
@@ -42,12 +45,16 @@ export interface FormProviderProps {
   onChange: (name: string, value: unknown) => void;
   onSubmit: () => void;
   onAction?: (actionId: string) => void;
-  onOptionsSearch?: (resource: string, query: string) => Promise<RelationOption[]>;
+  onOptionsSearch?: (
+    resource: string,
+    query: string,
+  ) => Promise<RelationOption[]>;
   children: JSX.Element;
 }
 
 export function FormProvider(props: FormProviderProps) {
-  const vm = () => props.vm;
+  // Wrap plain data in FormVM instance
+  const vm = () => new FormVM(props.vm);
 
   const value: FormContextValue = {
     vm,
@@ -56,20 +63,20 @@ export function FormProvider(props: FormProviderProps) {
     onAction: props.onAction,
     onOptionsSearch: props.onOptionsSearch,
 
-    // Derived
-    fields: () => FormVM.fields(vm()),
-    visibleFields: () => FormVM.visibleFields(vm()),
-    groups: () => FormVM.groups(vm()),
+    // Derived (OOP style)
+    fields: () => vm().fields,
+    visibleFields: () => vm().visibleFields,
+    groups: () => vm().groups,
     actions: () => vm().actions,
-    allowedActions: () => FormVM.allowedActions(vm()),
-    values: () => FormVM.values(vm()),
-    isValid: () => FormVM.valid(vm()),
-    isDirty: () => FormVM.dirty(vm()),
-    canSubmit: () => FormVM.canSubmit(vm()),
-    loading: () => FormVM.loading(vm()),
-    submitting: () => FormVM.submitting(vm()),
-    error: () => FormVM.error(vm()),
-    label: () => FormVM.label(vm()),
+    allowedActions: () => vm().allowedActions,
+    values: () => vm().values,
+    isValid: () => vm().isValid,
+    isDirty: () => vm().isDirty,
+    canSubmit: () => vm().canSubmit,
+    loading: () => vm().isLoading,
+    submitting: () => vm().isSubmitting,
+    error: () => vm().error,
+    label: () => vm().label,
     mode: () => vm().mode,
   };
 

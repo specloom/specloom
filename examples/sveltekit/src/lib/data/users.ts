@@ -239,7 +239,7 @@ export function createUsersListVM(page: number = 1): ListViewModel {
       { name: "createdAt", label: "登録日", kind: "date", sortable: true },
     ],
     rows: pageData.map(toRow),
-    headerActions: [
+    pageActions: [
       {
         id: "create",
         label: "新規作成",

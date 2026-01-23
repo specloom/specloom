@@ -32,7 +32,7 @@ export interface Context {
 export type ViewModel = ListViewModel | ShowViewModel | FormViewModel;
 
 // ============================================================
-// List ViewModel
+// List ViewModel (Plain data, serializable)
 // ============================================================
 
 export interface ListViewModel {
@@ -40,7 +40,7 @@ export interface ListViewModel {
   resource: string;
   label: string;
   fields: ListFieldVM[];
-  headerActions: ActionVM[];
+  pageActions: ActionVM[];
   bulkActions: ActionVM[];
   rows: RowVM[];
   filters: Filters;
@@ -128,7 +128,7 @@ export interface Search {
 }
 
 // ============================================================
-// Show ViewModel
+// Show ViewModel (Plain data, serializable)
 // ============================================================
 
 export interface ShowViewModel {
@@ -155,7 +155,7 @@ export interface ShowFieldVM {
 }
 
 // ============================================================
-// Form ViewModel
+// Form ViewModel (Plain data, serializable)
 // ============================================================
 
 export interface FormViewModel {

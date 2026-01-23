@@ -10,7 +10,6 @@ import type {
 } from "../spec/index.js";
 import type {
   Context,
-  ViewModel,
   ListViewModel,
   ShowViewModel,
   FormViewModel,
@@ -73,7 +72,7 @@ export function evaluateListView(options: EvaluateListOptions): ListViewModel {
     return toListFieldVM(field, view);
   });
 
-  const headerActions = view.actions
+  const pageActions = view.actions
     .filter((a) => !a.selection)
     .map((a) => toActionVM(a, context, {}));
 
@@ -93,7 +92,7 @@ export function evaluateListView(options: EvaluateListOptions): ListViewModel {
     resource: resource.name,
     label: resource.label ?? resource.name,
     fields,
-    headerActions,
+    pageActions,
     bulkActions,
     rows,
     filters,

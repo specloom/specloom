@@ -2,7 +2,9 @@ import { describe, it, expect } from "vitest";
 import { FormVM } from "../../src/vm/form.js";
 import type { FormViewModel } from "../../src/vm/types.js";
 
-const createFormVM = (overrides?: Partial<FormViewModel>): FormViewModel => ({
+const createFormVMData = (
+  overrides?: Partial<FormViewModel>,
+): FormViewModel => ({
   type: "form",
   resource: "Post",
   label: "投稿",
@@ -69,30 +71,43 @@ const createFormVM = (overrides?: Partial<FormViewModel>): FormViewModel => ({
   ...overrides,
 });
 
-describe("FormVM", () => {
+// ヘルパー: FormVM インスタンスを作成
+const createFormVM = (overrides?: Partial<FormViewModel>): FormVM =>
+  new FormVM(createFormVMData(overrides));
+
+describe("FormVM (OOP Style)", () => {
+  describe("Static Factory", () => {
+    it("FormVM.from で作成できる", () => {
+      const data = createFormVMData();
+      const vm = FormVM.from(data);
+      expect(vm).toBeInstanceOf(FormVM);
+      expect(vm.data).toBe(data);
+    });
+  });
+
   describe("フィールド操作", () => {
     it("fields で全フィールドを取得できる", () => {
       const vm = createFormVM();
-      expect(FormVM.fields(vm)).toHaveLength(4);
+      expect(vm.fields).toHaveLength(4);
     });
 
     it("field で特定のフィールドを取得できる", () => {
       const vm = createFormVM();
-      const field = FormVM.field(vm, "title");
+      const field = vm.field("title");
       expect(field?.name).toBe("title");
       expect(field?.label).toBe("タイトル");
     });
 
     it("visibleFields で表示フィールドのみ取得できる", () => {
       const vm = createFormVM();
-      const visible = FormVM.visibleFields(vm);
+      const visible = vm.visibleFields;
       expect(visible).toHaveLength(3);
       expect(visible.map((f) => f.name)).not.toContain("createdAt");
     });
 
     it("requiredFields で必須フィールドのみ取得できる", () => {
       const vm = createFormVM();
-      const required = FormVM.requiredFields(vm);
+      const required = vm.requiredFields;
       expect(required).toHaveLength(2);
       expect(required.map((f) => f.name)).toContain("title");
       expect(required.map((f) => f.name)).toContain("status");
@@ -100,7 +115,7 @@ describe("FormVM", () => {
 
     it("readonlyFields で読み取り専用フィールドのみ取得できる", () => {
       const vm = createFormVM();
-      const readonly = FormVM.readonlyFields(vm);
+      const readonly = vm.readonlyFields;
       expect(readonly).toHaveLength(1);
       expect(readonly[0].name).toBe("createdAt");
     });
@@ -109,13 +124,13 @@ describe("FormVM", () => {
   describe("値操作", () => {
     it("value で特定フィールドの値を取得できる", () => {
       const vm = createFormVM();
-      expect(FormVM.value(vm, "title")).toBe("テスト記事");
-      expect(FormVM.value(vm, "status")).toBe("draft");
+      expect(vm.value("title")).toBe("テスト記事");
+      expect(vm.value("status")).toBe("draft");
     });
 
     it("values で全値をオブジェクトで取得できる", () => {
       const vm = createFormVM();
-      const values = FormVM.values(vm);
+      const values = vm.values;
       expect(values.title).toBe("テスト記事");
       expect(values.content).toBe("本文です");
       expect(values.status).toBe("draft");
@@ -123,25 +138,25 @@ describe("FormVM", () => {
   });
 
   describe("バリデーション状態", () => {
-    it("valid でフォームが有効か判定できる", () => {
+    it("isValid でフォームが有効か判定できる", () => {
       const vm = createFormVM();
-      expect(FormVM.valid(vm)).toBe(false);
+      expect(vm.isValid).toBe(false);
 
       const vmValid = createFormVM({ isValid: true });
-      expect(FormVM.valid(vmValid)).toBe(true);
+      expect(vmValid.isValid).toBe(true);
     });
 
-    it("dirty でフォームに変更があるか判定できる", () => {
+    it("isDirty でフォームに変更があるか判定できる", () => {
       const vm = createFormVM();
-      expect(FormVM.dirty(vm)).toBe(true);
+      expect(vm.isDirty).toBe(true);
 
       const vmClean = createFormVM({ isDirty: false });
-      expect(FormVM.dirty(vmClean)).toBe(false);
+      expect(vmClean.isDirty).toBe(false);
     });
 
     it("errors でエラーのあるフィールド一覧を取得できる", () => {
       const vm = createFormVM();
-      const errors = FormVM.errors(vm);
+      const errors = vm.errors;
       expect(errors).toHaveLength(1);
       expect(errors[0].field).toBe("status");
       expect(errors[0].errors).toContain("ステータスを選択してください");
@@ -149,65 +164,92 @@ describe("FormVM", () => {
 
     it("fieldErrors で特定フィールドのエラーを取得できる", () => {
       const vm = createFormVM();
-      expect(FormVM.fieldErrors(vm, "status")).toContain(
+      expect(vm.fieldErrors("status")).toContain(
         "ステータスを選択してください",
       );
-      expect(FormVM.fieldErrors(vm, "title")).toHaveLength(0);
+      expect(vm.fieldErrors("title")).toHaveLength(0);
     });
 
     it("hasError でフィールドにエラーがあるか判定できる", () => {
       const vm = createFormVM();
-      expect(FormVM.hasError(vm, "status")).toBe(true);
-      expect(FormVM.hasError(vm, "title")).toBe(false);
+      expect(vm.hasError("status")).toBe(true);
+      expect(vm.hasError("title")).toBe(false);
+    });
+
+    it("hasErrors でいずれかのフィールドにエラーがあるか判定できる", () => {
+      const vm = createFormVM();
+      expect(vm.hasErrors).toBe(true);
+
+      const vmNoErrors = createFormVM({
+        fields: [
+          {
+            name: "title",
+            label: "タイトル",
+            kind: "text",
+            value: "test",
+            required: false,
+            readonly: false,
+            errors: [],
+          },
+        ],
+      });
+      expect(vmNoErrors.hasErrors).toBe(false);
+    });
+
+    it("fieldsWithErrors でエラーのあるフィールドを取得できる", () => {
+      const vm = createFormVM();
+      const withErrors = vm.fieldsWithErrors;
+      expect(withErrors).toHaveLength(1);
+      expect(withErrors[0].name).toBe("status");
     });
   });
 
   describe("UI補助情報", () => {
     it("hint でヒントを取得できる", () => {
       const vm = createFormVM();
-      expect(FormVM.hint(vm, "title")).toBe("100文字以内");
-      expect(FormVM.hint(vm, "content")).toBeUndefined();
+      expect(vm.hint("title")).toBe("100文字以内");
+      expect(vm.hint("content")).toBeUndefined();
     });
 
     it("placeholder でプレースホルダーを取得できる", () => {
       const vm = createFormVM();
-      expect(FormVM.placeholder(vm, "title")).toBe("タイトルを入力");
-      expect(FormVM.placeholder(vm, "content")).toBeUndefined();
+      expect(vm.placeholder("title")).toBe("タイトルを入力");
+      expect(vm.placeholder("content")).toBeUndefined();
     });
 
-    it("visible でフィールドが表示されるか判定できる", () => {
+    it("isVisible でフィールドが表示されるか判定できる", () => {
       const vm = createFormVM();
-      expect(FormVM.visible(vm, "title")).toBe(true);
-      expect(FormVM.visible(vm, "createdAt")).toBe(false);
+      expect(vm.isVisible("title")).toBe(true);
+      expect(vm.isVisible("createdAt")).toBe(false);
     });
 
-    it("required でフィールドが必須か判定できる", () => {
+    it("isRequired でフィールドが必須か判定できる", () => {
       const vm = createFormVM();
-      expect(FormVM.required(vm, "title")).toBe(true);
-      expect(FormVM.required(vm, "content")).toBe(false);
+      expect(vm.isRequired("title")).toBe(true);
+      expect(vm.isRequired("content")).toBe(false);
     });
 
-    it("readonly でフィールドが読み取り専用か判定できる", () => {
+    it("isReadonly でフィールドが読み取り専用か判定できる", () => {
       const vm = createFormVM();
-      expect(FormVM.readonly(vm, "createdAt")).toBe(true);
-      expect(FormVM.readonly(vm, "title")).toBe(false);
+      expect(vm.isReadonly("createdAt")).toBe(true);
+      expect(vm.isReadonly("title")).toBe(false);
     });
   });
 
   describe("グループ操作", () => {
     it("groups でグループ一覧を取得できる", () => {
       const vm = createFormVM();
-      expect(FormVM.groups(vm)).toHaveLength(2);
+      expect(vm.groups).toHaveLength(2);
     });
 
     it("groups でグループがない場合は空配列", () => {
       const vm = createFormVM({ groups: undefined });
-      expect(FormVM.groups(vm)).toHaveLength(0);
+      expect(vm.groups).toHaveLength(0);
     });
 
     it("fieldsInGroup でグループ内のフィールドを取得できる", () => {
       const vm = createFormVM();
-      const basicFields = FormVM.fieldsInGroup(vm, "basic");
+      const basicFields = vm.fieldsInGroup("basic");
       expect(basicFields).toHaveLength(2);
       expect(basicFields.map((f) => f.name)).toContain("title");
       expect(basicFields.map((f) => f.name)).toContain("content");
@@ -215,14 +257,14 @@ describe("FormVM", () => {
 
     it("fieldsInGroup で存在しないグループは空配列", () => {
       const vm = createFormVM();
-      expect(FormVM.fieldsInGroup(vm, "nonexistent")).toHaveLength(0);
+      expect(vm.fieldsInGroup("nonexistent")).toHaveLength(0);
     });
   });
 
   describe("アクション操作", () => {
     it("actions でアクション一覧を取得できる", () => {
       const vm = createFormVM();
-      expect(FormVM.actions(vm)).toHaveLength(2);
+      expect(vm.actions).toHaveLength(2);
     });
 
     it("allowedActions で許可されたアクションのみ取得できる", () => {
@@ -232,74 +274,74 @@ describe("FormVM", () => {
           { id: "delete", label: "削除", allowed: false },
         ],
       });
-      const allowed = FormVM.allowedActions(vm);
+      const allowed = vm.allowedActions;
       expect(allowed).toHaveLength(1);
       expect(allowed[0].id).toBe("save");
     });
 
     it("canSubmit で送信可能か判定できる", () => {
       const vm = createFormVM({ isValid: true, isSubmitting: false });
-      expect(FormVM.canSubmit(vm)).toBe(true);
+      expect(vm.canSubmit).toBe(true);
 
       const vmInvalid = createFormVM({ isValid: false });
-      expect(FormVM.canSubmit(vmInvalid)).toBe(false);
+      expect(vmInvalid.canSubmit).toBe(false);
 
       const vmSubmitting = createFormVM({ isValid: true, isSubmitting: true });
-      expect(FormVM.canSubmit(vmSubmitting)).toBe(false);
+      expect(vmSubmitting.canSubmit).toBe(false);
     });
   });
 
   describe("状態操作", () => {
-    it("loading で読み込み中か判定できる", () => {
+    it("isLoading で読み込み中か判定できる", () => {
       const vm = createFormVM();
-      expect(FormVM.loading(vm)).toBe(false);
+      expect(vm.isLoading).toBe(false);
 
       const vmLoading = createFormVM({ isLoading: true });
-      expect(FormVM.loading(vmLoading)).toBe(true);
+      expect(vmLoading.isLoading).toBe(true);
     });
 
-    it("submitting で送信中か判定できる", () => {
+    it("isSubmitting で送信中か判定できる", () => {
       const vm = createFormVM();
-      expect(FormVM.submitting(vm)).toBe(false);
+      expect(vm.isSubmitting).toBe(false);
 
       const vmSubmitting = createFormVM({ isSubmitting: true });
-      expect(FormVM.submitting(vmSubmitting)).toBe(true);
+      expect(vmSubmitting.isSubmitting).toBe(true);
     });
 
     it("error でエラーメッセージを取得できる", () => {
       const vm = createFormVM();
-      expect(FormVM.error(vm)).toBeUndefined();
+      expect(vm.error).toBeUndefined();
 
       const vmError = createFormVM({ error: "保存に失敗しました" });
-      expect(FormVM.error(vmError)).toBe("保存に失敗しました");
+      expect(vmError.error).toBe("保存に失敗しました");
     });
   });
 
   describe("メタ情報", () => {
     it("label でラベルを取得できる", () => {
       const vm = createFormVM();
-      expect(FormVM.label(vm)).toBe("投稿");
+      expect(vm.label).toBe("投稿");
     });
 
     it("resource でリソース名を取得できる", () => {
       const vm = createFormVM();
-      expect(FormVM.resource(vm)).toBe("Post");
+      expect(vm.resource).toBe("Post");
     });
 
     it("mode でcreate/editを取得できる", () => {
       const vm = createFormVM();
-      expect(FormVM.mode(vm)).toBe("edit");
+      expect(vm.mode).toBe("edit");
 
       const vmCreate = createFormVM({ mode: "create" });
-      expect(FormVM.mode(vmCreate)).toBe("create");
+      expect(vmCreate.mode).toBe("create");
     });
 
     it("id でレコードIDを取得できる", () => {
       const vm = createFormVM();
-      expect(FormVM.id(vm)).toBe("1");
+      expect(vm.id).toBe("1");
 
       const vmCreate = createFormVM({ mode: "create", id: undefined });
-      expect(FormVM.id(vmCreate)).toBeUndefined();
+      expect(vmCreate.id).toBeUndefined();
     });
   });
 
@@ -307,22 +349,23 @@ describe("FormVM", () => {
     describe("値の更新", () => {
       it("setValue でフィールド値を更新できる", () => {
         const vm = createFormVM({ isDirty: false });
-        const updated = FormVM.setValue(vm, "title", "新しいタイトル");
+        const updated = vm.setValue("title", "新しいタイトル");
 
-        expect(FormVM.value(updated, "title")).toBe("新しいタイトル");
+        expect(updated.value("title")).toBe("新しいタイトル");
         expect(updated.isDirty).toBe(true);
-        expect(FormVM.value(vm, "title")).toBe("テスト記事"); // 元は変わらない
+        expect(vm.value("title")).toBe("テスト記事"); // 元は変わらない
+        expect(updated).not.toBe(vm); // 別インスタンス
       });
 
       it("setValues で複数フィールドを一括更新できる", () => {
         const vm = createFormVM({ isDirty: false });
-        const updated = FormVM.setValues(vm, {
+        const updated = vm.setValues({
           title: "新タイトル",
           content: "新本文",
         });
 
-        expect(FormVM.value(updated, "title")).toBe("新タイトル");
-        expect(FormVM.value(updated, "content")).toBe("新本文");
+        expect(updated.value("title")).toBe("新タイトル");
+        expect(updated.value("content")).toBe("新本文");
         expect(updated.isDirty).toBe(true);
       });
     });
@@ -330,12 +373,9 @@ describe("FormVM", () => {
     describe("エラーの更新", () => {
       it("setFieldErrors でフィールドエラーを設定できる", () => {
         const vm = createFormVM({ isValid: true });
-        const updated = FormVM.setFieldErrors(vm, "title", [
-          "必須です",
-          "短すぎます",
-        ]);
+        const updated = vm.setFieldErrors("title", ["必須です", "短すぎます"]);
 
-        expect(FormVM.fieldErrors(updated, "title")).toEqual([
+        expect(updated.fieldErrors("title")).toEqual([
           "必須です",
           "短すぎます",
         ]);
@@ -344,28 +384,26 @@ describe("FormVM", () => {
 
       it("clearErrors で全エラーをクリアできる", () => {
         const vm = createFormVM();
-        expect(FormVM.hasErrors(vm)).toBe(true);
+        expect(vm.hasErrors).toBe(true);
 
-        const updated = FormVM.clearErrors(vm);
-        expect(FormVM.hasErrors(updated)).toBe(false);
+        const updated = vm.clearErrors();
+        expect(updated.hasErrors).toBe(false);
         expect(updated.isValid).toBe(true);
       });
 
       it("setAllErrors で全エラーを一括設定できる", () => {
         const vm = createFormVM();
-        const updated = FormVM.setAllErrors(vm, {
+        const updated = vm.setAllErrors({
           title: ["タイトルエラー"],
           content: ["本文エラー1", "本文エラー2"],
         });
 
-        expect(FormVM.fieldErrors(updated, "title")).toEqual([
-          "タイトルエラー",
-        ]);
-        expect(FormVM.fieldErrors(updated, "content")).toEqual([
+        expect(updated.fieldErrors("title")).toEqual(["タイトルエラー"]);
+        expect(updated.fieldErrors("content")).toEqual([
           "本文エラー1",
           "本文エラー2",
         ]);
-        expect(FormVM.fieldErrors(updated, "status")).toEqual([]); // クリアされる
+        expect(updated.fieldErrors("status")).toEqual([]); // クリアされる
       });
     });
 
@@ -386,8 +424,8 @@ describe("FormVM", () => {
           isValid: true,
         });
 
-        const validated = FormVM.validate(vm);
-        expect(FormVM.hasError(validated, "email")).toBe(true);
+        const validated = vm.validate();
+        expect(validated.hasError("email")).toBe(true);
         expect(validated.isValid).toBe(false);
       });
 
@@ -416,60 +454,80 @@ describe("FormVM", () => {
           isValid: true,
         });
 
-        const validated = FormVM.validateField(vm, "title");
-        expect(FormVM.hasError(validated, "title")).toBe(true);
-        expect(FormVM.hasError(validated, "content")).toBe(false); // バリデーションされない
+        const validated = vm.validateField("title");
+        expect(validated.hasError("title")).toBe(true);
+        expect(validated.hasError("content")).toBe(false); // バリデーションされない
       });
     });
 
     describe("状態フラグ", () => {
       it("setSubmitting で送信中状態を設定できる", () => {
         const vm = createFormVM();
-        const submitting = FormVM.setSubmitting(vm, true);
-        expect(FormVM.submitting(submitting)).toBe(true);
+        const submitting = vm.setSubmitting(true);
+        expect(submitting.isSubmitting).toBe(true);
 
-        const done = FormVM.setSubmitting(submitting, false);
-        expect(FormVM.submitting(done)).toBe(false);
+        const done = submitting.setSubmitting(false);
+        expect(done.isSubmitting).toBe(false);
       });
 
       it("setLoading でローディング状態を設定できる", () => {
         const vm = createFormVM();
-        const loading = FormVM.setLoading(vm, true);
-        expect(FormVM.loading(loading)).toBe(true);
+        const loading = vm.setLoading(true);
+        expect(loading.isLoading).toBe(true);
       });
 
       it("setError でエラーを設定できる", () => {
         const vm = createFormVM();
-        const withError = FormVM.setError(vm, "保存に失敗しました");
-        expect(FormVM.error(withError)).toBe("保存に失敗しました");
+        const withError = vm.setError("保存に失敗しました");
+        expect(withError.error).toBe("保存に失敗しました");
 
-        const cleared = FormVM.setError(withError, undefined);
-        expect(FormVM.error(cleared)).toBeUndefined();
+        const cleared = withError.setError(undefined);
+        expect(cleared.error).toBeUndefined();
       });
     });
 
     describe("リセット", () => {
       it("reset でフォームをリセットできる", () => {
         const vm = createFormVM({ isDirty: true, isValid: false });
-        const reset = FormVM.reset(vm);
+        const reset = vm.reset();
 
         expect(reset.isDirty).toBe(false);
         expect(reset.isValid).toBe(true);
-        expect(FormVM.fieldErrors(reset, "status")).toEqual([]);
+        expect(reset.fieldErrors("status")).toEqual([]);
       });
 
       it("reset で初期値を指定できる", () => {
         const vm = createFormVM();
-        const reset = FormVM.reset(vm, { title: "初期タイトル" });
+        const reset = vm.reset({ title: "初期タイトル" });
 
-        expect(FormVM.value(reset, "title")).toBe("初期タイトル");
+        expect(reset.value("title")).toBe("初期タイトル");
       });
 
       it("markClean でdirty状態をクリアできる", () => {
         const vm = createFormVM({ isDirty: true });
-        const clean = FormVM.markClean(vm);
+        const clean = vm.markClean();
 
         expect(clean.isDirty).toBe(false);
+      });
+    });
+
+    describe("メソッドチェーン", () => {
+      it("複数の操作をチェーンできる", () => {
+        const vm = createFormVM({ isDirty: false });
+
+        const updated = vm
+          .setValue("title", "新タイトル")
+          .setValue("content", "新本文")
+          .setSubmitting(true);
+
+        expect(updated.value("title")).toBe("新タイトル");
+        expect(updated.value("content")).toBe("新本文");
+        expect(updated.isSubmitting).toBe(true);
+        expect(updated.isDirty).toBe(true);
+
+        // 元は変わらない
+        expect(vm.value("title")).toBe("テスト記事");
+        expect(vm.isSubmitting).toBe(false);
       });
     });
   });

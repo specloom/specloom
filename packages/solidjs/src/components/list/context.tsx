@@ -3,8 +3,8 @@ import type { ListViewModel, ListFieldVM, RowVM, ActionVM } from "specloom";
 import { ListVM } from "specloom";
 
 export interface ListContextValue {
-  // ViewModel
-  vm: Accessor<ListViewModel>;
+  // ViewModel (OOP instance)
+  vm: Accessor<ListVM>;
 
   // Callbacks
   onSort?: (field: string) => void;
@@ -17,7 +17,7 @@ export interface ListContextValue {
   // Derived values (for convenience)
   fields: Accessor<ListFieldVM[]>;
   rows: Accessor<RowVM[]>;
-  headerActions: Accessor<ActionVM[]>;
+  pageActions: Accessor<ActionVM[]>;
   bulkActions: Accessor<ActionVM[]>;
   selectedIds: Accessor<string[]>;
   selectedCount: Accessor<number>;
@@ -48,7 +48,8 @@ export interface ListProviderProps {
 }
 
 export function ListProvider(props: ListProviderProps) {
-  const vm = () => props.vm;
+  // Wrap plain data in ListVM instance
+  const vm = () => new ListVM(props.vm);
 
   const value: ListContextValue = {
     vm,
@@ -59,24 +60,24 @@ export function ListProvider(props: ListProviderProps) {
     onPageChange: props.onPageChange,
     onRowClick: props.onRowClick,
 
-    // Derived
-    fields: () => ListVM.fields(vm()),
-    rows: () => ListVM.rows(vm()),
-    headerActions: () => ListVM.headerActions(vm()),
-    bulkActions: () => ListVM.bulkActions(vm()),
-    selectedIds: () => ListVM.selectedIds(vm()),
-    selectedCount: () => ListVM.selectedCount(vm()),
-    selectable: () => ListVM.selectable(vm()),
-    multiSelect: () => ListVM.multiSelect(vm()),
-    allSelected: () => ListVM.allSelected(vm()),
-    loading: () => ListVM.loading(vm()),
-    error: () => ListVM.error(vm()),
-    empty: () => ListVM.empty(vm()),
-    page: () => ListVM.page(vm()),
-    totalPages: () => ListVM.totalPages(vm()),
-    total: () => ListVM.total(vm()),
-    hasNext: () => ListVM.hasNext(vm()),
-    hasPrev: () => ListVM.hasPrev(vm()),
+    // Derived (OOP style)
+    fields: () => vm().fields,
+    rows: () => vm().rows,
+    pageActions: () => vm().pageActions,
+    bulkActions: () => vm().bulkActions,
+    selectedIds: () => vm().selectedIds,
+    selectedCount: () => vm().selectedCount,
+    selectable: () => vm().isSelectable,
+    multiSelect: () => vm().isMultiSelect,
+    allSelected: () => vm().isAllSelected,
+    loading: () => vm().isLoading,
+    error: () => vm().error,
+    empty: () => vm().isEmpty,
+    page: () => vm().page,
+    totalPages: () => vm().totalPages,
+    total: () => vm().total,
+    hasNext: () => vm().hasNextPage,
+    hasPrev: () => vm().hasPrevPage,
   };
 
   return (

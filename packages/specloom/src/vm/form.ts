@@ -1,169 +1,307 @@
 // ============================================================
-// FormVM - Form ViewModel 操作関数
+// FormVM - Form ViewModel Class (Immutable OOP Style)
 // ============================================================
 
 import type { FormViewModel, FormFieldVM, ActionVM } from "./types.js";
 import { validateField } from "../validation/index.js";
 import type { Field, FieldType } from "../spec/index.js";
 
-export const FormVM = {
+/**
+ * FormVM - Immutable ViewModel class for form views
+ *
+ * All setter methods return a new instance, preserving immutability.
+ * Method chaining is supported for fluent API usage.
+ *
+ * @example
+ * ```typescript
+ * const form = new FormVM(data)
+ *
+ * // Getters
+ * form.fields
+ * form.isValid
+ * form.value("email")
+ *
+ * // Method chaining
+ * const updated = form
+ *   .setValue("name", "John")
+ *   .setValue("email", "john@example.com")
+ *   .validate()
+ * ```
+ */
+export class FormVM {
+  constructor(public readonly data: FormViewModel) {}
+
+  // ============================================================
+  // Static Factory
+  // ============================================================
+
+  /**
+   * Create a new FormVM from plain data
+   */
+  static from(data: FormViewModel): FormVM {
+    return new FormVM(data);
+  }
+
   // ============================================================
   // フィールド
   // ============================================================
-  fields: (vm: FormViewModel) => vm.fields,
-  field: (vm: FormViewModel, name: string) =>
-    vm.fields.find((f) => f.name === name),
-  visibleFields: (vm: FormViewModel) =>
-    vm.fields.filter((f) => f.visible !== false),
-  requiredFields: (vm: FormViewModel) => vm.fields.filter((f) => f.required),
-  readonlyFields: (vm: FormViewModel) => vm.fields.filter((f) => f.readonly),
+
+  /** フィールド一覧 */
+  get fields(): FormFieldVM[] {
+    return this.data.fields;
+  }
+
+  /** 特定のフィールドを取得 */
+  field(name: string): FormFieldVM | undefined {
+    return this.data.fields.find((f) => f.name === name);
+  }
+
+  /** 表示可能なフィールドのみ取得 */
+  get visibleFields(): FormFieldVM[] {
+    return this.data.fields.filter((f) => f.visible !== false);
+  }
+
+  /** 必須フィールドのみ取得 */
+  get requiredFields(): FormFieldVM[] {
+    return this.data.fields.filter((f) => f.required);
+  }
+
+  /** 読み取り専用フィールドのみ取得 */
+  get readonlyFields(): FormFieldVM[] {
+    return this.data.fields.filter((f) => f.readonly);
+  }
 
   // ============================================================
   // 値
   // ============================================================
-  value: (vm: FormViewModel, name: string) =>
-    vm.fields.find((f) => f.name === name)?.value,
-  values: (vm: FormViewModel): Record<string, unknown> =>
-    vm.fields.reduce(
+
+  /** フィールドの値を取得 */
+  value(name: string): unknown {
+    return this.field(name)?.value;
+  }
+
+  /** 全フィールドの値をオブジェクトとして取得 */
+  get values(): Record<string, unknown> {
+    return this.data.fields.reduce(
       (acc, f) => {
         acc[f.name] = f.value;
         return acc;
       },
       {} as Record<string, unknown>,
-    ),
+    );
+  }
 
   // ============================================================
   // バリデーション
   // ============================================================
-  valid: (vm: FormViewModel) => vm.isValid,
-  dirty: (vm: FormViewModel) => vm.isDirty,
-  errors: (vm: FormViewModel): Array<{ field: string; errors: string[] }> =>
-    vm.fields
+
+  /** フォームが有効か */
+  get isValid(): boolean {
+    return this.data.isValid;
+  }
+
+  /** フォームが変更されているか */
+  get isDirty(): boolean {
+    return this.data.isDirty;
+  }
+
+  /** エラーのあるフィールドとそのエラー一覧 */
+  get errors(): Array<{ field: string; errors: string[] }> {
+    return this.data.fields
       .filter((f) => f.errors.length > 0)
-      .map((f) => ({ field: f.name, errors: f.errors })),
-  fieldErrors: (vm: FormViewModel, name: string) =>
-    vm.fields.find((f) => f.name === name)?.errors ?? [],
-  hasError: (vm: FormViewModel, name: string) =>
-    (vm.fields.find((f) => f.name === name)?.errors.length ?? 0) > 0,
-  hasErrors: (vm: FormViewModel) => vm.fields.some((f) => f.errors.length > 0),
-  fieldsWithErrors: (vm: FormViewModel) =>
-    vm.fields.filter((f) => f.errors.length > 0),
+      .map((f) => ({ field: f.name, errors: f.errors }));
+  }
+
+  /** 指定フィールドのエラー一覧 */
+  fieldErrors(name: string): string[] {
+    return this.field(name)?.errors ?? [];
+  }
+
+  /** 指定フィールドにエラーがあるか */
+  hasError(name: string): boolean {
+    return (this.field(name)?.errors.length ?? 0) > 0;
+  }
+
+  /** いずれかのフィールドにエラーがあるか */
+  get hasErrors(): boolean {
+    return this.data.fields.some((f) => f.errors.length > 0);
+  }
+
+  /** エラーのあるフィールド一覧 */
+  get fieldsWithErrors(): FormFieldVM[] {
+    return this.data.fields.filter((f) => f.errors.length > 0);
+  }
 
   // ============================================================
   // フィールド属性
   // ============================================================
-  hint: (vm: FormViewModel, name: string) =>
-    vm.fields.find((f) => f.name === name)?.hint,
-  placeholder: (vm: FormViewModel, name: string) =>
-    vm.fields.find((f) => f.name === name)?.placeholder,
-  visible: (vm: FormViewModel, name: string) =>
-    vm.fields.find((f) => f.name === name)?.visible !== false,
-  required: (vm: FormViewModel, name: string) =>
-    vm.fields.find((f) => f.name === name)?.required ?? false,
-  readonly: (vm: FormViewModel, name: string) =>
-    vm.fields.find((f) => f.name === name)?.readonly ?? false,
+
+  /** フィールドのヒントを取得 */
+  hint(name: string): string | undefined {
+    return this.field(name)?.hint;
+  }
+
+  /** フィールドのプレースホルダーを取得 */
+  placeholder(name: string): string | undefined {
+    return this.field(name)?.placeholder;
+  }
+
+  /** フィールドが表示されているか */
+  isVisible(name: string): boolean {
+    return this.field(name)?.visible !== false;
+  }
+
+  /** フィールドが必須か */
+  isRequired(name: string): boolean {
+    return this.field(name)?.required ?? false;
+  }
+
+  /** フィールドが読み取り専用か */
+  isReadonly(name: string): boolean {
+    return this.field(name)?.readonly ?? false;
+  }
 
   // ============================================================
   // グループ
   // ============================================================
-  groups: (vm: FormViewModel) => vm.groups ?? [],
-  fieldsInGroup: (vm: FormViewModel, groupId: string) => {
-    const group = vm.groups?.find((g) => g.id === groupId);
+
+  /** フィールドグループ一覧 */
+  get groups() {
+    return this.data.groups ?? [];
+  }
+
+  /** 指定グループのフィールドを取得 */
+  fieldsInGroup(groupId: string): FormFieldVM[] {
+    const group = this.data.groups?.find((g) => g.id === groupId);
     if (!group) return [];
-    return vm.fields.filter((f) => group.fields.includes(f.name));
-  },
+    return this.data.fields.filter((f) => group.fields.includes(f.name));
+  }
 
   // ============================================================
   // アクション
   // ============================================================
-  actions: (vm: FormViewModel) => vm.actions,
-  allowedActions: (vm: FormViewModel) => vm.actions.filter((a) => a.allowed),
-  canSubmit: (vm: FormViewModel) => vm.isValid && !vm.isSubmitting,
+
+  /** アクション一覧 */
+  get actions(): ActionVM[] {
+    return this.data.actions;
+  }
+
+  /** 許可されたアクションのみ取得 */
+  get allowedActions(): ActionVM[] {
+    return this.data.actions.filter((a) => a.allowed);
+  }
+
+  /** 送信可能か（有効かつ送信中でない） */
+  get canSubmit(): boolean {
+    return this.data.isValid && !this.data.isSubmitting;
+  }
 
   // ============================================================
   // 状態
   // ============================================================
-  loading: (vm: FormViewModel) => vm.isLoading ?? false,
-  submitting: (vm: FormViewModel) => vm.isSubmitting ?? false,
-  error: (vm: FormViewModel) => vm.error,
+
+  /** ローディング中か */
+  get isLoading(): boolean {
+    return this.data.isLoading ?? false;
+  }
+
+  /** 送信中か */
+  get isSubmitting(): boolean {
+    return this.data.isSubmitting ?? false;
+  }
+
+  /** エラーメッセージ */
+  get error(): string | undefined {
+    return this.data.error;
+  }
 
   // ============================================================
   // メタ
   // ============================================================
-  label: (vm: FormViewModel) => vm.label,
-  resource: (vm: FormViewModel) => vm.resource,
-  mode: (vm: FormViewModel) => vm.mode,
-  id: (vm: FormViewModel) => vm.id,
+
+  /** ラベル */
+  get label(): string {
+    return this.data.label;
+  }
+
+  /** リソース名 */
+  get resource(): string {
+    return this.data.resource;
+  }
+
+  /** フォームモード（create または edit） */
+  get mode(): "create" | "edit" {
+    return this.data.mode;
+  }
+
+  /** レコードID（editモードの場合） */
+  get id(): string | undefined {
+    return this.data.id;
+  }
 
   // ============================================================
-  // 状態更新（イミュータブル）
+  // 状態更新（イミュータブル）- 新しいインスタンスを返す
   // ============================================================
 
   /** フィールド値を更新 */
-  setValue: (
-    vm: FormViewModel,
-    name: string,
-    value: unknown,
-  ): FormViewModel => ({
-    ...vm,
-    isDirty: true,
-    fields: vm.fields.map((f) => (f.name === name ? { ...f, value } : f)),
-  }),
+  setValue(name: string, value: unknown): FormVM {
+    return new FormVM({
+      ...this.data,
+      isDirty: true,
+      fields: this.data.fields.map((f) =>
+        f.name === name ? { ...f, value } : f,
+      ),
+    });
+  }
 
   /** 複数フィールド値を一括更新 */
-  setValues: (
-    vm: FormViewModel,
-    values: Record<string, unknown>,
-  ): FormViewModel => ({
-    ...vm,
-    isDirty: true,
-    fields: vm.fields.map((f) =>
-      f.name in values ? { ...f, value: values[f.name] } : f,
-    ),
-  }),
+  setValues(values: Record<string, unknown>): FormVM {
+    return new FormVM({
+      ...this.data,
+      isDirty: true,
+      fields: this.data.fields.map((f) =>
+        f.name in values ? { ...f, value: values[f.name] } : f,
+      ),
+    });
+  }
 
   /** フィールドエラーを設定 */
-  setFieldErrors: (
-    vm: FormViewModel,
-    name: string,
-    errors: string[],
-  ): FormViewModel => {
-    const newFields = vm.fields.map((f) =>
+  setFieldErrors(name: string, errors: string[]): FormVM {
+    const newFields = this.data.fields.map((f) =>
       f.name === name ? { ...f, errors } : f,
     );
-    return {
-      ...vm,
+    return new FormVM({
+      ...this.data,
       fields: newFields,
       isValid: newFields.every((f) => f.errors.length === 0),
-    };
-  },
+    });
+  }
 
   /** 全フィールドのエラーをクリア */
-  clearErrors: (vm: FormViewModel): FormViewModel => ({
-    ...vm,
-    fields: vm.fields.map((f) => ({ ...f, errors: [] })),
-    isValid: true,
-  }),
+  clearErrors(): FormVM {
+    return new FormVM({
+      ...this.data,
+      fields: this.data.fields.map((f) => ({ ...f, errors: [] })),
+      isValid: true,
+    });
+  }
 
   /** 全エラーを一括設定 */
-  setAllErrors: (
-    vm: FormViewModel,
-    errors: Record<string, string[]>,
-  ): FormViewModel => {
-    const newFields = vm.fields.map((f) => ({
+  setAllErrors(errors: Record<string, string[]>): FormVM {
+    const newFields = this.data.fields.map((f) => ({
       ...f,
       errors: errors[f.name] ?? [],
     }));
-    return {
-      ...vm,
+    return new FormVM({
+      ...this.data,
       fields: newFields,
       isValid: newFields.every((f) => f.errors.length === 0),
-    };
-  },
+    });
+  }
 
   /** フォーム全体をバリデーション */
-  validate: (vm: FormViewModel): FormViewModel => {
-    const newFields = vm.fields.map((f) => {
+  validate(): FormVM {
+    const newFields = this.data.fields.map((f) => {
       const field: Field = {
         name: f.name,
         type: f.kind as FieldType,
@@ -175,16 +313,16 @@ export const FormVM = {
       const errors = validateField(field, f.value);
       return { ...f, errors };
     });
-    return {
-      ...vm,
+    return new FormVM({
+      ...this.data,
       fields: newFields,
       isValid: newFields.every((f) => f.errors.length === 0),
-    };
-  },
+    });
+  }
 
   /** 単一フィールドをバリデーション */
-  validateField: (vm: FormViewModel, name: string): FormViewModel => {
-    const newFields = vm.fields.map((f) => {
+  validateField(name: string): FormVM {
+    const newFields = this.data.fields.map((f) => {
       if (f.name !== name) return f;
       const field: Field = {
         name: f.name,
@@ -197,49 +335,56 @@ export const FormVM = {
       const errors = validateField(field, f.value);
       return { ...f, errors };
     });
-    return {
-      ...vm,
+    return new FormVM({
+      ...this.data,
       fields: newFields,
       isValid: newFields.every((f) => f.errors.length === 0),
-    };
-  },
+    });
+  }
 
   /** 送信中状態を設定 */
-  setSubmitting: (vm: FormViewModel, isSubmitting: boolean): FormViewModel => ({
-    ...vm,
-    isSubmitting,
-  }),
+  setSubmitting(isSubmitting: boolean): FormVM {
+    return new FormVM({
+      ...this.data,
+      isSubmitting,
+    });
+  }
 
   /** ローディング状態を設定 */
-  setLoading: (vm: FormViewModel, isLoading: boolean): FormViewModel => ({
-    ...vm,
-    isLoading,
-  }),
+  setLoading(isLoading: boolean): FormVM {
+    return new FormVM({
+      ...this.data,
+      isLoading,
+    });
+  }
 
   /** エラーを設定 */
-  setError: (vm: FormViewModel, error: string | undefined): FormViewModel => ({
-    ...vm,
-    error,
-  }),
+  setError(error: string | undefined): FormVM {
+    return new FormVM({
+      ...this.data,
+      error,
+    });
+  }
 
   /** フォームをリセット（初期値に戻す） */
-  reset: (
-    vm: FormViewModel,
-    initialValues?: Record<string, unknown>,
-  ): FormViewModel => ({
-    ...vm,
-    isDirty: false,
-    isValid: true,
-    fields: vm.fields.map((f) => ({
-      ...f,
-      value: initialValues?.[f.name] ?? f.value,
-      errors: [],
-    })),
-  }),
+  reset(initialValues?: Record<string, unknown>): FormVM {
+    return new FormVM({
+      ...this.data,
+      isDirty: false,
+      isValid: true,
+      fields: this.data.fields.map((f) => ({
+        ...f,
+        value: initialValues?.[f.name] ?? f.value,
+        errors: [],
+      })),
+    });
+  }
 
   /** dirty状態をクリア */
-  markClean: (vm: FormViewModel): FormViewModel => ({
-    ...vm,
-    isDirty: false,
-  }),
-};
+  markClean(): FormVM {
+    return new FormVM({
+      ...this.data,
+      isDirty: false,
+    });
+  }
+}

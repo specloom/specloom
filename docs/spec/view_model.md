@@ -84,7 +84,7 @@ ViewModel の特徴：
       "sortable": true
     }
   ],
-  "headerActions": [
+  "pageActions": [
     {
       "id": "create",
       "label": "新規作成",
@@ -144,7 +144,7 @@ ViewModel の特徴：
 | resource | string | リソース名 |
 | label | string | リソースのラベル |
 | fields | FieldVM[] | 表示カラムの定義 |
-| headerActions | ActionVM[] | ヘッダーアクション（評価済み） |
+| pageActions | ActionVM[] | ページアクション（評価済み、選択不要） |
 | rows | RowVM[] | データ行 |
 | filters | Filters | フィルター状態 |
 | selection | Selection | 選択状態 |
@@ -449,6 +449,152 @@ ViewModel の特徴：
 }
 ```
 
+## ViewModel Classes (OOP Style)
+
+ViewModel データを操作するための OOP スタイルのクラスが提供されています。
+すべてのクラスはイミュータブルで、setter メソッドは新しいインスタンスを返します。
+
+### ListVM
+
+```typescript
+import { ListVM } from "specloom";
+
+const list = new ListVM(listData);
+
+// === Getters ===
+list.fields;              // ListFieldVM[] - フィールド一覧
+list.rows;                // RowVM[] - 行一覧
+list.pageActions;         // ActionVM[] - ページアクション（選択不要）
+list.bulkActions;         // ActionVM[] - バルクアクション（選択必須）
+list.allowedPageActions;  // ActionVM[] - 許可されたページアクション
+list.allowedBulkActions;  // ActionVM[] - 許可されたバルクアクション
+list.selectedIds;         // string[] - 選択された行ID
+list.selectedCount;       // number - 選択数
+list.isSelectable;        // boolean - 選択可能か
+list.isMultiSelect;       // boolean - 複数選択可能か
+list.isAllSelected;       // boolean - 全選択状態か
+list.isLoading;           // boolean - ローディング中か
+list.isEmpty;             // boolean - 行が空か
+list.error;               // string | undefined - エラーメッセージ
+list.page;                // number - 現在のページ
+list.totalPages;          // number - 総ページ数
+list.total;               // number - 総件数
+list.hasNextPage;         // boolean - 次ページがあるか
+list.hasPrevPage;         // boolean - 前ページがあるか
+list.searchQuery;         // string - 検索クエリ
+list.searchFields;        // string[] - 検索対象フィールド
+list.isSearchable;        // boolean - 検索可能か
+list.filters;             // NamedFilter[] - フィルター一覧
+list.hasFilters;          // boolean - フィルターがあるか
+list.sorts;               // SortVM[] - ソート一覧
+
+// === Methods ===
+list.field("title");               // ListFieldVM | undefined
+list.isSelected("row-1");          // boolean
+list.isSorted("title");            // boolean
+list.getSortDirection("title");    // "asc" | "desc" | undefined
+list.sortIcon("title");            // "▲" | "▼" | "−"
+list.formatCell(field, value);     // string
+list.row("row-1");                 // RowVM | undefined
+list.rowActions(row);              // ActionVM[]
+
+// === Immutable Setters (メソッドチェーン対応) ===
+const updated = list
+  .setSearchQuery("hello")
+  .toggleSort("title")
+  .toggleFilter("active")
+  .setPage(2)
+  .select("row-1")
+  .selectAll()
+  .clearSelection();
+```
+
+### ShowVM
+
+```typescript
+import { ShowVM } from "specloom";
+
+const show = new ShowVM(showData);
+
+// === Getters ===
+show.fields;              // ShowFieldVM[] - フィールド一覧
+show.groups;              // FieldGroup[] - グループ一覧
+show.actions;             // ActionVM[] - アクション一覧
+show.allowedActions;      // ActionVM[] - 許可されたアクション
+show.isLoading;           // boolean
+show.error;               // string | undefined
+show.label;               // string - ラベル
+show.id;                  // string - レコードID
+
+// === Methods ===
+show.field("title");               // ShowFieldVM | undefined
+show.value("title");               // unknown - フィールド値
+show.formatValue(field, value);    // string - フォーマット済み値
+show.fieldsInGroup("basic");       // ShowFieldVM[] - グループ内フィールド
+
+// === Immutable Setters ===
+const updated = show
+  .setLoading(true)
+  .setError("読み込みに失敗しました");
+```
+
+### FormVM
+
+```typescript
+import { FormVM } from "specloom";
+
+const form = new FormVM(formData);
+
+// === Getters ===
+form.fields;              // FormFieldVM[] - フィールド一覧
+form.visibleFields;       // FormFieldVM[] - 表示フィールド
+form.requiredFields;      // FormFieldVM[] - 必須フィールド
+form.readonlyFields;      // FormFieldVM[] - 読み取り専用フィールド
+form.groups;              // FieldGroup[] - グループ一覧
+form.actions;             // ActionVM[] - アクション一覧
+form.allowedActions;      // ActionVM[] - 許可されたアクション
+form.values;              // Record<string, unknown> - 全フィールド値
+form.isValid;             // boolean - バリデーション状態
+form.isDirty;             // boolean - 変更状態
+form.canSubmit;           // boolean - 送信可能か
+form.isLoading;           // boolean
+form.isSubmitting;        // boolean - 送信中か
+form.error;               // string | undefined
+form.errors;              // { field: string, errors: string[] }[]
+form.hasErrors;           // boolean
+form.fieldsWithErrors;    // FormFieldVM[]
+form.label;               // string
+form.mode;                // "create" | "edit"
+form.id;                  // string | undefined
+
+// === Methods ===
+form.field("title");               // FormFieldVM | undefined
+form.value("title");               // unknown
+form.fieldErrors("email");         // string[]
+form.hasError("email");            // boolean
+form.hint("title");                // string | undefined
+form.placeholder("title");         // string | undefined
+form.isVisible("title");           // boolean
+form.isRequired("title");          // boolean
+form.isReadonly("title");          // boolean
+form.fieldsInGroup("basic");       // FormFieldVM[]
+
+// === Immutable Setters (メソッドチェーン対応) ===
+const updated = form
+  .setValue("title", "New Title")
+  .setValues({ title: "Title", content: "Content" })
+  .setFieldErrors("email", ["必須です"])
+  .setAllErrors({ email: ["必須です"], name: ["短すぎます"] })
+  .clearErrors()
+  .validate()
+  .validateField("email")
+  .setSubmitting(true)
+  .setLoading(false)
+  .setError("保存に失敗しました")
+  .reset({ title: "初期値" })
+  .markClean();
+```
+
 ## UI 実装例
 
 ViewModel を受け取って描画するだけ：
@@ -459,7 +605,7 @@ function PostList({ vm }: { vm: ListViewModel }) {
   return (
     <div>
       <header>
-        {vm.headerActions.map(action => (
+        {vm.pageActions.map(action => (
           <button 
             key={action.id}
             disabled={!action.allowed}
@@ -505,4 +651,81 @@ function PostList({ vm }: { vm: ListViewModel }) {
 }
 ```
 
-**ポイント**: UI に権限ロジックがない。`allowed` を見るだけ。
+### OOP スタイルでの実装例
+
+```tsx
+import { ListVM } from "specloom";
+
+function PostList({ data }: { data: ListViewModel }) {
+  const [vm, setVM] = useState(() => new ListVM(data));
+
+  const handleSearch = (query: string) => {
+    setVM(vm.setSearchQuery(query));
+  };
+
+  const handleSort = (field: string) => {
+    setVM(vm.toggleSort(field));
+  };
+
+  const handleSelectAll = () => {
+    setVM(vm.isAllSelected ? vm.clearSelection() : vm.selectAll());
+  };
+
+  return (
+    <div>
+      <input 
+        value={vm.searchQuery}
+        onChange={(e) => handleSearch(e.target.value)}
+        placeholder="検索..."
+      />
+      
+      <table>
+        <thead>
+          <tr>
+            <th>
+              <input 
+                type="checkbox" 
+                checked={vm.isAllSelected}
+                onChange={handleSelectAll}
+              />
+            </th>
+            {vm.fields.map(field => (
+              <th 
+                key={field.name}
+                onClick={() => field.sortable && handleSort(field.name)}
+              >
+                {field.label} {vm.sortIcon(field.name)}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {vm.rows.map(row => (
+            <tr key={row.id} className={vm.isSelected(row.id) ? "selected" : ""}>
+              <td>
+                <input 
+                  type="checkbox"
+                  checked={vm.isSelected(row.id)}
+                  onChange={() => setVM(vm.toggleSelect(row.id))}
+                />
+              </td>
+              {vm.fields.map(field => (
+                <td key={field.name}>
+                  {vm.formatCell(field, row.values[field.name])}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      
+      <div>選択中: {vm.selectedCount}件</div>
+    </div>
+  );
+}
+```
+
+**ポイント**: 
+- UI に権限ロジックがない。`allowed` を見るだけ
+- イミュータブルな操作でステート管理がシンプル
+- メソッドチェーンで複数の操作を連続実行可能

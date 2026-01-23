@@ -6,7 +6,6 @@ import {
   children as resolveChildren,
 } from "solid-js";
 import type { FormFieldVM } from "specloom";
-import { FormVM } from "specloom";
 import { useForm } from "./context.jsx";
 import { FormField } from "./FormField.jsx";
 import { FormGroup } from "./FormGroup.jsx";
@@ -43,10 +42,7 @@ export const FormBody: Component<FormBodyProps> = (props) => {
                   <Show
                     when={renderField()}
                     fallback={
-                      <FormField
-                        field={field}
-                        value={values()[field.name]}
-                      />
+                      <FormField field={field} value={values()[field.name]} />
                     }
                   >
                     {renderField()!(field)}
@@ -61,7 +57,7 @@ export const FormBody: Component<FormBodyProps> = (props) => {
               {(group) => (
                 <FormGroup
                   group={group}
-                  fields={FormVM.fieldsInGroup(vm(), group.id)}
+                  fields={vm().fieldsInGroup(group.id)}
                   renderField={renderField()}
                 />
               )}

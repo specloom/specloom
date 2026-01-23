@@ -20,4 +20,4 @@ export type {
   FieldGroup,
 } from "specloom";
 
-export { ListHelpers, FormHelpers, ShowHelpers, ActionHelpers } from "specloom";
+export { ListVM, FormVM, ShowVM, ActionVMHelper } from "specloom";

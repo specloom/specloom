@@ -2,11 +2,46 @@ import type { ListViewModel, ShowViewModel, FormViewModel } from "specloom";
 
 // サンプルユーザーデータ
 export const sampleUsers = [
-  { id: "1", name: "田中太郎", email: "tanaka@example.com", role: "admin", active: true, createdAt: "2024-01-15" },
-  { id: "2", name: "佐藤花子", email: "sato@example.com", role: "editor", active: true, createdAt: "2024-02-20" },
-  { id: "3", name: "鈴木一郎", email: "suzuki@example.com", role: "viewer", active: false, createdAt: "2024-03-10" },
-  { id: "4", name: "高橋美咲", email: "takahashi@example.com", role: "editor", active: true, createdAt: "2024-04-05" },
-  { id: "5", name: "山田健太", email: "yamada@example.com", role: "viewer", active: true, createdAt: "2024-05-12" },
+  {
+    id: "1",
+    name: "田中太郎",
+    email: "tanaka@example.com",
+    role: "admin",
+    active: true,
+    createdAt: "2024-01-15",
+  },
+  {
+    id: "2",
+    name: "佐藤花子",
+    email: "sato@example.com",
+    role: "editor",
+    active: true,
+    createdAt: "2024-02-20",
+  },
+  {
+    id: "3",
+    name: "鈴木一郎",
+    email: "suzuki@example.com",
+    role: "viewer",
+    active: false,
+    createdAt: "2024-03-10",
+  },
+  {
+    id: "4",
+    name: "高橋美咲",
+    email: "takahashi@example.com",
+    role: "editor",
+    active: true,
+    createdAt: "2024-04-05",
+  },
+  {
+    id: "5",
+    name: "山田健太",
+    email: "yamada@example.com",
+    role: "viewer",
+    active: true,
+    createdAt: "2024-05-12",
+  },
 ];
 
 // ユーザー一覧 ViewModel
@@ -35,15 +70,37 @@ export const usersListVM: ListViewModel = {
     id: user.id,
     values: user,
     actions: [
-      { id: "edit", label: "編集", allowed: true, ui: { variant: "secondary" } },
-      { id: "delete", label: "削除", allowed: true, confirm: "本当に削除しますか？", ui: { variant: "danger" } },
+      {
+        id: "edit",
+        label: "編集",
+        allowed: true,
+        ui: { variant: "secondary" },
+      },
+      {
+        id: "delete",
+        label: "削除",
+        allowed: true,
+        confirm: "本当に削除しますか？",
+        ui: { variant: "danger" },
+      },
     ],
   })),
-  headerActions: [
-    { id: "create", label: "新規作成", allowed: true, ui: { variant: "primary" } },
+  pageActions: [
+    {
+      id: "create",
+      label: "新規作成",
+      allowed: true,
+      ui: { variant: "primary" },
+    },
   ],
   bulkActions: [
-    { id: "bulk-delete", label: "一括削除", allowed: true, confirm: "選択したユーザーを削除しますか？", ui: { variant: "danger" } },
+    {
+      id: "bulk-delete",
+      label: "一括削除",
+      allowed: true,
+      confirm: "選択したユーザーを削除しますか？",
+      ui: { variant: "danger" },
+    },
   ],
   filters: { named: [] },
   selection: { mode: "multi", selected: [] },
@@ -60,7 +117,12 @@ export const userShowVM: ShowViewModel = {
   id: "1",
   fields: [
     { name: "name", label: "名前", kind: "text", value: "田中太郎" },
-    { name: "email", label: "メール", kind: "email", value: "tanaka@example.com" },
+    {
+      name: "email",
+      label: "メール",
+      kind: "email",
+      value: "tanaka@example.com",
+    },
     {
       name: "role",
       label: "権限",
@@ -77,7 +139,13 @@ export const userShowVM: ShowViewModel = {
   ],
   actions: [
     { id: "edit", label: "編集", allowed: true, ui: { variant: "primary" } },
-    { id: "delete", label: "削除", allowed: true, confirm: "本当に削除しますか？", ui: { variant: "danger" } },
+    {
+      id: "delete",
+      label: "削除",
+      allowed: true,
+      confirm: "本当に削除しますか？",
+      ui: { variant: "danger" },
+    },
     { id: "back", label: "戻る", allowed: true },
   ],
   groups: [
@@ -149,9 +217,7 @@ export const userFormVM: FormViewModel = {
       placeholder: "自己紹介を入力（任意）",
     },
   ],
-  actions: [
-    { id: "cancel", label: "キャンセル", allowed: true },
-  ],
+  actions: [{ id: "cancel", label: "キャンセル", allowed: true }],
   isValid: true,
   isDirty: false,
   groups: [

@@ -14,5 +14,5 @@ export type {
   FieldGroup,
 } from "specloom";
 
-// Re-export helpers
+// Re-export classes
 export { ListVM, ShowVM, FormVM, ActionVMHelper, Format } from "specloom";

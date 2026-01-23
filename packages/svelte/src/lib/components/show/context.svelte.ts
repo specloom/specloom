@@ -5,7 +5,7 @@ import type {
   ActionVM,
   FieldGroup,
 } from "specloom";
-import { ShowHelpers } from "specloom";
+import { ShowVM } from "specloom";
 
 const SHOW_CONTEXT_KEY = Symbol("show-context");
 
@@ -35,36 +35,39 @@ export interface CreateShowContextOptions {
 export function createShowContext(
   options: CreateShowContextOptions,
 ): ShowContextValue {
+  // Wrap plain data in ShowVM instance
+  const getVM = () => new ShowVM(options.vm());
+
   const context: ShowContextValue = {
     get vm() {
       return options.vm();
     },
     onAction: options.onAction,
 
-    // Derived - 直接プロパティアクセス
+    // Derived - OOP style via ShowVM
     get fields() {
-      return options.vm().fields;
+      return getVM().fields;
     },
     get groups() {
-      return options.vm().groups ?? [];
+      return getVM().groups;
     },
     get actions() {
-      return options.vm().actions;
+      return getVM().actions;
     },
     get allowedActions() {
-      return ShowHelpers.allowedActions(options.vm());
+      return getVM().allowedActions;
     },
     get loading() {
-      return options.vm().isLoading ?? false;
+      return getVM().isLoading;
     },
     get error() {
-      return options.vm().error;
+      return getVM().error;
     },
     get label() {
-      return options.vm().label;
+      return getVM().label;
     },
     get id() {
-      return options.vm().id;
+      return getVM().id;
     },
   };
 
