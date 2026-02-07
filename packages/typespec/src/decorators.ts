@@ -101,6 +101,21 @@ function extractStringArray(val: unknown): string[] | undefined {
   return undefined;
 }
 
+/**
+ * Merge partial UI options into existing UI state
+ */
+function mergeUI(
+  context: DecoratorContext,
+  target: Model | ModelProperty,
+  patch: Record<string, unknown>,
+) {
+  const current =
+    (context.program.stateMap(StateKeys.ui).get(target) as
+      | Record<string, unknown>
+      | undefined) ?? {};
+  context.program.stateMap(StateKeys.ui).set(target, { ...current, ...patch });
+}
+
 // ============================================================
 // Resource Decorators
 // ============================================================
@@ -117,6 +132,25 @@ export function $resource(
   context.program
     .stateMap(StateKeys.resource)
     .set(target, extractedName ?? target.name);
+}
+
+/**
+ * @requiredOneOf - Require at least one field in the group
+ */
+export function $requiredOneOf(
+  context: DecoratorContext,
+  target: Model,
+  fields: unknown,
+) {
+  const extracted = extractStringArray(fields);
+  if (extracted && extracted.length > 0) {
+    const existing: string[][] =
+      context.program.stateMap(StateKeys.requiredOneOf).get(target) ?? [];
+    // TypeSpec processes decorators bottom-to-top, so prepend to keep source order.
+    context.program
+      .stateMap(StateKeys.requiredOneOf)
+      .set(target, [extracted, ...existing]);
+  }
 }
 
 /**
@@ -182,12 +216,40 @@ export function $relation(
   options?: unknown,
 ) {
   const extracted = extractValue(options) as
-    | { labelField?: string }
+    | { labelField?: string; valueField?: string; searchable?: boolean }
     | undefined;
+  const cardinality = extractString(
+    context.program.stateMap(StateKeys.cardinality).get(target),
+  );
   context.program.stateMap(StateKeys.relation).set(target, {
     resource: resource.name,
     labelField: extracted?.labelField,
+    valueField: extracted?.valueField,
+    searchable: extracted?.searchable,
+    cardinality,
   });
+}
+
+/**
+ * @cardinality - Legacy alias of @relation(..., #{ cardinality: ... }) intent
+ */
+export function $cardinality(
+  context: DecoratorContext,
+  target: ModelProperty,
+  cardinality: unknown,
+) {
+  const extracted = extractString(cardinality);
+  if (extracted) {
+    context.program.stateMap(StateKeys.cardinality).set(target, extracted);
+    const relation = context.program.stateMap(StateKeys.relation).get(target) as
+      | Record<string, unknown>
+      | undefined;
+    if (relation) {
+      context.program
+        .stateMap(StateKeys.relation)
+        .set(target, { ...relation, cardinality: extracted });
+    }
+  }
 }
 
 /**
@@ -201,7 +263,35 @@ export function $ui(
   // Extract values from TypeSpec Value types
   const extracted = extractValue(options) as Record<string, unknown> | null;
   if (extracted && typeof extracted === "object") {
-    context.program.stateMap(StateKeys.ui).set(target, extracted);
+    mergeUI(context, target, extracted);
+  }
+}
+
+/**
+ * @hint - Legacy alias for @ui(#{ hint: ... })
+ */
+export function $hint(
+  context: DecoratorContext,
+  target: ModelProperty,
+  hint: unknown,
+) {
+  const extracted = extractString(hint);
+  if (extracted) {
+    mergeUI(context, target, { hint: extracted });
+  }
+}
+
+/**
+ * @inputHint - Legacy alias for @ui(#{ inputHint: ... })
+ */
+export function $inputHint(
+  context: DecoratorContext,
+  target: ModelProperty,
+  inputHint: unknown,
+) {
+  const extracted = extractString(inputHint);
+  if (extracted) {
+    mergeUI(context, target, { inputHint: extracted });
   }
 }
 
@@ -235,7 +325,29 @@ export function $filter(
   operators?: unknown,
 ) {
   const extracted = extractStringArray(operators);
-  context.program.stateMap(StateKeys.filter).set(target, extracted ?? true);
+  const normalized = extracted?.map((op) => {
+    switch (op) {
+      case "startsWith":
+        return "starts_with";
+      case "endsWith":
+        return "ends_with";
+      case "notIn":
+        return "not_in";
+      case "isNull":
+        return "is_null";
+      case "isEmpty":
+        return "is_empty";
+      case "hasAny":
+        return "has_any";
+      case "hasAll":
+        return "has_all";
+      case "hasNone":
+        return "has_none";
+      default:
+        return op;
+    }
+  });
+  context.program.stateMap(StateKeys.filter).set(target, normalized ?? true);
 }
 
 // ============================================================
@@ -441,6 +553,21 @@ export function $rowAction(
 }
 
 /**
+ * @placement - Legacy action placement alias
+ * Prefer @rowAction for row actions and @requiresSelection for bulk actions.
+ */
+export function $placement(
+  context: DecoratorContext,
+  target: ModelProperty,
+  placement: unknown,
+) {
+  const extracted = extractString(placement);
+  if (extracted) {
+    context.program.stateMap(StateKeys.placement).set(target, extracted);
+  }
+}
+
+/**
  * @requiresSelection - Set selection requirement for bulk actions
  */
 export function $requiresSelection(
@@ -448,7 +575,9 @@ export function $requiresSelection(
   target: ModelProperty,
   selection: unknown,
 ) {
-  const extracted = extractString(selection);
+  const raw = extractValue(selection);
+  const extracted =
+    typeof raw === "string" ? raw : typeof raw === "boolean" ? "selected" : undefined;
   if (extracted !== undefined) {
     context.program
       .stateMap(StateKeys.requiresSelection)
@@ -476,12 +605,10 @@ export function $allowedWhen(
 export function $confirm(
   context: DecoratorContext,
   target: ModelProperty,
-  message: unknown,
+  message?: unknown,
 ) {
   const extracted = extractString(message);
-  if (extracted) {
-    context.program.stateMap(StateKeys.confirm).set(target, extracted);
-  }
+  context.program.stateMap(StateKeys.confirm).set(target, extracted ?? true);
 }
 
 /**
@@ -663,6 +790,13 @@ export function getResourceName(
   return program.stateMap(StateKeys.resource).get(target);
 }
 
+export function getRequiredOneOf(
+  program: DecoratorContext["program"],
+  target: Model,
+): string[][] | undefined {
+  return program.stateMap(StateKeys.requiredOneOf).get(target);
+}
+
 export function getLabel(
   program: DecoratorContext["program"],
   target: Type,
@@ -687,8 +821,21 @@ export function getOptions(
 export function getRelation(
   program: DecoratorContext["program"],
   target: ModelProperty,
-): { resource: string; labelField?: string } | undefined {
+): {
+  resource: string;
+  labelField?: string;
+  valueField?: string;
+  searchable?: boolean;
+  cardinality?: string;
+} | undefined {
   return program.stateMap(StateKeys.relation).get(target);
+}
+
+export function getCardinality(
+  program: DecoratorContext["program"],
+  target: ModelProperty,
+): string | undefined {
+  return program.stateMap(StateKeys.cardinality).get(target);
 }
 
 export function getUI(
@@ -810,6 +957,13 @@ export function getRowAction(
   return program.stateMap(StateKeys.rowAction).get(target);
 }
 
+export function getPlacement(
+  program: DecoratorContext["program"],
+  target: ModelProperty,
+): string | undefined {
+  return program.stateMap(StateKeys.placement).get(target);
+}
+
 export function getRequiresSelection(
   program: DecoratorContext["program"],
   target: ModelProperty,
@@ -827,7 +981,7 @@ export function getAllowedWhen(
 export function getConfirm(
   program: DecoratorContext["program"],
   target: ModelProperty,
-): string | undefined {
+): string | true | undefined {
   return program.stateMap(StateKeys.confirm).get(target);
 }
 

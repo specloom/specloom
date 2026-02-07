@@ -71,6 +71,8 @@ export interface Field {
   createOnly?: boolean;
   validation?: FieldValidation;
   options?: Option[];
+  /** フィルター可能設定。true=全演算子許可、配列=許可演算子 */
+  filter?: true | FilterOperator[];
   relation?: Relation;
   ui?: FieldUI;
 }
@@ -82,6 +84,7 @@ export interface FieldValidation {
   min?: number;
   max?: number;
   pattern?: string;
+  match?: string;
   minItems?: number;
   maxItems?: number;
 }
@@ -94,12 +97,17 @@ export interface Option {
 export interface Relation {
   resource: string;
   labelField: string;
+  valueField?: string;
+  searchable?: boolean;
+  cardinality?: "one" | "many";
 }
 
 export interface FieldUI {
   hint?: string;
   inputHint?: string;
   searchable?: boolean;
+  icon?: string;
+  variant?: string;
 }
 
 // ============================================================
@@ -125,7 +133,7 @@ export interface ListView {
   clickAction?: string;
   namedFilters?: NamedFilter[];
   actions: Action[];
-  rowActions: Action[];
+  rowActions?: Action[];
 }
 
 export interface Sort {
@@ -199,19 +207,27 @@ export type FilterOperator =
   // 文字列
   | "contains"
   | "starts_with"
+  | "startsWith" // legacy alias
   | "ends_with"
+  | "endsWith" // legacy alias
   | "matches"
   | "ilike"
   // 集合
   | "in"
   | "not_in"
+  | "notIn" // legacy alias
   // 存在
   | "is_null"
+  | "isNull" // legacy alias
   | "is_empty"
+  | "isEmpty" // legacy alias
   // 配列
   | "has_any"
+  | "hasAny" // legacy alias
   | "has_all"
-  | "has_none";
+  | "hasAll" // legacy alias
+  | "has_none"
+  | "hasNone"; // legacy alias
 
 // ============================================================
 // Form View
@@ -253,7 +269,8 @@ export interface Action {
   allowedWhen?: string;
   /** バルクアクションの対象。省略時はページアクション */
   selection?: ActionSelection;
-  confirm?: string;
+  /** true の場合はロケール既定メッセージで確認する */
+  confirm?: string | true;
   ui?: ActionUI;
   /** ダイアログ設定 */
   dialog?: ActionDialog;

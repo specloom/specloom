@@ -301,6 +301,7 @@ export class FormVM {
 
   /** フォーム全体をバリデーション */
   validate(): FormVM {
+    const values = this.values;
     const newFields = this.data.fields.map((f) => {
       const field: Field = {
         name: f.name,
@@ -310,7 +311,7 @@ export class FormVM {
         required: f.required,
         validation: f.validation,
       };
-      const errors = validateField(field, f.value);
+      const errors = validateField(field, f.value, values);
       return { ...f, errors };
     });
     return new FormVM({

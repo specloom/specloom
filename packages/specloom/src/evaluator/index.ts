@@ -1,12 +1,11 @@
 import type {
-  Spec,
   Resource,
   Field,
-  View,
   ListView,
   ShowView,
   FormView,
   Action,
+  FilterOperator,
 } from "../spec/index.js";
 import type {
   Context,
@@ -24,7 +23,8 @@ import type {
   Search,
   SortVM,
 } from "../vm/index.js";
-import { validateField, type ValidationErrors } from "../validation/index.js";
+import type { ValidationErrors } from "../validation/index.js";
+import { i18n } from "../i18n/index.js";
 
 // ============================================================
 // Main Evaluate Function
@@ -146,7 +146,7 @@ export function evaluateFormView(options: EvaluateFormOptions): FormViewModel {
     }
     const value = data?.[fieldName];
     const fieldErrors = errors?.[fieldName] ?? [];
-    return toFormFieldVM(field, value, fieldErrors);
+    return toFormFieldVM(field, value, fieldErrors, mode);
   });
 
   const actions = view.actions.map((a) => toActionVM(a, context, data ?? {}));
@@ -198,14 +198,19 @@ function toFormFieldVM(
   field: Field,
   value: unknown,
   errors: string[],
+  mode: "create" | "edit",
 ): FormFieldVM {
+  const createOnly = field.createOnly ?? false;
+  const readonly = field.readonly === true || (mode === "edit" && createOnly);
+
   return {
     name: field.name,
     label: field.label ?? field.name,
     kind: field.kind ?? "text",
     value,
     required: field.required ?? false,
-    readonly: field.readonly ?? false,
+    readonly,
+    createOnly,
     validation: field.validation,
     errors,
     ui: field.ui,
@@ -247,12 +252,22 @@ function toActionVM(
     ? evaluateExpression(action.allowedWhen, context, data)
     : true;
 
+  const t = i18n.t();
+  const confirm =
+    action.confirm === true
+      ? t.action.confirm
+      : typeof action.confirm === "string"
+        ? action.confirm
+        : undefined;
+
   return {
     id: action.id,
     label: action.label,
     allowed,
-    confirm: action.confirm,
+    confirm,
     ui: action.ui,
+    dialog: action.dialog,
+    api: action.api,
   };
 }
 
@@ -261,24 +276,118 @@ function toFilters(view: ListView, activeFilter?: string): Filters {
     id: f.id,
     label: f.label,
     active: f.id === (activeFilter ?? view.namedFilters?.[0]?.id),
-    filter: isFilterExpression(f.filter) ? f.filter : undefined,
+    filter: normalizeFilterExpression(f.filter),
   }));
 
   return { named };
 }
 
 /**
- * FilterExpression かどうかを判定する型ガード
+ * 演算子の legacy alias（camelCase）を正規化する
  */
-function isFilterExpression(value: unknown): value is Filters["custom"] {
-  if (value == null || typeof value !== "object") return false;
+function normalizeFilterOperator(operator: string): string {
+  switch (operator) {
+    case "startsWith":
+      return "starts_with";
+    case "endsWith":
+      return "ends_with";
+    case "notIn":
+      return "not_in";
+    case "isNull":
+      return "is_null";
+    case "isEmpty":
+      return "is_empty";
+    case "hasAny":
+      return "has_any";
+    case "hasAll":
+      return "has_all";
+    case "hasNone":
+      return "has_none";
+    default:
+      return operator;
+  }
+}
+
+const FILTER_OPERATORS: ReadonlySet<string> = new Set([
+  "eq",
+  "ne",
+  "gt",
+  "gte",
+  "lt",
+  "lte",
+  "contains",
+  "starts_with",
+  "ends_with",
+  "matches",
+  "ilike",
+  "in",
+  "not_in",
+  "is_null",
+  "is_empty",
+  "has_any",
+  "has_all",
+  "has_none",
+]);
+
+function isFilterOperator(value: string): value is FilterOperator {
+  return FILTER_OPERATORS.has(value);
+}
+
+/**
+ * unknown から FilterExpression を正規化して取り出す
+ * - operator / op の両方を受け付ける
+ * - legacy operator（camelCase）を snake_case に変換する
+ */
+function normalizeFilterExpression(value: unknown): Filters["custom"] {
+  if (value == null || typeof value !== "object") return undefined;
   const obj = value as Record<string, unknown>;
 
-  // AND/OR/NOT
-  if ("and" in obj || "or" in obj || "not" in obj) return true;
+  if ("and" in obj) {
+    if (!Array.isArray(obj.and)) return undefined;
+    const and = obj.and
+      .map((child) => normalizeFilterExpression(child))
+      .filter((child): child is NonNullable<Filters["custom"]> => child != null);
+    if (and.length !== obj.and.length) return undefined;
+    return { and };
+  }
 
-  // FilterCondition
-  return "field" in obj && "op" in obj && "value" in obj;
+  if ("or" in obj) {
+    if (!Array.isArray(obj.or)) return undefined;
+    const or = obj.or
+      .map((child) => normalizeFilterExpression(child))
+      .filter((child): child is NonNullable<Filters["custom"]> => child != null);
+    if (or.length !== obj.or.length) return undefined;
+    return { or };
+  }
+
+  if ("not" in obj) {
+    const not = normalizeFilterExpression(obj.not);
+    if (!not) return undefined;
+    return { not };
+  }
+
+  if (!("field" in obj) || !("value" in obj) || typeof obj.field !== "string") {
+    return undefined;
+  }
+
+  const rawOperator =
+    typeof obj.operator === "string"
+      ? obj.operator
+      : typeof obj.op === "string"
+        ? obj.op
+        : undefined;
+
+  if (!rawOperator) return undefined;
+  const operator = normalizeFilterOperator(rawOperator);
+  if (!isFilterOperator(operator)) {
+    return undefined;
+  }
+
+  return {
+    field: obj.field,
+    operator,
+    value: obj.value,
+  };
 }
 
 function toSelection(view: ListView, selected?: string[]): Selection {
@@ -313,9 +422,12 @@ function toDefaultSort(view: ListView): SortVM | undefined {
  * サポートする式:
  * - role == 'admin'
  * - role != 'guest'
+ * - count >= 10
+ * - score < 100
  * - status == 'draft'
  * - role == 'admin' || role == 'editor'
  * - role == 'admin' && status == 'draft'
+ * - (role == 'admin' || role == 'editor') && status == 'draft'
  */
 export function evaluateExpression(
   expression: string,
@@ -340,6 +452,19 @@ export function evaluateExpression(
 }
 
 /**
+ * 式が文法的に有効かどうかを検証する（評価はしない）
+ */
+export function isExpressionSyntaxValid(expression: string): boolean {
+  try {
+    const parser = new ExpressionParser(expression, {});
+    parser.parse(false);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * シンプルな式を評価する
  * セキュリティのため、eval() は使わずパースする
  */
@@ -347,36 +472,337 @@ function evalSimpleExpression(
   expression: string,
   env: Record<string, unknown>,
 ): boolean {
-  // || で分割（OR）
-  const orParts = expression.split("||").map((s) => s.trim());
-  if (orParts.length > 1) {
-    return orParts.some((part) => evalSimpleExpression(part, env));
+  const parser = new ExpressionParser(expression, env);
+  return parser.parse();
+}
+
+type TokenType =
+  | "LPAREN"
+  | "RPAREN"
+  | "AND"
+  | "OR"
+  | "EQ"
+  | "NEQ"
+  | "GT"
+  | "GTE"
+  | "LT"
+  | "LTE"
+  | "IDENT"
+  | "STRING"
+  | "NUMBER"
+  | "TRUE"
+  | "FALSE"
+  | "EOF";
+
+interface Token {
+  type: TokenType;
+  value?: string;
+}
+
+class ExpressionParser {
+  private readonly tokens: Token[];
+  private pos = 0;
+
+  constructor(
+    private readonly expression: string,
+    private readonly env: Record<string, unknown>,
+  ) {
+    this.tokens = this.tokenize(expression);
   }
 
-  // && で分割（AND）
-  const andParts = expression.split("&&").map((s) => s.trim());
-  if (andParts.length > 1) {
-    return andParts.every((part) => evalSimpleExpression(part, env));
+  parse(evaluate = true): boolean {
+    const result = this.parseOr(evaluate);
+    this.expect("EOF");
+    return result;
   }
 
-  // 比較式をパース
-  const eqMatch = expression.match(/^(\w+)\s*==\s*'([^']*)'$/);
-  if (eqMatch) {
-    const [, varName, value] = eqMatch;
-    return env[varName] === value;
+  private parseOr(evaluate: boolean): boolean {
+    let result = this.parseAnd(evaluate);
+    while (this.peek().type === "OR") {
+      this.consume("OR");
+      const shouldEvaluateRhs = evaluate && !result;
+      const rhs = this.parseAnd(shouldEvaluateRhs);
+      if (evaluate) {
+        result = result || rhs;
+      }
+    }
+    return evaluate ? result : false;
   }
 
-  const neqMatch = expression.match(/^(\w+)\s*!=\s*'([^']*)'$/);
-  if (neqMatch) {
-    const [, varName, value] = neqMatch;
-    return env[varName] !== value;
+  private parseAnd(evaluate: boolean): boolean {
+    let result = this.parsePrimary(evaluate);
+    while (this.peek().type === "AND") {
+      this.consume("AND");
+      const shouldEvaluateRhs = evaluate && result;
+      const rhs = this.parsePrimary(shouldEvaluateRhs);
+      if (evaluate) {
+        result = result && rhs;
+      }
+    }
+    return evaluate ? result : false;
   }
 
-  // true/false リテラル
-  if (expression === "true") return true;
-  if (expression === "false") return false;
+  private parsePrimary(evaluate: boolean): boolean {
+    const token = this.peek();
 
-  throw new Error(`Unsupported expression: ${expression}`);
+    if (token.type === "LPAREN") {
+      this.consume("LPAREN");
+      const value = this.parseOr(evaluate);
+      this.expect("RPAREN");
+      return value;
+    }
+
+    if (token.type === "TRUE") {
+      this.consume("TRUE");
+      return evaluate ? true : false;
+    }
+
+    if (token.type === "FALSE") {
+      this.consume("FALSE");
+      return false;
+    }
+
+    return this.parseComparison(evaluate);
+  }
+
+  private parseComparison(evaluate: boolean): boolean {
+    const identifier = this.consume("IDENT").value!;
+    const op = this.peek();
+    if (
+      op.type !== "EQ" &&
+      op.type !== "NEQ" &&
+      op.type !== "GT" &&
+      op.type !== "GTE" &&
+      op.type !== "LT" &&
+      op.type !== "LTE"
+    ) {
+      throw new Error(`Expected comparison operator near '${identifier}'`);
+    }
+    this.pos += 1;
+    const rhs = this.parseLiteral();
+    if (!evaluate) {
+      return false;
+    }
+    const lhsValue = resolveValue(this.env, identifier);
+    return compareValues(lhsValue, rhs, op.type);
+  }
+
+  private parseLiteral(): string | number | boolean {
+    const token = this.peek();
+    if (token.type === "STRING") {
+      return this.consume("STRING").value!;
+    }
+    if (token.type === "NUMBER") {
+      return Number(this.consume("NUMBER").value!);
+    }
+    if (token.type === "TRUE") {
+      this.consume("TRUE");
+      return true;
+    }
+    if (token.type === "FALSE") {
+      this.consume("FALSE");
+      return false;
+    }
+    throw new Error("Expected literal");
+  }
+
+  private tokenize(expression: string): Token[] {
+    const tokens: Token[] = [];
+    let i = 0;
+
+    while (i < expression.length) {
+      const ch = expression[i];
+
+      if (/\s/.test(ch)) {
+        i += 1;
+        continue;
+      }
+
+      if (expression.startsWith("&&", i)) {
+        tokens.push({ type: "AND" });
+        i += 2;
+        continue;
+      }
+
+      if (expression.startsWith("||", i)) {
+        tokens.push({ type: "OR" });
+        i += 2;
+        continue;
+      }
+
+      if (expression.startsWith("==", i)) {
+        tokens.push({ type: "EQ" });
+        i += 2;
+        continue;
+      }
+
+      if (expression.startsWith("!=", i)) {
+        tokens.push({ type: "NEQ" });
+        i += 2;
+        continue;
+      }
+
+      if (expression.startsWith(">=", i)) {
+        tokens.push({ type: "GTE" });
+        i += 2;
+        continue;
+      }
+
+      if (expression.startsWith("<=", i)) {
+        tokens.push({ type: "LTE" });
+        i += 2;
+        continue;
+      }
+
+      if (ch === ">") {
+        tokens.push({ type: "GT" });
+        i += 1;
+        continue;
+      }
+
+      if (ch === "<") {
+        tokens.push({ type: "LT" });
+        i += 1;
+        continue;
+      }
+
+      if (ch === "(") {
+        tokens.push({ type: "LPAREN" });
+        i += 1;
+        continue;
+      }
+
+      if (ch === ")") {
+        tokens.push({ type: "RPAREN" });
+        i += 1;
+        continue;
+      }
+
+      if (ch === "'") {
+        const { value, nextIndex } = readSingleQuotedString(expression, i);
+        tokens.push({ type: "STRING", value });
+        i = nextIndex;
+        continue;
+      }
+
+      const numMatch = expression.slice(i).match(/^-?\d+(?:\.\d+)?/);
+      if (numMatch) {
+        tokens.push({ type: "NUMBER", value: numMatch[0] });
+        i += numMatch[0].length;
+        continue;
+      }
+
+      const identMatch = expression.slice(i).match(/^[A-Za-z_][A-Za-z0-9_.]*/);
+      if (identMatch) {
+        const ident = identMatch[0];
+        if (ident === "true") {
+          tokens.push({ type: "TRUE" });
+        } else if (ident === "false") {
+          tokens.push({ type: "FALSE" });
+        } else {
+          tokens.push({ type: "IDENT", value: ident });
+        }
+        i += ident.length;
+        continue;
+      }
+
+      throw new Error(`Unexpected token in expression: '${ch}'`);
+    }
+
+    tokens.push({ type: "EOF" });
+    return tokens;
+  }
+
+  private peek(): Token {
+    return this.tokens[this.pos] ?? { type: "EOF" };
+  }
+
+  private consume(type: TokenType): Token {
+    const token = this.tokens[this.pos];
+    if (!token || token.type !== type) {
+      throw new Error(`Expected token '${type}'`);
+    }
+    this.pos += 1;
+    return token;
+  }
+
+  private expect(type: TokenType): void {
+    this.consume(type);
+  }
+}
+
+function readSingleQuotedString(
+  source: string,
+  startIndex: number,
+): { value: string; nextIndex: number } {
+  let i = startIndex + 1;
+  let value = "";
+
+  while (i < source.length) {
+    const ch = source[i];
+    if (ch === "\\") {
+      if (i + 1 < source.length) {
+        value += source[i + 1];
+        i += 2;
+        continue;
+      }
+      throw new Error("Invalid escape sequence");
+    }
+    if (ch === "'") {
+      return { value, nextIndex: i + 1 };
+    }
+    value += ch;
+    i += 1;
+  }
+
+  throw new Error("Unterminated string literal");
+}
+
+function resolveValue(env: Record<string, unknown>, keyPath: string): unknown {
+  if (!keyPath.includes(".")) {
+    return env[keyPath];
+  }
+
+  const parts = keyPath.split(".");
+  let current: unknown = env;
+  for (const part of parts) {
+    if (typeof current !== "object" || current === null) {
+      return undefined;
+    }
+    current = (current as Record<string, unknown>)[part];
+  }
+  return current;
+}
+
+function compareValues(
+  lhs: unknown,
+  rhs: string | number | boolean,
+  operator: "EQ" | "NEQ" | "GT" | "GTE" | "LT" | "LTE",
+): boolean {
+  switch (operator) {
+    case "EQ":
+      return lhs === rhs;
+    case "NEQ":
+      return lhs !== rhs;
+    case "GT":
+    case "GTE":
+    case "LT":
+    case "LTE": {
+      if (typeof lhs === "number" && typeof rhs === "number") {
+        if (operator === "GT") return lhs > rhs;
+        if (operator === "GTE") return lhs >= rhs;
+        if (operator === "LT") return lhs < rhs;
+        return lhs <= rhs;
+      }
+      if (typeof lhs === "string" && typeof rhs === "string") {
+        if (operator === "GT") return lhs > rhs;
+        if (operator === "GTE") return lhs >= rhs;
+        if (operator === "LT") return lhs < rhs;
+        return lhs <= rhs;
+      }
+      throw new Error(`Operator ${operator} requires matching number or string operands`);
+    }
+  }
 }
 
 // ============================================================

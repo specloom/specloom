@@ -194,5 +194,105 @@ describe("loader", () => {
       expect(() => validateSpec("string")).toThrow("must be an object");
       expect(() => validateSpec([])).toThrow("must be an object");
     });
+
+    it("未知リソースを参照する view でエラーになる", () => {
+      const data = {
+        version: "0.1",
+        resources: [{ name: "Post", fields: [{ name: "id", type: "string" }] }],
+        views: [
+          {
+            resource: "User",
+            type: "list",
+            columns: ["id"],
+            actions: [],
+          },
+        ],
+      };
+      expect(() => validateSpec(data)).toThrow("unknown resource");
+    });
+
+    it("action.confirm は true を許可する", () => {
+      const data = {
+        version: "0.1",
+        resources: [{ name: "Post", fields: [{ name: "id", type: "string" }] }],
+        views: [
+          {
+            resource: "Post",
+            type: "show",
+            fields: ["id"],
+            actions: [{ id: "delete", label: "削除", confirm: true }],
+          },
+        ],
+      };
+      const spec = validateSpec(data);
+      expect(spec.views[0].actions[0].confirm).toBe(true);
+    });
+
+    it("list.columns が resource の未知フィールドを参照するとエラー", () => {
+      const data = {
+        version: "0.1",
+        resources: [
+          {
+            name: "Post",
+            fields: [{ name: "id", type: "string" }],
+          },
+        ],
+        views: [
+          {
+            resource: "Post",
+            type: "list",
+            columns: ["title"],
+            actions: [],
+          },
+        ],
+      };
+
+      expect(() => validateSpec(data)).toThrow("columns[0] references unknown field");
+    });
+
+    it("form/show.fields が resource の未知フィールドを参照するとエラー", () => {
+      const data = {
+        version: "0.1",
+        resources: [
+          {
+            name: "Post",
+            fields: [{ name: "id", type: "string" }],
+          },
+        ],
+        views: [
+          {
+            resource: "Post",
+            type: "form",
+            fields: ["title"],
+            actions: [],
+          },
+        ],
+      };
+
+      expect(() => validateSpec(data)).toThrow("fields[0] references unknown field");
+    });
+
+    it("action.allowedWhen の構文が不正な場合はエラー", () => {
+      const data = {
+        version: "0.1",
+        resources: [{ name: "Post", fields: [{ name: "id", type: "string" }] }],
+        views: [
+          {
+            resource: "Post",
+            type: "show",
+            fields: ["id"],
+            actions: [
+              {
+                id: "delete",
+                label: "削除",
+                allowedWhen: "role == 'admin' && (",
+              },
+            ],
+          },
+        ],
+      };
+
+      expect(() => validateSpec(data)).toThrow("invalid expression syntax");
+    });
   });
 });

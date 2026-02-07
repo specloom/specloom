@@ -6,6 +6,8 @@ import type {
   FieldKind,
   FieldUI,
   ActionUI,
+  ActionDialog,
+  ActionApi,
   Option,
   FieldValidation,
   FilterExpression,
@@ -182,6 +184,7 @@ export interface FormFieldVM {
   value: unknown;
   required: boolean;
   readonly: boolean;
+  createOnly?: boolean;
   validation?: FieldValidation;
   errors: string[];
   ui?: FieldUI;
@@ -209,4 +212,6 @@ export interface ActionVM {
   allowed: boolean;
   confirm?: string;
   ui?: ActionUI;
+  dialog?: ActionDialog;
+  api?: ActionApi;
 }

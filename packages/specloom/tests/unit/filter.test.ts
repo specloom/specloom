@@ -136,10 +136,28 @@ describe("filter", () => {
         expect(evaluateFilter(filter2, data)).toBe(false);
       });
 
+      it("startsWith (legacy): 前方一致", () => {
+        const filter: FilterExpression = {
+          field: "title",
+          operator: "startsWith",
+          value: "Hello",
+        };
+        expect(evaluateFilter(filter, data)).toBe(true);
+      });
+
       it("ends_with: 後方一致", () => {
         const filter: FilterExpression = {
           field: "title",
           operator: "ends_with",
+          value: "World",
+        };
+        expect(evaluateFilter(filter, data)).toBe(true);
+      });
+
+      it("endsWith (legacy): 後方一致", () => {
+        const filter: FilterExpression = {
+          field: "title",
+          operator: "endsWith",
           value: "World",
         };
         expect(evaluateFilter(filter, data)).toBe(true);

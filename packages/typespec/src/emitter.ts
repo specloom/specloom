@@ -12,10 +12,12 @@ import {
 import type { SpecloomEmitterOptions } from "./lib.js";
 import {
   getResourceName,
+  getRequiredOneOf,
   getLabel,
   getKind,
   getOptions,
   getRelation,
+  getCardinality,
   getUI,
   isReadonly,
   isComputed,
@@ -33,6 +35,7 @@ import {
   getNamedFilters,
   getAction,
   getRowAction,
+  getPlacement,
   getRequiresSelection,
   getAllowedWhen,
   getConfirm,
@@ -58,6 +61,9 @@ interface Resource {
   name: string;
   label?: string;
   fields: Field[];
+  validation?: {
+    requiredOneOf?: string[][];
+  };
 }
 
 interface Field {
@@ -69,8 +75,15 @@ interface Field {
   readonly?: boolean;
   computed?: boolean;
   createOnly?: boolean;
+  filter?: true | string[];
   options?: { value: string; label: string }[];
-  relation?: { resource: string; labelField?: string };
+  relation?: {
+    resource: string;
+    labelField?: string;
+    valueField?: string;
+    searchable?: boolean;
+    cardinality?: string;
+  };
   validation?: {
     required?: boolean;
     minLength?: number;
@@ -78,6 +91,7 @@ interface Field {
     min?: number;
     max?: number;
     pattern?: string;
+    match?: string;
     minItems?: number;
     maxItems?: number;
   };
@@ -104,7 +118,7 @@ interface Action {
   label: string;
   selection?: "selected" | "query";
   allowedWhen?: string;
-  confirm?: string;
+  confirm?: string | true;
   ui?: Record<string, unknown>;
   dialog?: {
     title?: string;
@@ -221,6 +235,7 @@ function buildSpecsBySourceFile(program: Program): Map<string, Spec> {
 function buildResource(program: Program, model: Model): Resource {
   const resourceName = getResourceName(program, model)!;
   const label = getLabel(program, model);
+  const requiredOneOf = getRequiredOneOf(program, model);
   const fields: Field[] = [];
 
   for (const [, prop] of model.properties) {
@@ -238,6 +253,12 @@ function buildResource(program: Program, model: Model): Resource {
 
   if (label) {
     resource.label = label;
+  }
+
+  if (requiredOneOf && requiredOneOf.length > 0) {
+    resource.validation = {
+      requiredOneOf,
+    };
   }
 
   return resource;
@@ -287,6 +308,11 @@ function buildField(program: Program, prop: ModelProperty): Field {
     field.createOnly = true;
   }
 
+  const filter = getFilter(program, prop);
+  if (filter !== undefined) {
+    field.filter = filter;
+  }
+
   // Manual options override auto-generated enum options
   const options = getOptions(program, prop);
   if (options) {
@@ -295,7 +321,11 @@ function buildField(program: Program, prop: ModelProperty): Field {
 
   const relation = getRelation(program, prop);
   if (relation) {
-    field.relation = relation;
+    const cardinality = getCardinality(program, prop);
+    field.relation = {
+      ...relation,
+      ...(cardinality ? { cardinality } : {}),
+    };
   }
 
   const ui = getUI(program, prop);
@@ -348,6 +378,11 @@ function buildValidation(
     validation.pattern = pattern;
   }
 
+  const match = getMatch(program, prop);
+  if (match !== undefined) {
+    validation.match = match;
+  }
+
   const minItems = getMinItems(program, prop);
   if (minItems !== undefined) {
     validation.minItems = minItems;
@@ -370,11 +405,18 @@ function buildView(program: Program, model: Model): View {
   for (const [, prop] of model.properties) {
     const actionId = getAction(program, prop);
     const rowActionId = getRowAction(program, prop);
+    const placement = getPlacement(program, prop);
+    const resolvedRowActionId =
+      rowActionId ?? (actionId && placement === "row" ? actionId : undefined);
 
-    if (rowActionId) {
-      rowActions.push(buildAction(program, prop, rowActionId));
+    if (resolvedRowActionId) {
+      rowActions.push(buildAction(program, prop, resolvedRowActionId));
     } else if (actionId) {
-      actions.push(buildAction(program, prop, actionId));
+      const action = buildAction(program, prop, actionId);
+      if (placement === "bulk" && !action.selection) {
+        action.selection = "selected";
+      }
+      actions.push(action);
     }
   }
 

@@ -17,7 +17,7 @@ export function validateForm(
 
   for (const field of fields) {
     const value = data[field.name];
-    const fieldErrors = validateField(field, value);
+    const fieldErrors = validateField(field, value, data);
     if (fieldErrors.length > 0) {
       errors[field.name] = fieldErrors;
     }
@@ -26,10 +26,11 @@ export function validateForm(
   return errors;
 }
 
-/**
- * 単一フィールドをバリデーションする
- */
-export function validateField(field: Field, value: unknown): string[] {
+export function validateField(
+  field: Field,
+  value: unknown,
+  allValues?: Record<string, unknown>,
+): string[] {
   const errors: string[] = [];
   const validation = field.validation ?? {};
   const t = i18n.t();
@@ -80,6 +81,14 @@ export function validateField(field: Field, value: unknown): string[] {
     }
     if (validation.maxItems != null && value.length > validation.maxItems) {
       errors.push(t.validation.maxItems(validation.maxItems));
+    }
+  }
+
+  // 他フィールドとの一致チェック（例: password / passwordConfirm）
+  if (validation.match) {
+    const otherValue = allValues?.[validation.match];
+    if (otherValue !== undefined && value !== otherValue) {
+      errors.push(t.validation.match(validation.match));
     }
   }
 

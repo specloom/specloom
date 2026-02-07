@@ -97,7 +97,7 @@ model Contact {
 }
 ```
 
-## @confirm
+## @match
 
 確認入力を指定します。パスワードなどで使います。
 ```typespec
@@ -110,7 +110,7 @@ password: string;
 @label("パスワード確認")
 @kind("text")
 @inputHint("password")
-@confirm("password")
+@match("password")
 passwordConfirm: string;
 ```
 

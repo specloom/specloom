@@ -26,10 +26,15 @@ export interface Messages {
     readonly max: (max: number) => string;
     readonly minItems: (min: number) => string;
     readonly maxItems: (max: number) => string;
+    readonly match: (field: string) => string;
     readonly email: string;
     readonly url: string;
     readonly tel: string;
     readonly pattern: string;
+  };
+  // Action
+  readonly action: {
+    readonly confirm: string;
   };
   // Intl設定
   readonly intlLocale: string;

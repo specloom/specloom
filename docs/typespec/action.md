@@ -63,14 +63,30 @@ bulkDelete: never;
 @action("exportAll")
 @requiresSelection("query")
 exportAll: never;
+
+// legacy alias（true は "selected" と同義）
+@action("bulkDelete")
+@requiresSelection(true)
+bulkDelete: never;
 ```
 
 | 値 | JSON出力 | 説明 |
 |-----|---------|------|
 | `"selected"` | `selection: "selected"` | 選択した行に対して実行 |
 | `"query"` | `selection: "query"` | フィルター条件に一致する全件に対して実行 |
+| `true` (legacy) | `selection: "selected"` | 旧記法（新規定義では非推奨） |
 
 > **Note**: TypeSpec では `@requiresSelection`、JSON 出力では `selection` プロパティになります。
+
+## 推奨記法（Canonical）
+
+新規定義では次を推奨します。
+
+- Page action: `@action("...")`
+- Row action: `@rowAction("...")`
+- Bulk action: `@action("...") + @requiresSelection("selected" | "query")`
+
+`@placement("row" | "bulk")` は legacy alias です。既存 spec の互換用途のみを想定しています。
 
 ## アクションの配置
 
@@ -112,6 +128,8 @@ exportAll: never;
 |--------|------|
 | == | 等しい |
 | != | 等しくない |
+| >, >= | より大きい、以上（number / ISO日付文字列） |
+| <, <= | より小さい、以下（number / ISO日付文字列） |
 | && | AND |
 | \|\| | OR |
 
@@ -127,6 +145,42 @@ delete: never;
 // カスタムメッセージ
 @confirm("本当に削除しますか？")
 delete: never;
+```
+
+- `@confirm`（引数なし）は JSON で `confirm: true` を出力します。
+- 実際の文言は spec では固定せず、i18n で解決します。
+- 固定文言が必要な場合のみ `@confirm("...")` を使います。
+
+## @dialog
+
+アクション実行前に入力を求めるダイアログを定義します。
+
+```typespec
+model ArchiveDialog {
+  @label("理由")
+  @kind("longText")
+  @required
+  reason: string;
+}
+
+@rowAction("archive")
+@label("アーカイブ")
+@dialog(ArchiveDialog, #{ title: "アーカイブ理由" })
+archive: never;
+```
+
+## @api
+
+アクションの API エンドポイントを定義します。
+
+```typespec
+@rowAction("archive")
+@api(#{
+  path: "/posts/:id/archive",
+  method: "POST",
+  body: ["reason"]
+})
+archive: never;
 ```
 
 ## @ui

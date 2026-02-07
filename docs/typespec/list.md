@@ -206,6 +206,9 @@ model PostList {}
 | Bulk action | `@action` + `@requiresSelection` | 複数選択時に有効 |
 | Row action | `@rowAction` | 各行に表示 |
 
+> 推奨: `@rowAction` / `@requiresSelection` を canonical とし、`@placement` は legacy alias として扱います。  
+> `@placement("bulk")` を使う場合は `selection: "selected"` が暗黙付与されます。
+
 ### Page Actions（画面上部）
 
 ```typespec

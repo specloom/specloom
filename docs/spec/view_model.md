@@ -179,7 +179,15 @@ ViewModel の特徴：
   "label": "削除",
   "allowed": false,
   "confirm": "本当に削除しますか？",
-  "ui": { "icon": "trash", "variant": "danger" }
+  "ui": { "icon": "trash", "variant": "danger" },
+  "dialog": {
+    "title": "削除理由",
+    "fields": [{ "name": "reason", "label": "理由" }]
+  },
+  "api": {
+    "path": "/posts/:id/delete",
+    "method": "POST"
+  }
 }
 ```
 
@@ -190,6 +198,8 @@ ViewModel の特徴：
 | allowed | boolean | **評価済み**の許可状態 |
 | confirm? | string | 確認メッセージ |
 | ui? | ActionUI | UI ヒント |
+| dialog? | ActionDialog | 実行前ダイアログ定義 |
+| api? | ActionApi | 実行API定義 |
 
 ## Show ViewModel
 
@@ -383,6 +393,7 @@ ViewModel の特徴：
 | value | any | 現在値 |
 | required | boolean | 必須フラグ |
 | readonly | boolean | 読み取り専用フラグ |
+| createOnly? | boolean | create 専用フィールド |
 | validation? | Validation | バリデーションルール |
 | errors | string[] | バリデーションエラー |
 | ui? | FieldUI | UI ヒント |
@@ -396,7 +407,9 @@ ViewModel の特徴：
 {
   "hint": "badge",
   "inputHint": "select",
-  "searchable": true
+  "searchable": true,
+  "icon": "tag",
+  "variant": "subtle"
 }
 ```
 
@@ -405,6 +418,8 @@ ViewModel の特徴：
 | hint? | string | 表示ヒント（badge, avatar, etc） |
 | inputHint? | string | 入力ヒント（select, autocomplete, etc） |
 | searchable? | boolean | 検索可能フラグ |
+| icon? | string | 補助アイコン |
+| variant? | string | 表示バリアント |
 
 ### ActionUI
 
@@ -444,6 +459,7 @@ ViewModel の特徴：
   "min": 0,
   "max": 100,
   "pattern": "email",
+  "match": "password",
   "minItems": 1,
   "maxItems": 5
 }

@@ -2,6 +2,7 @@ import { createTypeSpecLibrary, type JSONSchemaType } from "@typespec/compiler";
 
 export interface SpecloomEmitterOptions {
   "output-file"?: string;
+  "output-dir"?: string;
 }
 
 const EmitterOptionsSchema: JSONSchemaType<SpecloomEmitterOptions> = {
@@ -9,6 +10,7 @@ const EmitterOptionsSchema: JSONSchemaType<SpecloomEmitterOptions> = {
   additionalProperties: false,
   properties: {
     "output-file": { type: "string", nullable: true },
+    "output-dir": { type: "string", nullable: true },
   },
   required: [],
 };
@@ -21,10 +23,12 @@ export const $lib = createTypeSpecLibrary({
   },
   state: {
     resource: { description: "State for @resource decorator" },
+    requiredOneOf: { description: "State for @requiredOneOf decorator" },
     label: { description: "State for @label decorator" },
     kind: { description: "State for @kind decorator" },
     options: { description: "State for @options decorator" },
     relation: { description: "State for @relation decorator" },
+    cardinality: { description: "State for @cardinality decorator" },
     ui: { description: "State for @ui decorator" },
     readonly: { description: "State for @readonly decorator" },
     computed: { description: "State for @computed decorator" },
@@ -41,6 +45,7 @@ export const $lib = createTypeSpecLibrary({
     namedFilters: { description: "State for @namedFilters decorator" },
     action: { description: "State for @action decorator" },
     rowAction: { description: "State for @rowAction decorator" },
+    placement: { description: "State for @placement decorator" },
     requiresSelection: {
       description: "State for @requiresSelection decorator",
     },

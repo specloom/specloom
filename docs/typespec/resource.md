@@ -17,6 +17,26 @@ model Post {
 
 `@resource` を付けると、そのモデルが specloom の Resource として認識されます。
 
+## 計算フィールド（@computed）
+
+`@computed` は DB に保存しない計算値フィールドを表します。
+
+```typespec
+@resource
+model User {
+  firstName: string;
+  lastName: string;
+
+  @label("氏名")
+  @computed
+  fullName: string;
+}
+```
+
+- Form では編集対象から除外されます
+- List / Show では表示可能です
+- 値の算出ロジックはサーバー側の責務です
+
 ## @label
 
 表示名を設定します。

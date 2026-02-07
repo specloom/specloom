@@ -112,6 +112,21 @@ model PostList {}
 | **アニメーション** | UX デザイン依存 |
 | **CSS クラス** | 実装詳細 |
 
+## Canonical と Legacy
+
+新規 spec は **canonical 記法** を使い、legacy は互換目的でのみ利用します。
+
+| 分類 | Canonical | Legacy alias |
+|------|-----------|--------------|
+| Filter operator | `starts_with`, `ends_with`, `not_in` など snake_case | `startsWith`, `endsWith`, `notIn` など camelCase |
+| UI ヒント | `@ui(#{ ... })` | `@hint`, `@inputHint` |
+| Row/Bulk action | `@rowAction`, `@requiresSelection` | `@placement("row" \| "bulk")` |
+
+原則:
+- ドキュメントと新規サンプルは canonical を使う
+- legacy は読み込み時に正規化して受理する
+- 将来は warning を追加し、段階的に縮退可能な状態を保つ
+
 ### ui.hint の役割
 
 `hint` は「意味的なヒント」であり、「見た目の指定」ではない。
@@ -165,7 +180,7 @@ namedFilter と自由検索は共存する：
     ],
     "custom": {
       "and": [
-        { "field": "title", "op": "contains", "value": "React" }
+        { "field": "title", "operator": "contains", "value": "React" }
       ]
     }
   }

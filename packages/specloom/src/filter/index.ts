@@ -121,6 +121,7 @@ function evaluateOperator(
       );
 
     case "starts_with":
+    case "startsWith":
       return (
         typeof fieldValue === "string" &&
         typeof compareValue === "string" &&
@@ -128,6 +129,7 @@ function evaluateOperator(
       );
 
     case "ends_with":
+    case "endsWith":
       return (
         typeof fieldValue === "string" &&
         typeof compareValue === "string" &&
@@ -156,15 +158,18 @@ function evaluateOperator(
       return Array.isArray(compareValue) && compareValue.includes(fieldValue);
 
     case "not_in":
+    case "notIn":
       return Array.isArray(compareValue) && !compareValue.includes(fieldValue);
 
     // 存在演算子
     case "is_null":
+    case "isNull":
       return compareValue
         ? fieldValue === null || fieldValue === undefined
         : fieldValue !== null && fieldValue !== undefined;
 
     case "is_empty":
+    case "isEmpty":
       if (compareValue) {
         return (
           fieldValue === "" ||
@@ -182,6 +187,7 @@ function evaluateOperator(
 
     // 配列演算子
     case "has_any":
+    case "hasAny":
       return (
         Array.isArray(fieldValue) &&
         Array.isArray(compareValue) &&
@@ -189,6 +195,7 @@ function evaluateOperator(
       );
 
     case "has_all":
+    case "hasAll":
       return (
         Array.isArray(fieldValue) &&
         Array.isArray(compareValue) &&
@@ -196,6 +203,7 @@ function evaluateOperator(
       );
 
     case "has_none":
+    case "hasNone":
       return (
         Array.isArray(fieldValue) &&
         Array.isArray(compareValue) &&

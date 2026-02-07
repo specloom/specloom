@@ -183,6 +183,27 @@ describe("validation", () => {
         expect(validateField(field, "")).toEqual([]);
       });
     });
+
+    describe("match", () => {
+      const field: Field = {
+        name: "passwordConfirm",
+        type: "string",
+        label: "確認用パスワード",
+        validation: { match: "password" },
+      };
+
+      it("一致する場合はエラーなし", () => {
+        const values = { password: "secret", passwordConfirm: "secret" };
+        expect(validateField(field, "secret", values)).toEqual([]);
+      });
+
+      it("不一致の場合はエラー", () => {
+        const values = { password: "secret", passwordConfirm: "different" };
+        const errors = validateField(field, "different", values);
+        expect(errors).toHaveLength(1);
+        expect(errors[0]).toContain("一致");
+      });
+    });
   });
 
   describe("validateForm", () => {

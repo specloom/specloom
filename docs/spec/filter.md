@@ -19,7 +19,7 @@ model Post {
   @filter
   status: Status;
   
-  @filter(["eq", "contains", "startsWith"])
+  @filter(["eq", "contains", "starts_with"])
   title: string;
   
   @filter(["gte", "lte", "eq"])

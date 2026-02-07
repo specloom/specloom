@@ -72,12 +72,14 @@ describe("i18n", () => {
       expect(ja.validation.max(100)).toBe("100以下の値を入力してください");
       expect(ja.validation.minItems(1)).toBe("1件以上選択してください");
       expect(ja.validation.maxItems(5)).toBe("5件以内で選択してください");
+      expect(ja.validation.match("パスワード")).toBe("パスワードと一致しません");
       expect(ja.validation.email).toBe(
         "有効なメールアドレスを入力してください",
       );
       expect(ja.validation.url).toBe("有効なURLを入力してください");
       expect(ja.validation.tel).toBe("有効な電話番号を入力してください");
       expect(ja.validation.pattern).toBe("入力形式が正しくありません");
+      expect(ja.action.confirm).toBe("本当によろしいですか？");
     });
 
     it("Intl 設定", () => {
@@ -101,10 +103,12 @@ describe("i18n", () => {
       expect(en.validation.max(100)).toBe("Must be at most 100");
       expect(en.validation.minItems(1)).toBe("Select at least 1 items");
       expect(en.validation.maxItems(5)).toBe("Select at most 5 items");
+      expect(en.validation.match("password")).toBe("Must match password");
       expect(en.validation.email).toBe("Please enter a valid email address");
       expect(en.validation.url).toBe("Please enter a valid URL");
       expect(en.validation.tel).toBe("Please enter a valid phone number");
       expect(en.validation.pattern).toBe("Invalid format");
+      expect(en.action.confirm).toBe("Are you sure?");
     });
 
     it("Intl 設定", () => {

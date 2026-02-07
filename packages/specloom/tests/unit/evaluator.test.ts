@@ -6,6 +6,7 @@ import {
   evaluateExpression,
   EvaluateError,
 } from "../../src/evaluator/index.js";
+import { i18n } from "../../src/i18n/index.js";
 import type {
   Resource,
   ListView,
@@ -133,9 +134,47 @@ describe("evaluator", () => {
       ).toBe(false);
     });
 
+    it("比較演算子（>, >=, <, <=）を評価できる", () => {
+      const context = createContext("admin");
+      const data = { count: 10, createdAt: "2024-01-15" };
+      expect(evaluateExpression("count > 5", context, data)).toBe(true);
+      expect(evaluateExpression("count >= 10", context, data)).toBe(true);
+      expect(evaluateExpression("count < 10", context, data)).toBe(false);
+      expect(evaluateExpression("count <= 10", context, data)).toBe(true);
+      expect(
+        evaluateExpression("createdAt >= '2024-01-01'", context, data),
+      ).toBe(true);
+    });
+
+    it("OR/AND は短絡評価する", () => {
+      const context = createContext("admin");
+      expect(evaluateExpression("true || role > 1", context, {})).toBe(true);
+      expect(evaluateExpression("false && role > 1", context, {})).toBe(false);
+    });
+
+    it("括弧を含む複合式を評価できる", () => {
+      const context = createContext("editor");
+      const data = { status: "draft" };
+      expect(
+        evaluateExpression(
+          "(role == 'admin' || role == 'editor') && status == 'draft'",
+          context,
+          data,
+        ),
+      ).toBe(true);
+      expect(
+        evaluateExpression(
+          "role == 'admin' || (role == 'editor' && status == 'published')",
+          context,
+          data,
+        ),
+      ).toBe(false);
+    });
+
     it("不正な式は false を返す", () => {
       const context = createContext("admin");
       expect(evaluateExpression("invalid expression", context, {})).toBe(false);
+      expect(evaluateExpression("(role == 'admin'", context, {})).toBe(false);
     });
   });
 
@@ -313,6 +352,80 @@ describe("evaluator", () => {
       expect(vm.filters.named[1].active).toBe(true);
     });
 
+    it("namedFilter の条件式で operator/op を正規化する", () => {
+      const resource = createResource();
+      const context = createContext("admin");
+      const data: Record<string, unknown>[] = [];
+      const viewWithExpression: ListView = {
+        ...listView,
+        namedFilters: [
+          {
+            id: "published",
+            label: "公開中",
+            filter: { field: "status", operator: "eq", value: "published" },
+          },
+          {
+            id: "draft",
+            label: "下書き",
+            filter: { field: "status", op: "eq", value: "draft" },
+          },
+          {
+            id: "starts-with",
+            label: "前方一致",
+            filter: { field: "title", operator: "startsWith", value: "Hello" },
+          },
+        ],
+      };
+
+      const vm = evaluateListView({
+        view: viewWithExpression,
+        resource,
+        context,
+        data,
+      });
+
+      expect(vm.filters.named[0].filter).toEqual({
+        field: "status",
+        operator: "eq",
+        value: "published",
+      });
+      expect(vm.filters.named[1].filter).toEqual({
+        field: "status",
+        operator: "eq",
+        value: "draft",
+      });
+      expect(vm.filters.named[2].filter).toEqual({
+        field: "title",
+        operator: "starts_with",
+        value: "Hello",
+      });
+    });
+
+    it("namedFilter の未知演算子は無効化される", () => {
+      const resource = createResource();
+      const context = createContext("admin");
+      const data: Record<string, unknown>[] = [];
+      const viewWithInvalidOperator: ListView = {
+        ...listView,
+        namedFilters: [
+          {
+            id: "invalid",
+            label: "Invalid",
+            filter: { field: "status", operator: "unknown_operator", value: "draft" },
+          },
+        ],
+      };
+
+      const vm = evaluateListView({
+        view: viewWithInvalidOperator,
+        resource,
+        context,
+        data,
+      });
+
+      expect(vm.filters.named[0].filter).toBeUndefined();
+    });
+
     it("検索と選択状態を正しく変換する", () => {
       const resource = createResource();
       const context = createContext("admin");
@@ -469,6 +582,26 @@ describe("evaluator", () => {
 
       expect(vm.clickAction).toBeUndefined();
     });
+
+    it("rowActions が未定義でも rows.actions は空配列になる", () => {
+      const resource = createResource();
+      const context = createContext("admin");
+      const viewWithoutRowActions: ListView = {
+        ...listView,
+        rowActions: undefined,
+      };
+      const data = [{ id: "1", title: "Hello", status: "published" }];
+
+      const vm = evaluateListView({
+        view: viewWithoutRowActions,
+        resource,
+        context,
+        data,
+      });
+
+      expect(vm.rows).toHaveLength(1);
+      expect(vm.rows[0].actions).toEqual([]);
+    });
   });
 
   describe("evaluateShowView", () => {
@@ -559,6 +692,48 @@ describe("evaluator", () => {
         data,
       });
       expect(editorVm.actions[0].allowed).toBe(false);
+    });
+
+    it("ActionVM に dialog/api を引き継ぎ、confirm=true をローカライズする", () => {
+      const resource = createResource();
+      const context = createContext("admin");
+      const viewWithDialog: ShowView = {
+        ...showView,
+        actions: [
+          {
+            id: "archive",
+            label: "アーカイブ",
+            confirm: true,
+            dialog: {
+              title: "理由を入力",
+              fields: [{ name: "reason", label: "理由" }],
+            },
+            api: {
+              path: "/posts/:id/archive",
+              method: "POST",
+              body: ["reason"],
+            },
+          },
+        ],
+      };
+
+      const vm = evaluateShowView({
+        view: viewWithDialog,
+        resource,
+        context,
+        data: { id: "1", title: "Hello" },
+      });
+
+      expect(vm.actions[0].dialog).toEqual({
+        title: "理由を入力",
+        fields: [{ name: "reason", label: "理由" }],
+      });
+      expect(vm.actions[0].api).toEqual({
+        path: "/posts/:id/archive",
+        method: "POST",
+        body: ["reason"],
+      });
+      expect(vm.actions[0].confirm).toBe(i18n.t().action.confirm);
     });
 
     it("存在しないフィールドでエラーになる", () => {
@@ -673,6 +848,43 @@ describe("evaluator", () => {
         value: "Hello",
         required: true,
       });
+    });
+
+    it("createOnly フィールドは edit モードで readonly になる", () => {
+      const resource = createResource();
+      resource.fields.push({
+        name: "inviteCode",
+        type: "string",
+        label: "招待コード",
+        createOnly: true,
+      });
+      const viewWithCreateOnly: FormView = {
+        ...formView,
+        fields: [...formView.fields, "inviteCode"],
+      };
+      const context = createContext("admin");
+
+      const createVm = evaluateFormView({
+        view: viewWithCreateOnly,
+        resource,
+        context,
+        mode: "create",
+      });
+      const editVm = evaluateFormView({
+        view: viewWithCreateOnly,
+        resource,
+        context,
+        data: { id: "1", inviteCode: "ABC123" },
+        mode: "edit",
+      });
+
+      const createField = createVm.fields.find((f) => f.name === "inviteCode");
+      const editField = editVm.fields.find((f) => f.name === "inviteCode");
+
+      expect(createField?.createOnly).toBe(true);
+      expect(createField?.readonly).toBe(false);
+      expect(editField?.createOnly).toBe(true);
+      expect(editField?.readonly).toBe(true);
     });
 
     it("バリデーションエラーを反映する", () => {

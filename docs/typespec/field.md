@@ -86,8 +86,8 @@ author: User;
 | inputHint | string | Field | 入力ヒント（select, autocomplete, richtext） |
 | format | string | Field | 表示フォーマット（currency, relative） |
 | link | boolean | Field | クリック可能にする |
-| icon | string | Action | アイコン（plus, trash, pencil） |
-| variant | string | Action | 種類（primary, danger, warning） |
+| icon | string | Field/Action | アイコン（plus, trash, pencil） |
+| variant | string | Field/Action | 種類（primary, danger, warning） |
 
 ```typespec
 // Field
@@ -109,6 +109,10 @@ author: User;
 @ui(#{ icon: "trash", variant: "danger" })
 delete: never;
 ```
+
+### Legacy aliases
+
+`@hint("...")` と `@inputHint("...")` も使えますが、**新規定義では `@ui(#{ ... })` を推奨**します。
 
 ### format 一覧
 
@@ -233,6 +237,19 @@ model Order {
 | @readonly | ある | 不可 |
 | @computed | ない | 不可 |
 
+## @createOnly
+
+作成時のみ編集可能にしたいフィールドに使います。
+
+```typespec
+@label("初期パスワード")
+@createOnly
+password: string;
+```
+
+- create モード: 通常入力可能
+- edit モード: ViewModel で `readonly: true` として評価
+
 ## @label
 
 フィールドの表示名を設定します。
@@ -271,7 +288,7 @@ status: string;
 status: string;
 
 // 文字列検索を許可
-@filter(["eq", "contains", "startsWith"])
+@filter(["eq", "contains", "starts_with"])
 title: string;
 
 // 範囲検索を許可
@@ -287,12 +304,12 @@ createdAt: utcDateTime;
 | `ne` | 等しくない | すべて |
 | `gt`, `gte` | より大きい、以上 | number, date |
 | `lt`, `lte` | より小さい、以下 | number, date |
-| `in`, `notIn` | いずれかに一致 | すべて |
+| `in`, `not_in` | いずれかに一致 | すべて |
 | `contains` | 部分一致 | string |
-| `startsWith` | 前方一致 | string |
-| `endsWith` | 後方一致 | string |
-| `isNull` | null 判定 | すべて |
-| `hasAny`, `hasAll` | 配列に含む | array |
+| `starts_with` | 前方一致 | string |
+| `ends_with` | 後方一致 | string |
+| `is_null` | null 判定 | すべて |
+| `has_any`, `has_all` | 配列に含む | array |
 
 詳細は [Filter Spec](../spec/filter.md) を参照。
 
@@ -307,8 +324,8 @@ author: User;
 
 使用例（namedFilter や API クエリで）:
 ```json
-{ "field": "author.id", "op": "eq", "value": "user-1" }
-{ "field": "author.role", "op": "eq", "value": "admin" }
+{ "field": "author.id", "operator": "eq", "value": "user-1" }
+{ "field": "author.role", "operator": "eq", "value": "admin" }
 ```
 
 ## 例

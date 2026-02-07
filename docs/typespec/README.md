@@ -141,6 +141,20 @@ specloom の spec は 3 つの要素で構成されます。
 | View | 画面の定義（list / form / show） |
 | Action | 操作の定義（作成、編集、削除など） |
 
+## 記法ポリシー
+
+新規定義は canonical 記法を推奨します。
+
+- Filter 演算子: snake_case（例: `starts_with`）
+- UI 指定: `@ui(#{ ... })`
+- Row/Bulk action: `@rowAction` と `@requiresSelection`
+
+以下は legacy alias（互換用途）です。
+
+- `startsWith` / `endsWith` / `notIn` など camelCase 演算子
+- `@hint` / `@inputHint`
+- `@placement("row" | "bulk")`
+
 ## ドキュメント
 
 | ドキュメント | 内容 |

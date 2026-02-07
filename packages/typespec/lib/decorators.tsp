@@ -13,6 +13,12 @@ namespace S;
 extern dec resource(target: Model, name?: valueof string);
 
 /**
+ * Require at least one field in the group
+ * @param fields Field names that require at least one non-empty value
+ */
+extern dec requiredOneOf(target: Model, fields: valueof string[]);
+
+/**
  * Set display label
  * @param label Display label
  */
@@ -35,7 +41,18 @@ extern dec options(target: ModelProperty, options: valueof {value: string, label
  * @param resource Related resource model
  * @param options Relation options
  */
-extern dec relation(target: ModelProperty, resource: Model, options?: valueof {labelField?: string});
+extern dec relation(target: ModelProperty, resource: Model, options?: valueof {
+  labelField?: string,
+  valueField?: string,
+  searchable?: boolean
+});
+
+/**
+ * Set relation cardinality (legacy alias, usually inferred from type)
+ * Prefer @relation(..., #{ ... }) as canonical syntax.
+ * @param cardinality "one" or "many"
+ */
+extern dec cardinality(target: ModelProperty, cardinality: valueof "one" | "many");
 
 /**
  * Set UI hints
@@ -50,6 +67,20 @@ extern dec ui(target: Model | ModelProperty, options: valueof {
   variant?: string,
   searchable?: boolean
 });
+
+/**
+ * Set UI hint (legacy alias of @ui(#{ hint: ... }))
+ * Prefer @ui as canonical syntax.
+ * @param hint UI hint
+ */
+extern dec hint(target: ModelProperty, hint: valueof string);
+
+/**
+ * Set UI input hint (legacy alias of @ui(#{ inputHint: ... }))
+ * Prefer @ui as canonical syntax.
+ * @param inputHint UI input hint
+ */
+extern dec inputHint(target: ModelProperty, inputHint: valueof string);
 
 /**
  * Mark field as readonly
@@ -157,10 +188,17 @@ extern dec action(target: ModelProperty, id: valueof string);
 extern dec rowAction(target: ModelProperty, id: valueof string);
 
 /**
+ * Set action placement (legacy alias)
+ * Prefer @rowAction for row actions and @requiresSelection for bulk actions.
+ * @param placement Action placement
+ */
+extern dec placement(target: ModelProperty, placement: valueof "header" | "row" | "bulk");
+
+/**
  * Set selection requirement for bulk actions
  * @param target Selection target ("selected" for selected rows, "query" for all filtered rows)
  */
-extern dec requiresSelection(target: ModelProperty, selection: valueof "selected" | "query");
+extern dec requiresSelection(target: ModelProperty, selection: valueof "selected" | "query" | boolean);
 
 /**
  * Set permission expression
@@ -170,9 +208,10 @@ extern dec allowedWhen(target: ModelProperty, expression: valueof string);
 
 /**
  * Set confirmation message
+ * If omitted, emitted spec uses `confirm: true` (message resolved by i18n at runtime).
  * @param message Confirmation message
  */
-extern dec confirm(target: ModelProperty, message: valueof string);
+extern dec confirm(target: ModelProperty, message?: valueof string);
 
 /**
  * Define a dialog for an action
