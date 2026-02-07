@@ -5,7 +5,7 @@ Show View は詳細画面を定義します。
 ## 基本
 
 ```typespec
-@view(Post, "show")
+@S.view(Post, "show")
 model PostShow {}
 ```
 
@@ -14,8 +14,8 @@ model PostShow {}
 表示するフィールドを指定します。
 
 ```typespec
-@view(Post, "show")
-@fields(["title", "body", "status", "author", "tags", "createdAt", "updatedAt"])
+@S.view(Post, "show")
+@S.fields(["title", "body", "status", "author", "tags", "createdAt", "updatedAt"])
 model PostShow {}
 ```
 
@@ -30,18 +30,18 @@ model PostShow {}
 Relation フィールドは Resource の `@ui({ hint })` で表示方法が決まります。
 
 ```typespec
-@resource
+@S.resource
 model Post {
-  @label("著者")
-  @kind("relation")
-  @relation(User, #{ labelField: "name" })
-  @ui(#{ hint: "avatar", link: true })
+  @S.label("著者")
+  @S.kind("relation")
+  @S.relation(User, #{ labelField: "name" })
+  @S.ui(#{ hint: "avatar", link: true })
   author: User;
 
-  @label("タグ")
-  @kind("relation")
-  @relation(Tag, #{ labelField: "name" })
-  @ui(#{ hint: "badge" })
+  @S.label("タグ")
+  @S.kind("relation")
+  @S.relation(Tag, #{ labelField: "name" })
+  @S.ui(#{ hint: "badge" })
   tags: Tag[];
 }
 ```
@@ -53,20 +53,20 @@ model Post {
 ## Actions
 
 ```typespec
-@view(Post, "show")
-@fields(["title", "body", "status", "author", "tags", "createdAt", "updatedAt"])
+@S.view(Post, "show")
+@S.fields(["title", "body", "status", "author", "tags", "createdAt", "updatedAt"])
 model PostShow {
-  @action("edit")
-  @label("編集")
-  @allowedWhen("role == 'admin' || role == 'editor'")
-  @ui(#{ icon: "pencil" })
+  @S.action("edit")
+  @S.label("編集")
+  @S.allowedWhen("role == 'admin' || role == 'editor'")
+  @S.ui(#{ icon: "pencil" })
   edit: never;
 
-  @action("delete")
-  @label("削除")
-  @allowedWhen("role == 'admin'")
-  @confirm("本当に削除しますか？")
-  @ui(#{ icon: "trash", variant: "danger" })
+  @S.action("delete")
+  @S.label("削除")
+  @S.allowedWhen("role == 'admin'")
+  @S.confirm("本当に削除しますか？")
+  @S.ui(#{ icon: "trash", variant: "danger" })
   delete: never;
 }
 ```
@@ -76,23 +76,23 @@ model PostShow {
 レコードの状態に応じたアクションを定義できます。
 
 ```typespec
-@view(Post, "show")
+@S.view(Post, "show")
 model PostShow {
-  @action("publish")
-  @label("公開")
-  @allowedWhen("status == 'draft'")
-  @ui(#{ icon: "globe", variant: "primary" })
+  @S.action("publish")
+  @S.label("公開")
+  @S.allowedWhen("status == 'draft'")
+  @S.ui(#{ icon: "globe", variant: "primary" })
   publish: never;
 
-  @action("unpublish")
-  @label("非公開")
-  @allowedWhen("status == 'published'")
+  @S.action("unpublish")
+  @S.label("非公開")
+  @S.allowedWhen("status == 'published'")
   unpublish: never;
 
-  @action("archive")
-  @label("アーカイブ")
-  @allowedWhen("status == 'published'")
-  @confirm("アーカイブしますか？")
+  @S.action("archive")
+  @S.label("アーカイブ")
+  @S.allowedWhen("status == 'published'")
+  @S.confirm("アーカイブしますか？")
   archive: never;
 }
 ```
@@ -100,34 +100,34 @@ model PostShow {
 ## 完全な例
 
 ```typespec
-@view(Post, "show")
-@fields(["title", "body", "status", "author", "tags", "createdAt", "updatedAt"])
+@S.view(Post, "show")
+@S.fields(["title", "body", "status", "author", "tags", "createdAt", "updatedAt"])
 model PostShow {
   // 基本アクション
-  @action("edit")
-  @label("編集")
-  @allowedWhen("role == 'admin' || role == 'editor'")
-  @ui(#{ icon: "pencil" })
+  @S.action("edit")
+  @S.label("編集")
+  @S.allowedWhen("role == 'admin' || role == 'editor'")
+  @S.ui(#{ icon: "pencil" })
   edit: never;
 
-  @action("delete")
-  @label("削除")
-  @allowedWhen("role == 'admin'")
-  @confirm("本当に削除しますか？")
-  @ui(#{ icon: "trash", variant: "danger" })
+  @S.action("delete")
+  @S.label("削除")
+  @S.allowedWhen("role == 'admin'")
+  @S.confirm("本当に削除しますか？")
+  @S.ui(#{ icon: "trash", variant: "danger" })
   delete: never;
 
   // 状態遷移
-  @action("publish")
-  @label("公開")
-  @allowedWhen("status == 'draft'")
-  @ui(#{ icon: "globe", variant: "primary" })
+  @S.action("publish")
+  @S.label("公開")
+  @S.allowedWhen("status == 'draft'")
+  @S.ui(#{ icon: "globe", variant: "primary" })
   publish: never;
 
-  @action("archive")
-  @label("アーカイブ")
-  @allowedWhen("status == 'published'")
-  @confirm
+  @S.action("archive")
+  @S.label("アーカイブ")
+  @S.allowedWhen("status == 'published'")
+  @S.confirm
   archive: never;
 }
 ```

@@ -5,7 +5,7 @@ Form View は作成・編集画面を定義します。
 ## 基本
 
 ```typespec
-@view(Post, "form")
+@S.view(Post, "form")
 model PostForm {}
 ```
 
@@ -14,8 +14,8 @@ model PostForm {}
 表示するフィールドを指定します。
 
 ```typespec
-@view(Post, "form")
-@fields(["title", "body", "status", "author", "tags"])
+@S.view(Post, "form")
+@S.fields(["title", "body", "status", "author", "tags"])
 model PostForm {}
 ```
 
@@ -26,8 +26,8 @@ model PostForm {}
 `@fields` の配列順がフォームの表示順になります。
 
 ```typespec
-@view(Post, "form")
-@fields(["title", "status", "body", "author", "tags"])
+@S.view(Post, "form")
+@S.fields(["title", "status", "body", "author", "tags"])
 model PostForm {}
 ```
 
@@ -36,28 +36,28 @@ model PostForm {}
 Relation フィールドは Resource の `@ui` で入力方法を指定します。
 
 ```typespec
-@resource
+@S.resource
 model Post {
-  @label("著者")
-  @kind("relation")
-  @relation(User, #{ labelField: "name" })
-  @required
-  @ui(#{ inputHint: "autocomplete", searchable: true })
+  @S.label("著者")
+  @S.kind("relation")
+  @S.relation(User, #{ labelField: "name" })
+  @S.required
+  @S.ui(#{ inputHint: "autocomplete", searchable: true })
   author: User;
 
-  @label("カテゴリ")
-  @kind("relation")
-  @relation(Category, #{ labelField: "name" })
-  @required
-  @ui(#{ inputHint: "select" })
+  @S.label("カテゴリ")
+  @S.kind("relation")
+  @S.relation(Category, #{ labelField: "name" })
+  @S.required
+  @S.ui(#{ inputHint: "select" })
   category: Category;
 
-  @label("タグ")
-  @kind("relation")
-  @relation(Tag, #{ labelField: "name" })
+  @S.label("タグ")
+  @S.kind("relation")
+  @S.relation(Tag, #{ labelField: "name" })
   @minItems(1)
   @maxItems(5)
-  @ui(#{ inputHint: "autocomplete", searchable: true })
+  @S.ui(#{ inputHint: "autocomplete", searchable: true })
   tags: Tag[];
 }
 ```
@@ -79,16 +79,16 @@ model Post {
 ## Actions
 
 ```typespec
-@view(Post, "form")
-@fields(["title", "body", "status", "author", "tags"])
+@S.view(Post, "form")
+@S.fields(["title", "body", "status", "author", "tags"])
 model PostForm {
-  @action("save")
-  @label("保存")
-  @ui(#{ icon: "check", variant: "primary" })
+  @S.action("save")
+  @S.label("保存")
+  @S.ui(#{ icon: "check", variant: "primary" })
   save: never;
 
-  @action("cancel")
-  @label("キャンセル")
+  @S.action("cancel")
+  @S.label("キャンセル")
   cancel: never;
 }
 ```
@@ -121,21 +121,21 @@ UI は `mode` を見て：
 ## 完全な例
 
 ```typespec
-@view(Post, "form")
-@fields(["title", "body", "status", "author", "tags"])
+@S.view(Post, "form")
+@S.fields(["title", "body", "status", "author", "tags"])
 model PostForm {
-  @action("save")
-  @label("保存")
-  @ui(#{ icon: "check", variant: "primary" })
+  @S.action("save")
+  @S.label("保存")
+  @S.ui(#{ icon: "check", variant: "primary" })
   save: never;
 
-  @action("cancel")
-  @label("キャンセル")
+  @S.action("cancel")
+  @S.label("キャンセル")
   cancel: never;
 
-  @action("saveDraft")
-  @label("下書き保存")
-  @allowedWhen("status == 'draft'")
+  @S.action("saveDraft")
+  @S.label("下書き保存")
+  @S.allowedWhen("status == 'draft'")
   saveDraft: never;
 }
 ```

@@ -6,13 +6,13 @@ Action は操作を定義します。
 
 ```typespec
 // Page action (ページレベルのアクション)
-@action("create")
-@label("新規作成")
+@S.action("create")
+@S.label("新規作成")
 create: never;
 
 // Row action (行レベルのアクション - List View のみ)
-@rowAction("delete")
-@label("削除")
+@S.rowAction("delete")
+@S.label("削除")
 delete: never;
 ```
 
@@ -21,10 +21,10 @@ delete: never;
 ページレベルのアクション ID を指定します。
 
 ```typespec
-@action("create")
-@action("save")
-@action("cancel")
-@action("publish")
+@S.action("create")
+@S.action("save")
+@S.action("cancel")
+@S.action("publish")
 ```
 
 ID はユニークにしてください。
@@ -34,9 +34,9 @@ ID はユニークにしてください。
 行レベルのアクション ID を指定します（List View のみ）。
 
 ```typespec
-@rowAction("edit")
-@rowAction("delete")
-@rowAction("show")
+@S.rowAction("edit")
+@S.rowAction("delete")
+@S.rowAction("show")
 ```
 
 ## @label
@@ -44,8 +44,8 @@ ID はユニークにしてください。
 表示名を指定します。
 
 ```typespec
-@action("delete")
-@label("削除")
+@S.action("delete")
+@S.label("削除")
 delete: never;
 ```
 
@@ -55,18 +55,18 @@ delete: never;
 
 ```typespec
 // 選択した行に対して実行
-@action("bulkDelete")
-@requiresSelection("selected")
+@S.action("bulkDelete")
+@S.requiresSelection("selected")
 bulkDelete: never;
 
 // クエリ全体に対して実行（フィルター条件に一致する全件）
-@action("exportAll")
-@requiresSelection("query")
+@S.action("exportAll")
+@S.requiresSelection("query")
 exportAll: never;
 
 // legacy alias（true は "selected" と同義）
-@action("bulkDelete")
-@requiresSelection(true)
+@S.action("bulkDelete")
+@S.requiresSelection(true)
 bulkDelete: never;
 ```
 
@@ -102,16 +102,16 @@ bulkDelete: never;
 
 ```typespec
 // ロールベース
-@allowedWhen("role == 'admin'")
+@S.allowedWhen("role == 'admin'")
 
 // 複合条件
-@allowedWhen("role == 'admin' || role == 'editor'")
+@S.allowedWhen("role == 'admin' || role == 'editor'")
 
 // 状態ベース
-@allowedWhen("status == 'draft'")
+@S.allowedWhen("status == 'draft'")
 
 // 所有者チェック
-@allowedWhen("userId == authorId")
+@S.allowedWhen("userId == authorId")
 ```
 
 ### 利用可能な変数
@@ -139,11 +139,11 @@ bulkDelete: never;
 
 ```typespec
 // デフォルトメッセージ
-@confirm
+@S.confirm
 delete: never;
 
 // カスタムメッセージ
-@confirm("本当に削除しますか？")
+@S.confirm("本当に削除しますか？")
 delete: never;
 ```
 
@@ -157,15 +157,15 @@ delete: never;
 
 ```typespec
 model ArchiveDialog {
-  @label("理由")
-  @kind("longText")
-  @required
+  @S.label("理由")
+  @S.kind("longText")
+  @S.required
   reason: string;
 }
 
-@rowAction("archive")
-@label("アーカイブ")
-@dialog(ArchiveDialog, #{ title: "アーカイブ理由" })
+@S.rowAction("archive")
+@S.label("アーカイブ")
+@S.dialog(ArchiveDialog, #{ title: "アーカイブ理由" })
 archive: never;
 ```
 
@@ -174,8 +174,8 @@ archive: never;
 アクションの API エンドポイントを定義します。
 
 ```typespec
-@rowAction("archive")
-@api(#{
+@S.rowAction("archive")
+@S.api(#{
   path: "/posts/:id/archive",
   method: "POST",
   body: ["reason"]
@@ -188,14 +188,14 @@ archive: never;
 アイコンと種類を指定します。
 
 ```typespec
-@action("create")
-@label("新規作成")
-@ui(#{ icon: "plus", variant: "primary" })
+@S.action("create")
+@S.label("新規作成")
+@S.ui(#{ icon: "plus", variant: "primary" })
 create: never;
 
-@rowAction("delete")
-@label("削除")
-@ui(#{ icon: "trash", variant: "danger" })
+@S.rowAction("delete")
+@S.label("削除")
+@S.ui(#{ icon: "trash", variant: "danger" })
 delete: never;
 ```
 
@@ -230,45 +230,45 @@ delete: never;
 
 ```typespec
 // CRUD
-@action("create")
-@rowAction("show")
-@rowAction("edit")
-@rowAction("delete")
+@S.action("create")
+@S.rowAction("show")
+@S.rowAction("edit")
+@S.rowAction("delete")
 
 // 一括操作
-@action("bulkDelete")
-@requiresSelection("selected")
+@S.action("bulkDelete")
+@S.requiresSelection("selected")
 
-@action("bulkPublish")
-@requiresSelection("selected")
+@S.action("bulkPublish")
+@S.requiresSelection("selected")
 ```
 
 ### 状態遷移アクション
 
 ```typespec
-@action("publish")
-@allowedWhen("status == 'draft'")
+@S.action("publish")
+@S.allowedWhen("status == 'draft'")
 publish: never;
 
-@action("unpublish")
-@allowedWhen("status == 'published'")
+@S.action("unpublish")
+@S.allowedWhen("status == 'published'")
 unpublish: never;
 
-@action("archive")
-@allowedWhen("status == 'published'")
+@S.action("archive")
+@S.allowedWhen("status == 'published'")
 archive: never;
 ```
 
 ### カスタムアクション
 
 ```typespec
-@rowAction("duplicate")
-@label("複製")
+@S.rowAction("duplicate")
+@S.label("複製")
 duplicate: never;
 
-@action("export")
-@label("エクスポート")
-@ui(#{ icon: "download" })
+@S.action("export")
+@S.label("エクスポート")
+@S.ui(#{ icon: "download" })
 export: never;
 ```
 
@@ -277,11 +277,11 @@ export: never;
 複数の操作を1つのボタンにまとめたい場合:
 
 ```typespec
-@action("bulkStatus")
-@label("ステータス変更")
-@requiresSelection("selected")
-@ui(#{ type: "menu" })
-@options(#[
+@S.action("bulkStatus")
+@S.label("ステータス変更")
+@S.requiresSelection("selected")
+@S.ui(#{ type: "menu" })
+@S.options(#[
   #{ value: "draft", label: "下書きに変更" },
   #{ value: "published", label: "公開に変更" }
 ])
@@ -291,54 +291,54 @@ bulkStatus: never;
 ## 完全な例
 
 ```typespec
-@view(Post, "list")
-@columns(["title", "status", "author", "createdAt"])
-@selection("multi")
+@S.view(Post, "list")
+@S.columns(["title", "status", "author", "createdAt"])
+@S.selection("multi")
 model PostList {
   // Page actions
-  @action("create")
-  @label("新規作成")
-  @allowedWhen("role == 'admin' || role == 'editor'")
-  @ui(#{ icon: "plus", variant: "primary" })
+  @S.action("create")
+  @S.label("新規作成")
+  @S.allowedWhen("role == 'admin' || role == 'editor'")
+  @S.ui(#{ icon: "plus", variant: "primary" })
   create: never;
 
-  @action("export")
-  @label("エクスポート")
-  @ui(#{ icon: "download" })
+  @S.action("export")
+  @S.label("エクスポート")
+  @S.ui(#{ icon: "download" })
   export: never;
 
   // Bulk actions
-  @action("bulkDelete")
-  @label("一括削除")
-  @requiresSelection("selected")
-  @allowedWhen("role == 'admin'")
-  @confirm("選択した項目を削除しますか？")
-  @ui(#{ icon: "trash", variant: "danger" })
+  @S.action("bulkDelete")
+  @S.label("一括削除")
+  @S.requiresSelection("selected")
+  @S.allowedWhen("role == 'admin'")
+  @S.confirm("選択した項目を削除しますか？")
+  @S.ui(#{ icon: "trash", variant: "danger" })
   bulkDelete: never;
 
-  @action("bulkPublish")
-  @label("一括公開")
-  @requiresSelection("selected")
-  @allowedWhen("role == 'admin' || role == 'editor'")
+  @S.action("bulkPublish")
+  @S.label("一括公開")
+  @S.requiresSelection("selected")
+  @S.allowedWhen("role == 'admin' || role == 'editor'")
   bulkPublish: never;
 
   // Row actions
-  @rowAction("show")
-  @label("詳細")
-  @ui(#{ icon: "eye" })
+  @S.rowAction("show")
+  @S.label("詳細")
+  @S.ui(#{ icon: "eye" })
   show: never;
 
-  @rowAction("edit")
-  @label("編集")
-  @allowedWhen("role == 'admin' || role == 'editor'")
-  @ui(#{ icon: "pencil" })
+  @S.rowAction("edit")
+  @S.label("編集")
+  @S.allowedWhen("role == 'admin' || role == 'editor'")
+  @S.ui(#{ icon: "pencil" })
   edit: never;
 
-  @rowAction("delete")
-  @label("削除")
-  @allowedWhen("role == 'admin'")
-  @confirm("本当に削除しますか？")
-  @ui(#{ icon: "trash", variant: "danger" })
+  @S.rowAction("delete")
+  @S.label("削除")
+  @S.allowedWhen("role == 'admin'")
+  @S.confirm("本当に削除しますか？")
+  @S.ui(#{ icon: "trash", variant: "danger" })
   delete: never;
 }
 ```

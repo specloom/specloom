@@ -89,6 +89,13 @@ options:
     output-dir: "./src/lib"
 ```
 
+## Namespace Convention
+
+specloom デコレーターは `@S.` プレフィックス付きで使用します（`using S;` は TypeSpec の制約上使えません）。
+
+- specloom 固有: `@S.resource`, `@S.label`, `@S.kind`, `@S.required`, `@S.ui`, etc.
+- TypeSpec 標準（プレフィックス不要）: `@minLength`, `@maxLength`, `@pattern`, `@minItems`, `@maxItems`
+
 ## Quick Reference
 
 ### 1. Resource Definition
@@ -105,7 +112,7 @@ model Post {
   @S.label("タイトル")
   @S.kind("text")
   @S.required
-  @S.maxLength(100)
+  @maxLength(100)
   title: string;
 
   @S.label("本文")
@@ -171,8 +178,8 @@ model Post {
   @S.label("タグ")
   @S.kind("relation")
   @S.relation(Tag, #{ labelField: "name" })
-  @S.minItems(1)
-  @S.maxItems(5)
+  @minItems(1)
+  @maxItems(5)
   tags: Tag[];
 }
 ```
@@ -268,13 +275,13 @@ model ChangePasswordDialog {
   @S.label("新しいパスワード")
   @S.kind("password")
   @S.required
-  @S.minLength(8)
+  @minLength(8)
   password: string;
 
   @S.label("パスワード（確認）")
   @S.kind("password")
   @S.required
-  @S.minLength(8)
+  @minLength(8)
   @S.match("password")  // passwordフィールドと一致することを検証
   confirm_password: string;
 }
@@ -362,16 +369,17 @@ model UserShow {
 
 ### Validation Decorators
 
-| Decorator | Description |
-|-----------|-------------|
-| `@required` | Required field |
-| `@minLength(n)` | Minimum length |
-| `@maxLength(n)` | Maximum length |
-| `@min(n)` | Minimum value |
-| `@max(n)` | Maximum value |
-| `@pattern(string)` | Regex pattern (email, url, tel, or custom) |
-| `@minItems(n)` | Minimum array items |
-| `@maxItems(n)` | Maximum array items |
+| Decorator | Prefix | Description |
+|-----------|--------|-------------|
+| `@S.required` | `@S.` | Required field |
+| `@S.min(n)` | `@S.` | Minimum value |
+| `@S.max(n)` | `@S.` | Maximum value |
+| `@S.match(field)` | `@S.` | Must match another field |
+| `@minLength(n)` | (TypeSpec標準) | Minimum length |
+| `@maxLength(n)` | (TypeSpec標準) | Maximum length |
+| `@pattern(string)` | (TypeSpec標準) | Regex pattern |
+| `@minItems(n)` | (TypeSpec標準) | Minimum array items |
+| `@maxItems(n)` | (TypeSpec標準) | Maximum array items |
 
 ### View Decorators
 
@@ -557,7 +565,7 @@ model Post {
   @S.label("タイトル")
   @S.kind("text")
   @S.required
-  @S.maxLength(100)
+  @maxLength(100)
   @S.filter
   title: string;
 

@@ -9,76 +9,74 @@
 ```typespec
 import "@specloom/typespec";
 
-using Specloom;
-
-@resource
-@label("投稿")
+@S.resource
+@S.label("投稿")
 model Post {
-  @readonly
+  @S.readonly
   id: string;
 
-  @label("タイトル")
-  @kind("text")
-  @required
+  @S.label("タイトル")
+  @S.kind("text")
+  @S.required
   @maxLength(100)
   title: string;
 
-  @label("スラッグ")
-  @kind("text")
+  @S.label("スラッグ")
+  @S.kind("text")
   @pattern("slug")
   @maxLength(100)
   slug: string;
 
-  @label("本文")
-  @kind("longText")
-  @ui(#{ inputHint: "richtext" })
+  @S.label("本文")
+  @S.kind("longText")
+  @S.ui(#{ inputHint: "richtext" })
   body: string;
 
-  @label("状態")
-  @kind("enum")
-  @ui(#{ hint: "badge", inputHint: "select" })
-  @options(#[
+  @S.label("状態")
+  @S.kind("enum")
+  @S.ui(#{ hint: "badge", inputHint: "select" })
+  @S.options(#[
     #{ value: "draft", label: "下書き" },
     #{ value: "published", label: "公開中" },
     #{ value: "archived", label: "アーカイブ" }
   ])
   status: string;
 
-  @label("著者")
-  @kind("relation")
-  @relation(User, #{ labelField: "name" })
-  @ui(#{ hint: "avatar", inputHint: "autocomplete", searchable: true })
-  @required
+  @S.label("著者")
+  @S.kind("relation")
+  @S.relation(User, #{ labelField: "name" })
+  @S.ui(#{ hint: "avatar", inputHint: "autocomplete", searchable: true })
+  @S.required
   author: User;
 
-  @label("カテゴリ")
-  @kind("relation")
-  @relation(Category, #{ labelField: "name" })
-  @ui(#{ inputHint: "select" })
-  @required
+  @S.label("カテゴリ")
+  @S.kind("relation")
+  @S.relation(Category, #{ labelField: "name" })
+  @S.ui(#{ inputHint: "select" })
+  @S.required
   category: Category;
 
-  @label("タグ")
-  @kind("relation")
-  @relation(Tag, #{ labelField: "name" })
-  @ui(#{ hint: "badge", inputHint: "autocomplete", searchable: true })
+  @S.label("タグ")
+  @S.kind("relation")
+  @S.relation(Tag, #{ labelField: "name" })
+  @S.ui(#{ hint: "badge", inputHint: "autocomplete", searchable: true })
   @maxItems(5)
   tags: Tag[];
 
-  @label("公開日")
-  @kind("datetime")
-  @visibleWhen("status == 'published'")
-  @requiredWhen("status == 'published'")
+  @S.label("公開日")
+  @S.kind("datetime")
+  @S.visibleWhen("status == 'published'")
+  @S.requiredWhen("status == 'published'")
   publishedAt?: utcDateTime;
 
-  @label("作成日時")
-  @kind("datetime")
-  @readonly
+  @S.label("作成日時")
+  @S.kind("datetime")
+  @S.readonly
   createdAt: utcDateTime;
 
-  @label("更新日時")
-  @kind("datetime")
-  @readonly
+  @S.label("更新日時")
+  @S.kind("datetime")
+  @S.readonly
   updatedAt: utcDateTime;
 }
 ```
@@ -86,47 +84,47 @@ model Post {
 ### List View
 
 ```typespec
-@view(Post, "list")
-@columns(["title", "status", "author", "category", "createdAt"])
-@searchable(["title", "body"])
-@sortable(["title", "createdAt", "updatedAt"])
-@defaultSort("createdAt", "desc")
-@selection("multi")
-@clickAction("show")
-@namedFilter("all", "すべて", #{})
-@namedFilter("published", "公開中", #{ status: "published" })
-@namedFilter("draft", "下書き", #{ status: "draft" })
+@S.view(Post, "list")
+@S.columns(["title", "status", "author", "category", "createdAt"])
+@S.searchable(["title", "body"])
+@S.sortable(["title", "createdAt", "updatedAt"])
+@S.defaultSort("createdAt", "desc")
+@S.selection("multi")
+@S.clickAction("show")
+@S.namedFilter("all", "すべて", #{})
+@S.namedFilter("published", "公開中", #{ status: "published" })
+@S.namedFilter("draft", "下書き", #{ status: "draft" })
 model PostList {
-  @action("create")
-  @label("新規作成")
-  @allowedWhen("role == 'admin' || role == 'editor'")
-  @ui(#{ icon: "plus", variant: "primary" })
+  @S.action("create")
+  @S.label("新規作成")
+  @S.allowedWhen("role == 'admin' || role == 'editor'")
+  @S.ui(#{ icon: "plus", variant: "primary" })
   create: never;
 
-  @action("bulkDelete")
-  @label("一括削除")
-  @requiresSelection(true)
-  @allowedWhen("role == 'admin'")
-  @confirm
-  @ui(#{ icon: "trash", variant: "danger" })
+  @S.action("bulkDelete")
+  @S.label("一括削除")
+  @S.requiresSelection(true)
+  @S.allowedWhen("role == 'admin'")
+  @S.confirm
+  @S.ui(#{ icon: "trash", variant: "danger" })
   bulkDelete: never;
 
-  @rowAction("show")
-  @label("詳細")
-  @ui(#{ icon: "eye" })
+  @S.rowAction("show")
+  @S.label("詳細")
+  @S.ui(#{ icon: "eye" })
   show: never;
 
-  @rowAction("edit")
-  @label("編集")
-  @allowedWhen("role == 'admin' || role == 'editor'")
-  @ui(#{ icon: "pencil" })
+  @S.rowAction("edit")
+  @S.label("編集")
+  @S.allowedWhen("role == 'admin' || role == 'editor'")
+  @S.ui(#{ icon: "pencil" })
   edit: never;
 
-  @rowAction("delete")
-  @label("削除")
-  @allowedWhen("role == 'admin'")
-  @confirm("本当に削除しますか？")
-  @ui(#{ icon: "trash", variant: "danger" })
+  @S.rowAction("delete")
+  @S.label("削除")
+  @S.allowedWhen("role == 'admin'")
+  @S.confirm("本当に削除しますか？")
+  @S.ui(#{ icon: "trash", variant: "danger" })
   delete: never;
 }
 ```
@@ -134,17 +132,17 @@ model PostList {
 ### Form View
 
 ```typespec
-@view(Post, "form")
-@fields(["title", "slug", "body", "status", "author", "category", "tags"])
+@S.view(Post, "form")
+@S.fields(["title", "slug", "body", "status", "author", "category", "tags"])
 model PostForm {
-  @action("save")
-  @label("保存")
-  @ui(#{ icon: "check", variant: "primary" })
+  @S.action("save")
+  @S.label("保存")
+  @S.ui(#{ icon: "check", variant: "primary" })
   save: never;
 
-  @action("cancel")
-  @label("キャンセル")
-  
+  @S.action("cancel")
+  @S.label("キャンセル")
+
   cancel: never;
 }
 ```
@@ -152,37 +150,37 @@ model PostForm {
 ### Show View
 
 ```typespec
-@view(Post, "show")
-@fields(["title", "slug", "body", "status", "author", "category", "tags", "publishedAt", "createdAt", "updatedAt"])
+@S.view(Post, "show")
+@S.fields(["title", "slug", "body", "status", "author", "category", "tags", "publishedAt", "createdAt", "updatedAt"])
 model PostShow {
-  @action("edit")
-  @label("編集")
-  @allowedWhen("role == 'admin' || role == 'editor'")
-  @ui(#{ icon: "pencil" })
+  @S.action("edit")
+  @S.label("編集")
+  @S.allowedWhen("role == 'admin' || role == 'editor'")
+  @S.ui(#{ icon: "pencil" })
   edit: never;
 
-  @action("delete")
-  @label("削除")
-  @allowedWhen("role == 'admin'")
-  @confirm("本当に削除しますか？")
-  @ui(#{ icon: "trash", variant: "danger" })
+  @S.action("delete")
+  @S.label("削除")
+  @S.allowedWhen("role == 'admin'")
+  @S.confirm("本当に削除しますか？")
+  @S.ui(#{ icon: "trash", variant: "danger" })
   delete: never;
 
-  @action("publish")
-  @label("公開")
-  @allowedWhen("status == 'draft'")
-  @ui(#{ icon: "globe", variant: "primary" })
+  @S.action("publish")
+  @S.label("公開")
+  @S.allowedWhen("status == 'draft'")
+  @S.ui(#{ icon: "globe", variant: "primary" })
   publish: never;
 
-  @action("unpublish")
-  @label("非公開")
-  @allowedWhen("status == 'published'")
+  @S.action("unpublish")
+  @S.label("非公開")
+  @S.allowedWhen("status == 'published'")
   unpublish: never;
 
-  @action("archive")
-  @label("アーカイブ")
-  @allowedWhen("status == 'published'")
-  @confirm
+  @S.action("archive")
+  @S.label("アーカイブ")
+  @S.allowedWhen("status == 'published'")
+  @S.confirm
   archive: never;
 }
 ```
@@ -194,53 +192,53 @@ model PostShow {
 ### Resource
 
 ```typespec
-@resource
-@label("ユーザー")
-@requiredOneOf(["email", "phone"])
+@S.resource
+@S.label("ユーザー")
+@S.requiredOneOf(["email", "phone"])
 model User {
-  @readonly
+  @S.readonly
   id: string;
 
-  @label("名前")
-  @kind("text")
-  @required
+  @S.label("名前")
+  @S.kind("text")
+  @S.required
   @maxLength(50)
   name: string;
 
-  @label("メール")
-  @kind("email")
+  @S.label("メール")
+  @S.kind("email")
   @pattern("email")
   email?: string;
 
-  @label("電話")
-  @kind("text")
+  @S.label("電話")
+  @S.kind("text")
   @pattern("phone")
   phone?: string;
 
-  @label("ロール")
-  @kind("enum")
-  @ui(#{ hint: "badge", inputHint: "select" })
-  @options(#[
+  @S.label("ロール")
+  @S.kind("enum")
+  @S.ui(#{ hint: "badge", inputHint: "select" })
+  @S.options(#[
     #{ value: "admin", label: "管理者" },
     #{ value: "editor", label: "編集者" },
     #{ value: "viewer", label: "閲覧者" }
   ])
-  @required
+  @S.required
   role: string;
 
-  @label("アバター")
-  @kind("image")
-  @ui(#{ inputHint: "file" })
+  @S.label("アバター")
+  @S.kind("image")
+  @S.ui(#{ inputHint: "file" })
   avatar?: string;
 
-  @label("有効")
-  @kind("boolean")
-  @ui(#{ inputHint: "switch" })
+  @S.label("有効")
+  @S.kind("boolean")
+  @S.ui(#{ inputHint: "switch" })
   active: boolean;
 
-  @label("作成日時")
-  @kind("datetime")
-  @readonly
+  @S.label("作成日時")
+  @S.kind("datetime")
+  @S.readonly
   createdAt: utcDateTime;
 }
 ```
@@ -248,29 +246,29 @@ model User {
 ### List View
 
 ```typespec
-@view(User, "list")
-@columns(["name", "email", "role", "active", "createdAt"])
-@searchable(["name", "email"])
-@sortable(["name", "createdAt"])
-@defaultSort("createdAt", "desc")
-@namedFilter("all", "すべて", #{})
-@namedFilter("admin", "管理者", #{ role: "admin" })
-@namedFilter("active", "有効", #{ active: true })
+@S.view(User, "list")
+@S.columns(["name", "email", "role", "active", "createdAt"])
+@S.searchable(["name", "email"])
+@S.sortable(["name", "createdAt"])
+@S.defaultSort("createdAt", "desc")
+@S.namedFilter("all", "すべて", #{})
+@S.namedFilter("admin", "管理者", #{ role: "admin" })
+@S.namedFilter("active", "有効", #{ active: true })
 model UserList {
-  @action("create")
-  @label("新規作成")
-  @allowedWhen("role == 'admin'")
-  @ui(#{ icon: "plus", variant: "primary" })
+  @S.action("create")
+  @S.label("新規作成")
+  @S.allowedWhen("role == 'admin'")
+  @S.ui(#{ icon: "plus", variant: "primary" })
   create: never;
 
-  @rowAction("show")
-  @label("詳細")
+  @S.rowAction("show")
+  @S.label("詳細")
   show: never;
 
-  @rowAction("edit")
-  @label("編集")
-  @allowedWhen("role == 'admin'")
-  @ui(#{ icon: "pencil" })
+  @S.rowAction("edit")
+  @S.label("編集")
+  @S.allowedWhen("role == 'admin'")
+  @S.ui(#{ icon: "pencil" })
   edit: never;
 }
 ```
@@ -282,53 +280,53 @@ model UserList {
 ### Resource
 
 ```typespec
-@resource
-@label("注文")
+@S.resource
+@S.label("注文")
 model Order {
-  @readonly
+  @S.readonly
   id: string;
 
-  @label("注文番号")
-  @kind("text")
-  @readonly
+  @S.label("注文番号")
+  @S.kind("text")
+  @S.readonly
   orderNumber: string;
 
-  @label("顧客")
-  @kind("relation")
-  @relation(Customer, #{ labelField: "name" })
-  @ui(#{ inputHint: "autocomplete", searchable: true })
-  @required
+  @S.label("顧客")
+  @S.kind("relation")
+  @S.relation(Customer, #{ labelField: "name" })
+  @S.ui(#{ inputHint: "autocomplete", searchable: true })
+  @S.required
   customer: Customer;
 
-  @label("商品")
-  @kind("relation")
-  @relation(Product, #{ labelField: "name" })
-  @ui(#{ inputHint: "modal" })
+  @S.label("商品")
+  @S.kind("relation")
+  @S.relation(Product, #{ labelField: "name" })
+  @S.ui(#{ inputHint: "modal" })
   @minItems(1)
   products: Product[];
 
-  @label("小計")
-  @kind("number")
-  @computed
-  @ui(#{ format: "currency" })
+  @S.label("小計")
+  @S.kind("number")
+  @S.computed
+  @S.ui(#{ format: "currency" })
   subtotal: int32;
 
-  @label("税額")
-  @kind("number")
-  @computed
-  @ui(#{ format: "currency" })
+  @S.label("税額")
+  @S.kind("number")
+  @S.computed
+  @S.ui(#{ format: "currency" })
   tax: int32;
 
-  @label("合計")
-  @kind("number")
-  @computed
-  @ui(#{ format: "currency" })
+  @S.label("合計")
+  @S.kind("number")
+  @S.computed
+  @S.ui(#{ format: "currency" })
   total: int32;
 
-  @label("状態")
-  @kind("enum")
-  @ui(#{ hint: "badge", inputHint: "select" })
-  @options(#[
+  @S.label("状態")
+  @S.kind("enum")
+  @S.ui(#{ hint: "badge", inputHint: "select" })
+  @S.options(#[
     #{ value: "pending", label: "保留中" },
     #{ value: "confirmed", label: "確定" },
     #{ value: "shipped", label: "発送済" },
@@ -337,9 +335,9 @@ model Order {
   ])
   status: string;
 
-  @label("注文日時")
-  @kind("datetime")
-  @readonly
+  @S.label("注文日時")
+  @S.kind("datetime")
+  @S.readonly
   orderedAt: utcDateTime;
 }
 ```
@@ -347,32 +345,32 @@ model Order {
 ### Show View（状態遷移）
 
 ```typespec
-@view(Order, "show")
-@fields(["orderNumber", "customer", "products", "subtotal", "tax", "total", "status", "orderedAt"])
+@S.view(Order, "show")
+@S.fields(["orderNumber", "customer", "products", "subtotal", "tax", "total", "status", "orderedAt"])
 model OrderShow {
-  @action("confirm")
-  @label("確定")
-  @allowedWhen("status == 'pending'")
-  @ui(#{ icon: "check", variant: "primary" })
+  @S.action("confirm")
+  @S.label("確定")
+  @S.allowedWhen("status == 'pending'")
+  @S.ui(#{ icon: "check", variant: "primary" })
   confirm: never;
 
-  @action("ship")
-  @label("発送")
-  @allowedWhen("status == 'confirmed'")
-  @ui(#{ icon: "truck", variant: "primary" })
+  @S.action("ship")
+  @S.label("発送")
+  @S.allowedWhen("status == 'confirmed'")
+  @S.ui(#{ icon: "truck", variant: "primary" })
   ship: never;
 
-  @action("deliver")
-  @label("配達完了")
-  @allowedWhen("status == 'shipped'")
-  @ui(#{ icon: "check", variant: "primary" })
+  @S.action("deliver")
+  @S.label("配達完了")
+  @S.allowedWhen("status == 'shipped'")
+  @S.ui(#{ icon: "check", variant: "primary" })
   deliver: never;
 
-  @action("cancel")
-  @label("キャンセル")
-  @allowedWhen("status == 'pending' || status == 'confirmed'")
-  @confirm("注文をキャンセルしますか？")
-  @ui(#{ icon: "x", variant: "danger" })
+  @S.action("cancel")
+  @S.label("キャンセル")
+  @S.allowedWhen("status == 'pending' || status == 'confirmed'")
+  @S.confirm("注文をキャンセルしますか？")
+  @S.ui(#{ icon: "x", variant: "danger" })
   cancel: never;
 }
 ```
@@ -388,20 +386,20 @@ model OrderShow {
 公開状態に応じてフィールドを出し分ける。
 
 ```typespec
-@resource
-@label("記事")
+@S.resource
+@S.label("記事")
 model Article {
-  @readonly
+  @S.readonly
   id: string;
 
-  @label("タイトル")
-  @kind("text")
-  @required
+  @S.label("タイトル")
+  @S.kind("text")
+  @S.required
   title: string;
 
-  @label("状態")
-  @kind("enum")
-  @options(#[
+  @S.label("状態")
+  @S.kind("enum")
+  @S.options(#[
     #{ value: "draft", label: "下書き" },
     #{ value: "scheduled", label: "予約公開" },
     #{ value: "published", label: "公開中" }
@@ -409,16 +407,16 @@ model Article {
   status: string;
 
   // 予約公開・公開中の場合のみ表示＆必須
-  @label("公開日時")
-  @kind("datetime")
-  @visibleWhen("status == 'scheduled' || status == 'published'")
-  @requiredWhen("status == 'scheduled' || status == 'published'")
+  @S.label("公開日時")
+  @S.kind("datetime")
+  @S.visibleWhen("status == 'scheduled' || status == 'published'")
+  @S.requiredWhen("status == 'scheduled' || status == 'published'")
   publishedAt?: utcDateTime;
 
   // 下書きでない場合のみ表示
-  @label("OGP 画像")
-  @kind("image")
-  @visibleWhen("status != 'draft'")
+  @S.label("OGP 画像")
+  @S.kind("image")
+  @S.visibleWhen("status != 'draft'")
   ogImage?: string;
 }
 ```
@@ -428,39 +426,39 @@ model Article {
 リンクの種別に応じて入力欄を切り替える。
 
 ```typespec
-@resource
-@label("リンク")
+@S.resource
+@S.label("リンク")
 model Link {
-  @readonly
+  @S.readonly
   id: string;
 
-  @label("種別")
-  @kind("enum")
-  @options(#[
+  @S.label("種別")
+  @S.kind("enum")
+  @S.options(#[
     #{ value: "internal", label: "内部ページ" },
     #{ value: "external", label: "外部URL" },
     #{ value: "file", label: "ファイル" }
   ])
-  @required
+  @S.required
   type: string;
 
-  @label("ページ")
-  @kind("relation")
-  @relation(Page, #{ labelField: "title" })
-  @visibleWhen("type == 'internal'")
-  @requiredWhen("type == 'internal'")
+  @S.label("ページ")
+  @S.kind("relation")
+  @S.relation(Page, #{ labelField: "title" })
+  @S.visibleWhen("type == 'internal'")
+  @S.requiredWhen("type == 'internal'")
   page?: Page;
 
-  @label("URL")
-  @kind("url")
-  @visibleWhen("type == 'external'")
-  @requiredWhen("type == 'external'")
+  @S.label("URL")
+  @S.kind("url")
+  @S.visibleWhen("type == 'external'")
+  @S.requiredWhen("type == 'external'")
   url?: string;
 
-  @label("ファイル")
-  @kind("file")
-  @visibleWhen("type == 'file'")
-  @requiredWhen("type == 'file'")
+  @S.label("ファイル")
+  @S.kind("file")
+  @S.visibleWhen("type == 'file'")
+  @S.requiredWhen("type == 'file'")
   file?: string;
 }
 ```
@@ -470,32 +468,32 @@ model Link {
 管理者のみに見える管理用フィールド。
 
 ```typespec
-@resource
-@label("ユーザー")
+@S.resource
+@S.label("ユーザー")
 model User {
-  @readonly
+  @S.readonly
   id: string;
 
-  @label("名前")
-  @required
+  @S.label("名前")
+  @S.required
   name: string;
 
-  @label("メール")
-  @kind("email")
-  @required
+  @S.label("メール")
+  @S.kind("email")
+  @S.required
   email: string;
 
   // 管理者のみ閲覧・編集可能
-  @label("内部メモ")
-  @kind("longText")
-  @visibleWhen("role == 'admin'")
+  @S.label("内部メモ")
+  @S.kind("longText")
+  @S.visibleWhen("role == 'admin'")
   internalNote?: string;
 
   // 管理者のみ表示
-  @label("API キー")
-  @kind("text")
-  @visibleWhen("role == 'admin'")
-  @createOnly
+  @S.label("API キー")
+  @S.kind("text")
+  @S.visibleWhen("role == 'admin'")
+  @S.createOnly
   apiKey?: string;
 }
 ```
@@ -505,28 +503,28 @@ model User {
 `@match` と `@requiredWhen` の組み合わせ。
 
 ```typespec
-@resource
-@label("プロフィール")
+@S.resource
+@S.label("プロフィール")
 model Profile {
-  @readonly
+  @S.readonly
   id: string;
 
-  @label("名前")
-  @required
+  @S.label("名前")
+  @S.required
   name: string;
 
   // パスワードを入力した場合のみ確認欄を必須に
-  @label("新しいパスワード")
-  @kind("text")
-  @ui(#{ inputHint: "password" })
+  @S.label("新しいパスワード")
+  @S.kind("text")
+  @S.ui(#{ inputHint: "password" })
   @minLength(8)
   newPassword?: string;
 
-  @label("パスワード確認")
-  @kind("text")
-  @ui(#{ inputHint: "password" })
-  @match("newPassword")
-  @requiredWhen("newPassword != ''")
+  @S.label("パスワード確認")
+  @S.kind("text")
+  @S.ui(#{ inputHint: "password" })
+  @S.match("newPassword")
+  @S.requiredWhen("newPassword != ''")
   newPasswordConfirm?: string;
 }
 ```

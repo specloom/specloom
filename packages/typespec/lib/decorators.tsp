@@ -263,18 +263,6 @@ extern dec match(target: ModelProperty, field: valueof string);
 extern dec required(target: ModelProperty);
 
 /**
- * Set minimum length
- * @param value Minimum length
- */
-extern dec minLength(target: ModelProperty, value: valueof int32);
-
-/**
- * Set maximum length
- * @param value Maximum length
- */
-extern dec maxLength(target: ModelProperty, value: valueof int32);
-
-/**
  * Set minimum value
  * @param value Minimum value
  */
@@ -286,20 +274,5 @@ extern dec min(target: ModelProperty, value: valueof int32);
  */
 extern dec max(target: ModelProperty, value: valueof int32);
 
-/**
- * Set regex pattern
- * @param pattern Regex pattern (email, url, tel, or custom)
- */
-extern dec pattern(target: ModelProperty, pattern: valueof string);
-
-/**
- * Set minimum items (for arrays)
- * @param value Minimum items
- */
-extern dec minItems(target: ModelProperty, value: valueof int32);
-
-/**
- * Set maximum items (for arrays)
- * @param value Maximum items
- */
-extern dec maxItems(target: ModelProperty, value: valueof int32);
+// @minLength, @maxLength, @pattern, @minItems, @maxItems は
+// TypeSpec 標準デコレーターを使用してください。

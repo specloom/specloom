@@ -6,11 +6,13 @@ Validation はフィールドの制約を定義します。
 
 必須にします。
 ```typespec
-@required
+@S.required
 title: string;
 ```
 
 ## @minLength / @maxLength
+
+> **Note**: これらは TypeSpec 標準のデコレーターです。
 
 文字数制限を設定します。
 ```typespec
@@ -23,8 +25,8 @@ title: string;
 
 数値の範囲を設定します。
 ```typespec
-@min(0)
-@max(100)
+@S.min(0)
+@S.max(100)
 progress: int32;
 ```
 
@@ -54,11 +56,13 @@ slug: string;
 
 ## @minItems / @maxItems
 
+> **Note**: これらは TypeSpec 標準のデコレーターです。
+
 配列の要素数を制限します。
 ```typespec
-@kind("relation")
-@relation(Tag, #{ labelField: "name" })
-@cardinality("many")
+@S.kind("relation")
+@S.relation(Tag, #{ labelField: "name" })
+@S.cardinality("many")
 @minItems(1)
 @maxItems(5)
 tags: Tag[];
@@ -70,25 +74,25 @@ tags: Tag[];
 
 Resource に付けます。
 ```typespec
-@resource
-@requiredOneOf(["email", "phone", "address"])
+@S.resource
+@S.requiredOneOf(["email", "phone", "address"])
 model Contact {
-  @label("メール")
+  @S.label("メール")
   email?: string;
 
-  @label("電話")
+  @S.label("電話")
   phone?: string;
 
-  @label("住所")
+  @S.label("住所")
   address?: string;
 }
 ```
 
 複数のグループを指定できます。
 ```typespec
-@resource
-@requiredOneOf(["email", "phone"])
-@requiredOneOf(["firstName", "companyName"])
+@S.resource
+@S.requiredOneOf(["email", "phone"])
+@S.requiredOneOf(["firstName", "companyName"])
 model Contact {
   email?: string;
   phone?: string;
@@ -101,16 +105,16 @@ model Contact {
 
 確認入力を指定します。パスワードなどで使います。
 ```typespec
-@label("パスワード")
-@kind("text")
-@inputHint("password")
-@required
+@S.label("パスワード")
+@S.kind("text")
+@S.inputHint("password")
+@S.required
 password: string;
 
-@label("パスワード確認")
-@kind("text")
-@inputHint("password")
-@match("password")
+@S.label("パスワード確認")
+@S.kind("text")
+@S.inputHint("password")
+@S.match("password")
 passwordConfirm: string;
 ```
 
@@ -118,23 +122,23 @@ passwordConfirm: string;
 
 ## 組み合わせ
 ```typespec
-@label("タイトル")
-@kind("text")
-@required
+@S.label("タイトル")
+@S.kind("text")
+@S.required
 @minLength(1)
 @maxLength(100)
 title: string;
 
-@label("メールアドレス")
-@kind("email")
-@required
+@S.label("メールアドレス")
+@S.kind("email")
+@S.required
 @pattern("email")
 email: string;
 
-@label("タグ")
-@kind("relation")
-@relation(Tag, #{ labelField: "name" })
-@cardinality("many")
+@S.label("タグ")
+@S.kind("relation")
+@S.relation(Tag, #{ labelField: "name" })
+@S.cardinality("many")
 @minItems(1)
 @maxItems(5)
 tags: Tag[];
@@ -161,13 +165,13 @@ UI: リアルタイムチェック（UX）
 条件付きで必須にします。`@allowedWhen` と同じ式言語を使います。
 
 ```typespec
-@label("URL")
-@kind("url")
-@requiredWhen("type == 'external'")
+@S.label("URL")
+@S.kind("url")
+@S.requiredWhen("type == 'external'")
 url: string;
 
-@label("公開日")
-@requiredWhen("status == 'published'")
+@S.label("公開日")
+@S.requiredWhen("status == 'published'")
 publishedAt?: plainDate;
 ```
 

@@ -5,10 +5,10 @@ Relation は他の Resource への参照を定義します。
 ## 基本
 
 ```typespec
-@label("著者")
-@kind("relation")
-@ui(#{ hint: "avatar", inputHint: "autocomplete" })
-@relation(User, #{ labelField: "name" })
+@S.label("著者")
+@S.kind("relation")
+@S.ui(#{ hint: "avatar", inputHint: "autocomplete" })
+@S.relation(User, #{ labelField: "name" })
 author: User;
 ```
 
@@ -17,10 +17,10 @@ author: User;
 参照先の Resource と表示に使うフィールドを指定します。
 
 ```typespec
-@relation(User, #{ labelField: "name" })
+@S.relation(User, #{ labelField: "name" })
 author: User;
 
-@relation(Category, #{ labelField: "title" })
+@S.relation(Category, #{ labelField: "title" })
 category: Category;
 ```
 
@@ -33,10 +33,10 @@ category: Category;
 | searchable | boolean | | 検索可能か |
 
 ```typespec
-@relation(User, #{ 
+@S.relation(User, #{
   labelField: "name",
   valueField: "id",
-  searchable: true 
+  searchable: true
 })
 author: User;
 ```
@@ -47,11 +47,11 @@ author: User;
 
 ```typespec
 // 単一
-@relation(User, #{ labelField: "name" })
+@S.relation(User, #{ labelField: "name" })
 author: User;
 
 // 複数
-@relation(Tag, #{ labelField: "name" })
+@S.relation(Tag, #{ labelField: "name" })
 tags: Tag[];
 ```
 
@@ -60,9 +60,9 @@ tags: Tag[];
 表示と入力のヒントを `@ui` で指定します。
 
 ```typespec
-@kind("relation")
-@ui(#{ hint: "avatar", inputHint: "autocomplete" })
-@relation(User, #{ labelField: "name", searchable: true })
+@S.kind("relation")
+@S.ui(#{ hint: "avatar", inputHint: "autocomplete" })
+@S.relation(User, #{ labelField: "name", searchable: true })
 author: User;
 ```
 
@@ -77,64 +77,64 @@ author: User;
 
 ```typespec
 // 少数の固定選択肢
-@ui(#{ inputHint: "select" })
-@relation(Category, #{ labelField: "name" })
+@S.ui(#{ inputHint: "select" })
+@S.relation(Category, #{ labelField: "name" })
 category: Category;
 
 // 検索して選ぶ
-@ui(#{ hint: "avatar", inputHint: "autocomplete" })
-@relation(User, #{ labelField: "name", searchable: true })
+@S.ui(#{ hint: "avatar", inputHint: "autocomplete" })
+@S.relation(User, #{ labelField: "name", searchable: true })
 author: User;
 
 // 一覧から選ぶ
-@ui(#{ inputHint: "modal" })
-@relation(Product, #{ labelField: "name" })
+@S.ui(#{ inputHint: "modal" })
+@S.relation(Product, #{ labelField: "name" })
 products: Product[];
 ```
 
 ## 単一リレーション
 
 ```typespec
-@label("著者")
-@kind("relation")
-@ui(#{ hint: "avatar", inputHint: "autocomplete" })
-@relation(User, #{ labelField: "name", searchable: true })
-@required
+@S.label("著者")
+@S.kind("relation")
+@S.ui(#{ hint: "avatar", inputHint: "autocomplete" })
+@S.relation(User, #{ labelField: "name", searchable: true })
+@S.required
 author: User;
 
-@label("カテゴリ")
-@kind("relation")
-@ui(#{ inputHint: "select" })
-@relation(Category, #{ labelField: "name" })
-@required
+@S.label("カテゴリ")
+@S.kind("relation")
+@S.ui(#{ inputHint: "select" })
+@S.relation(Category, #{ labelField: "name" })
+@S.required
 category: Category;
 ```
 
 ## 複数リレーション
 
 ```typespec
-@label("タグ")
-@kind("relation")
-@ui(#{ inputHint: "autocomplete" })
-@relation(Tag, #{ labelField: "name" })
+@S.label("タグ")
+@S.kind("relation")
+@S.ui(#{ inputHint: "autocomplete" })
+@S.relation(Tag, #{ labelField: "name" })
 @minItems(1)
 @maxItems(5)
 tags: Tag[];
 
-@label("関連記事")
-@kind("relation")
-@ui(#{ inputHint: "modal" })
-@relation(Post, #{ labelField: "title" })
+@S.label("関連記事")
+@S.kind("relation")
+@S.ui(#{ inputHint: "modal" })
+@S.relation(Post, #{ labelField: "title" })
 relatedPosts: Post[];
 ```
 
 ## 複数リレーションのバリデーション
 
 ```typespec
-@label("タグ")
-@kind("relation")
-@relation(Tag, #{ labelField: "name" })
-@required          // 1つ以上必須
+@S.label("タグ")
+@S.kind("relation")
+@S.relation(Tag, #{ labelField: "name" })
+@S.required          // 1つ以上必須
 @minItems(1)       // 最小1個
 @maxItems(5)       // 最大5個
 tags: Tag[];
@@ -145,7 +145,7 @@ tags: Tag[];
 spec は「意味的な参照」を定義します。
 
 ```typespec
-@relation(User, #{ labelField: "name" })
+@S.relation(User, #{ labelField: "name" })
 author: User;
 ```
 

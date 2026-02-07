@@ -6,11 +6,11 @@
 
 ```typespec
 // 文字列 ID（UUID など）
-@readonly
+@S.readonly
 id: string;
 
 // 数値 ID（auto increment）
-@readonly
+@S.readonly
 id: int32;
 ```
 
@@ -21,13 +21,13 @@ ID の生成方法（UUID、auto increment など）は実装側で決めます�
 フィールドの意味的な種類を指定します。
 
 ```typespec
-@kind("text")
+@S.kind("text")
 title: string;
 
-@kind("longText")
+@S.kind("longText")
 body: string;
 
-@kind("enum")
+@S.kind("enum")
 status: string;
 ```
 
@@ -58,7 +58,7 @@ status: string;
 
 ```typespec
 // これだけで OK
-@kind("email")
+@S.kind("email")
 email: string;
 
 // 内部的にはこうなる
@@ -69,8 +69,8 @@ email: string;
 `image` は `file` の特殊化で、画像プレビューや画像専用アップローダーを示します。
 
 ```typespec
-@kind("image")
-@ui(#{ inputHint: "file" })
+@S.kind("image")
+@S.ui(#{ inputHint: "file" })
 avatar?: string;
 ```
 
@@ -79,12 +79,12 @@ avatar?: string;
 表示と入力のヒントを `@ui` でまとめて指定します。
 
 ```typespec
-@kind("enum")
-@ui(#{ hint: "badge", inputHint: "select" })
+@S.kind("enum")
+@S.ui(#{ hint: "badge", inputHint: "select" })
 status: string;
 
-@kind("relation")
-@ui(#{ hint: "avatar", inputHint: "autocomplete" })
+@S.kind("relation")
+@S.ui(#{ hint: "avatar", inputHint: "autocomplete" })
 author: User;
 ```
 
@@ -101,22 +101,22 @@ author: User;
 
 ```typespec
 // Field
-@kind("number")
-@ui(#{ format: "currency" })
+@S.kind("number")
+@S.ui(#{ format: "currency" })
 price: int32;
 
-@kind("enum")
-@ui(#{ hint: "badge" })
+@S.kind("enum")
+@S.ui(#{ hint: "badge" })
 status: string;
 
-@kind("relation")
-@relation(User, #{ labelField: "name", searchable: true })
-@ui(#{ hint: "avatar", link: true })
+@S.kind("relation")
+@S.relation(User, #{ labelField: "name", searchable: true })
+@S.ui(#{ hint: "avatar", link: true })
 author: User;
 
 // Action
-@action("delete")
-@ui(#{ icon: "trash", variant: "danger" })
+@S.action("delete")
+@S.ui(#{ icon: "trash", variant: "danger" })
 delete: never;
 ```
 
@@ -174,9 +174,9 @@ delete: never;
 選択肢を定義します。`@kind("enum")` と一緒に使います。
 
 ```typespec
-@kind("enum")
-@ui(#{ hint: "badge", inputHint: "select" })
-@options(#[
+@S.kind("enum")
+@S.ui(#{ hint: "badge", inputHint: "select" })
+@S.options(#[
   #{ value: "draft", label: "下書き" },
   #{ value: "published", label: "公開中" },
   #{ value: "archived", label: "アーカイブ" }
@@ -189,10 +189,10 @@ status: string;
 読み取り専用にします。フォームに表示されません。
 
 ```typespec
-@readonly
+@S.readonly
 id: string;
 
-@readonly
+@S.readonly
 createdAt: utcDateTime;
 ```
 
@@ -201,32 +201,32 @@ createdAt: utcDateTime;
 DB にない計算フィールドを定義します。サーバーが値を計算します。
 
 ```typespec
-@resource
+@S.resource
 model User {
-  @label("姓")
+  @S.label("姓")
   lastName: string;
 
-  @label("名")
+  @S.label("名")
   firstName: string;
 
-  @label("氏名")
-  @computed
+  @S.label("氏名")
+  @S.computed
   fullName: string;
 }
 ```
 
 ```typespec
-@resource
+@S.resource
 model Order {
-  @label("単価")
+  @S.label("単価")
   unitPrice: int32;
 
-  @label("数量")
+  @S.label("数量")
   quantity: int32;
 
-  @label("合計")
-  @computed
-  @ui(#{ format: "currency" })
+  @S.label("合計")
+  @S.computed
+  @S.ui(#{ format: "currency" })
   total: int32;
 }
 ```
@@ -252,8 +252,8 @@ model Order {
 作成時のみ編集可能にしたいフィールドに使います。
 
 ```typespec
-@label("初期パスワード")
-@createOnly
+@S.label("初期パスワード")
+@S.createOnly
 password: string;
 ```
 
@@ -265,13 +265,13 @@ password: string;
 条件付きでフィールドの表示/非表示を制御します。`@allowedWhen` と同じ式言語を使います。
 
 ```typespec
-@label("公開日")
-@kind("date")
-@visibleWhen("status == 'published'")
+@S.label("公開日")
+@S.kind("date")
+@S.visibleWhen("status == 'published'")
 publishedAt?: plainDate;
 
-@label("カテゴリ")
-@visibleWhen("type == 'article'")
+@S.label("カテゴリ")
+@S.visibleWhen("type == 'article'")
 category: string;
 ```
 
@@ -286,14 +286,14 @@ UI は `visible` を見て表示/非表示を切り替えるだけ。条件ロ�
 条件付きでフィールドを必須化します。
 
 ```typespec
-@label("URL")
-@kind("url")
-@requiredWhen("type == 'external'")
+@S.label("URL")
+@S.kind("url")
+@S.requiredWhen("type == 'external'")
 url: string;
 
-@label("公開日")
-@kind("date")
-@requiredWhen("status == 'published'")
+@S.label("公開日")
+@S.kind("date")
+@S.requiredWhen("status == 'published'")
 publishedAt?: plainDate;
 ```
 
@@ -303,8 +303,8 @@ publishedAt?: plainDate;
 
 ```typespec
 // required: true が常に優先される
-@required
-@requiredWhen("status == 'published'")
+@S.required
+@S.requiredWhen("status == 'published'")
 title: string;  // → 常に required: true
 ```
 
@@ -313,7 +313,7 @@ title: string;  // → 常に required: true
 フィールドの表示名を設定します。
 
 ```typespec
-@label("タイトル")
+@S.label("タイトル")
 title: string;
 ```
 
@@ -324,13 +324,13 @@ title: string;
 フィールドをフィルター可能にします。
 
 ```typespec
-@filter
+@S.filter
 status: string;
 
-@filter
+@S.filter
 createdAt: utcDateTime;
 
-@filter
+@S.filter
 author: User;
 ```
 
@@ -338,19 +338,19 @@ author: User;
 
 ```typespec
 // すべての演算子を許可（デフォルト）
-@filter
+@S.filter
 status: string;
 
 // 特定の演算子のみ許可
-@filter(["eq", "ne", "in"])
+@S.filter(["eq", "ne", "in"])
 status: string;
 
 // 文字列検索を許可
-@filter(["eq", "contains", "starts_with"])
+@S.filter(["eq", "contains", "starts_with"])
 title: string;
 
 // 範囲検索を許可
-@filter(["eq", "gte", "lte"])
+@S.filter(["eq", "gte", "lte"])
 createdAt: utcDateTime;
 ```
 
@@ -376,7 +376,7 @@ createdAt: utcDateTime;
 リレーションフィールドに `@filter` を付けると、関連先のフィールドでフィルターできます。
 
 ```typespec
-@filter
+@S.filter
 author: User;
 ```
 
@@ -389,44 +389,44 @@ author: User;
 ## 例
 
 ```typespec
-@resource
-@label("投稿")
+@S.resource
+@S.label("投稿")
 model Post {
-  @readonly
+  @S.readonly
   id: string;
 
-  @label("タイトル")
-  @kind("text")
+  @S.label("タイトル")
+  @S.kind("text")
   title: string;
 
-  @label("本文")
-  @kind("longText")
-  @ui(#{ inputHint: "richtext" })
+  @S.label("本文")
+  @S.kind("longText")
+  @S.ui(#{ inputHint: "richtext" })
   body: string;
 
-  @label("状態")
-  @kind("enum")
-  @ui(#{ hint: "badge", inputHint: "select" })
-  @options(#[
+  @S.label("状態")
+  @S.kind("enum")
+  @S.ui(#{ hint: "badge", inputHint: "select" })
+  @S.options(#[
     #{ value: "draft", label: "下書き" },
     #{ value: "published", label: "公開中" }
   ])
   status: string;
 
-  @label("著者")
-  @kind("relation")
-  @ui(#{ hint: "avatar", inputHint: "autocomplete" })
-  @relation(User, #{ labelField: "name", searchable: true })
-  @required
+  @S.label("著者")
+  @S.kind("relation")
+  @S.ui(#{ hint: "avatar", inputHint: "autocomplete" })
+  @S.relation(User, #{ labelField: "name", searchable: true })
+  @S.required
   author: User;
 
-  @label("公開日")
-  @kind("date")
+  @S.label("公開日")
+  @S.kind("date")
   publishedAt?: plainDate;
 
-  @label("作成日時")
-  @kind("datetime")
-  @readonly
+  @S.label("作成日時")
+  @S.kind("datetime")
+  @S.readonly
   createdAt: utcDateTime;
 }
 ```

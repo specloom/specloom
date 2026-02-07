@@ -40,13 +40,8 @@ import {
   $api,
   $match,
   $required,
-  $minLength,
-  $maxLength,
   $min,
   $max,
-  $pattern,
-  $minItems,
-  $maxItems,
 } from "./decorators.js";
 
 export const $decorators = {
@@ -87,12 +82,7 @@ export const $decorators = {
     api: $api,
     match: $match,
     required: $required,
-    minLength: $minLength,
-    maxLength: $maxLength,
     min: $min,
     max: $max,
-    pattern: $pattern,
-    minItems: $minItems,
-    maxItems: $maxItems,
   },
 };

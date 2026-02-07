@@ -3,6 +3,11 @@ import {
   resolvePath,
   navigateProgram,
   getSourceLocation,
+  getMinLength,
+  getMaxLength,
+  getPattern,
+  getMinItems,
+  getMaxItems,
   type EmitContext,
   type Model,
   type ModelProperty,
@@ -44,13 +49,8 @@ import {
   getDialog,
   getApi,
   getMatch,
-  getMinLength,
-  getMaxLength,
   getMin,
   getMax,
-  getPattern,
-  getMinItems,
-  getMaxItems,
 } from "./decorators.js";
 
 interface Spec {

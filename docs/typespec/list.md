@@ -5,7 +5,7 @@ List View は一覧画面を定義します。
 ## 基本
 
 ```typespec
-@view(Post, "list")
+@S.view(Post, "list")
 model PostList {}
 ```
 
@@ -14,8 +14,8 @@ model PostList {}
 一覧に表示するカラムを指定します。
 
 ```typespec
-@view(Post, "list")
-@columns(["title", "status", "author", "createdAt"])
+@S.view(Post, "list")
+@S.columns(["title", "status", "author", "createdAt"])
 model PostList {}
 ```
 
@@ -26,9 +26,9 @@ model PostList {}
 検索可能なフィールドを指定します。
 
 ```typespec
-@view(Post, "list")
-@columns(["title", "status", "author", "createdAt"])
-@searchable(["title", "body"])
+@S.view(Post, "list")
+@S.columns(["title", "status", "author", "createdAt"])
+@S.searchable(["title", "body"])
 model PostList {}
 ```
 
@@ -37,10 +37,10 @@ model PostList {}
 ソート可能なフィールドとデフォルトソートを指定します。
 
 ```typespec
-@view(Post, "list")
-@columns(["title", "status", "author", "createdAt"])
-@sortable(["title", "createdAt", "updatedAt"])
-@defaultSort("createdAt", "desc")
+@S.view(Post, "list")
+@S.columns(["title", "status", "author", "createdAt"])
+@S.sortable(["title", "createdAt", "updatedAt"])
+@S.defaultSort("createdAt", "desc")
 model PostList {}
 ```
 
@@ -54,8 +54,8 @@ model PostList {}
 行選択モードを指定します。JSON では `selectionMode` として出力されます。
 
 ```typespec
-@view(Post, "list")
-@selection("multi")
+@S.view(Post, "list")
+@S.selection("multi")
 model PostList {}
 ```
 
@@ -72,8 +72,8 @@ model PostList {}
 行クリック時のアクションを指定します。
 
 ```typespec
-@view(Post, "list")
-@clickAction("show")
+@S.view(Post, "list")
+@S.clickAction("show")
 model PostList {}
 ```
 
@@ -93,11 +93,11 @@ model PostList {}
 ### 基本的な使い方
 
 ```typespec
-@view(Post, "list")
-@columns(["title", "status", "author", "createdAt"])
-@namedFilter("all", "すべて", #{})
-@namedFilter("published", "公開中", #{ status: "published" })
-@namedFilter("draft", "下書き", #{ status: "draft" })
+@S.view(Post, "list")
+@S.columns(["title", "status", "author", "createdAt"])
+@S.namedFilter("all", "すべて", #{})
+@S.namedFilter("published", "公開中", #{ status: "published" })
+@S.namedFilter("draft", "下書き", #{ status: "draft" })
 model PostList {}
 ```
 
@@ -112,14 +112,14 @@ model PostList {}
 AND/OR/NOT や各種演算子を使った複雑な条件も定義できます。
 
 ```typespec
-@view(Post, "list")
+@S.view(Post, "list")
 // 単純な条件
-@namedFilter("published", "公開中", #{ 
-  field: "status", operator: "eq", value: "published" 
+@S.namedFilter("published", "公開中", #{
+  field: "status", operator: "eq", value: "published"
 })
 
 // AND 条件: 公開中 かつ 最近7日以内
-@namedFilter("recent_published", "最近の公開記事", #{
+@S.namedFilter("recent_published", "最近の公開記事", #{
   and: [
     { field: "status", operator: "eq", value: "published" },
     { field: "createdAt", operator: "gte", value: "@relative(-7d)" }
@@ -127,7 +127,7 @@ AND/OR/NOT や各種演算子を使った複雑な条件も定義できます。
 })
 
 // OR 条件: 下書き または レビュー中
-@namedFilter("unpublished", "未公開", #{
+@S.namedFilter("unpublished", "未公開", #{
   or: [
     { field: "status", operator: "eq", value: "draft" },
     { field: "status", operator: "eq", value: "review" }
@@ -135,12 +135,12 @@ AND/OR/NOT や各種演算子を使った複雑な条件も定義できます。
 })
 
 // コンテキスト参照: 自分の記事
-@namedFilter("my_posts", "自分の記事", #{
+@S.namedFilter("my_posts", "自分の記事", #{
   field: "author.id", operator: "eq", value: "@context.user.id"
 })
 
 // IN 演算子
-@namedFilter("active", "アクティブ", #{
+@S.namedFilter("active", "アクティブ", #{
   field: "status", operator: "in", value: ["draft", "review", "published"]
 })
 model PostList {}
@@ -212,12 +212,12 @@ model PostList {}
 ### Page Actions（画面上部）
 
 ```typespec
-@view(Post, "list")
+@S.view(Post, "list")
 model PostList {
-  @action("create")
-  @label("新規作成")
-  @allowedWhen("role == 'admin' || role == 'editor'")
-  @ui(#{ icon: "plus", variant: "primary" })
+  @S.action("create")
+  @S.label("新規作成")
+  @S.allowedWhen("role == 'admin' || role == 'editor'")
+  @S.ui(#{ icon: "plus", variant: "primary" })
   create: never;
 }
 ```
@@ -227,21 +227,21 @@ model PostList {
 `@selection("multi")` と組み合わせて使います。
 
 ```typespec
-@view(Post, "list")
-@selection("multi")
+@S.view(Post, "list")
+@S.selection("multi")
 model PostList {
-  @action("bulkDelete")
-  @label("一括削除")
-  @requiresSelection("selected")
-  @allowedWhen("role == 'admin'")
-  @confirm("選択した項目を削除しますか？")
-  @ui(#{ icon: "trash", variant: "danger" })
+  @S.action("bulkDelete")
+  @S.label("一括削除")
+  @S.requiresSelection("selected")
+  @S.allowedWhen("role == 'admin'")
+  @S.confirm("選択した項目を削除しますか？")
+  @S.ui(#{ icon: "trash", variant: "danger" })
   bulkDelete: never;
 
-  @action("bulkPublish")
-  @label("一括公開")
-  @requiresSelection("selected")
-  @allowedWhen("role == 'admin' || role == 'editor'")
+  @S.action("bulkPublish")
+  @S.label("一括公開")
+  @S.requiresSelection("selected")
+  @S.allowedWhen("role == 'admin' || role == 'editor'")
   bulkPublish: never;
 }
 ```
@@ -249,23 +249,23 @@ model PostList {
 ### Row Actions（各行）
 
 ```typespec
-@view(Post, "list")
+@S.view(Post, "list")
 model PostList {
-  @rowAction("show")
-  @label("詳細")
+  @S.rowAction("show")
+  @S.label("詳細")
   show: never;
 
-  @rowAction("edit")
-  @label("編集")
-  @allowedWhen("role == 'admin' || role == 'editor'")
-  @ui(#{ icon: "pencil" })
+  @S.rowAction("edit")
+  @S.label("編集")
+  @S.allowedWhen("role == 'admin' || role == 'editor'")
+  @S.ui(#{ icon: "pencil" })
   edit: never;
 
-  @rowAction("delete")
-  @label("削除")
-  @allowedWhen("role == 'admin'")
-  @confirm("本当に削除しますか？")
-  @ui(#{ icon: "trash", variant: "danger" })
+  @S.rowAction("delete")
+  @S.label("削除")
+  @S.allowedWhen("role == 'admin'")
+  @S.confirm("本当に削除しますか？")
+  @S.ui(#{ icon: "trash", variant: "danger" })
   delete: never;
 }
 ```
@@ -273,49 +273,49 @@ model PostList {
 ## 完全な例
 
 ```typespec
-@view(Post, "list")
-@columns(["title", "status", "author", "createdAt"])
-@searchable(["title", "body"])
-@sortable(["title", "createdAt", "updatedAt"])
-@defaultSort("createdAt", "desc")
-@selection("multi")
-@clickAction("show")
-@namedFilter("all", "すべて", #{})
-@namedFilter("published", "公開中", #{ status: "published" })
-@namedFilter("draft", "下書き", #{ status: "draft" })
+@S.view(Post, "list")
+@S.columns(["title", "status", "author", "createdAt"])
+@S.searchable(["title", "body"])
+@S.sortable(["title", "createdAt", "updatedAt"])
+@S.defaultSort("createdAt", "desc")
+@S.selection("multi")
+@S.clickAction("show")
+@S.namedFilter("all", "すべて", #{})
+@S.namedFilter("published", "公開中", #{ status: "published" })
+@S.namedFilter("draft", "下書き", #{ status: "draft" })
 model PostList {
   // Page Actions
-  @action("create")
-  @label("新規作成")
-  @allowedWhen("role == 'admin' || role == 'editor'")
-  @ui(#{ icon: "plus", variant: "primary" })
+  @S.action("create")
+  @S.label("新規作成")
+  @S.allowedWhen("role == 'admin' || role == 'editor'")
+  @S.ui(#{ icon: "plus", variant: "primary" })
   create: never;
 
   // Bulk Actions
-  @action("bulkDelete")
-  @label("一括削除")
-  @requiresSelection("selected")
-  @allowedWhen("role == 'admin'")
-  @confirm
-  @ui(#{ icon: "trash", variant: "danger" })
+  @S.action("bulkDelete")
+  @S.label("一括削除")
+  @S.requiresSelection("selected")
+  @S.allowedWhen("role == 'admin'")
+  @S.confirm
+  @S.ui(#{ icon: "trash", variant: "danger" })
   bulkDelete: never;
 
   // Row Actions
-  @rowAction("show")
-  @label("詳細")
+  @S.rowAction("show")
+  @S.label("詳細")
   show: never;
 
-  @rowAction("edit")
-  @label("編集")
-  @allowedWhen("role == 'admin' || role == 'editor'")
-  @ui(#{ icon: "pencil" })
+  @S.rowAction("edit")
+  @S.label("編集")
+  @S.allowedWhen("role == 'admin' || role == 'editor'")
+  @S.ui(#{ icon: "pencil" })
   edit: never;
 
-  @rowAction("delete")
-  @label("削除")
-  @allowedWhen("role == 'admin'")
-  @confirm("本当に削除しますか？")
-  @ui(#{ icon: "trash", variant: "danger" })
+  @S.rowAction("delete")
+  @S.label("削除")
+  @S.allowedWhen("role == 'admin'")
+  @S.confirm("本当に削除しますか？")
+  @S.ui(#{ icon: "trash", variant: "danger" })
   delete: never;
 }
 ```

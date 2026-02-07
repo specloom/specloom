@@ -18,7 +18,7 @@ model User {
   @S.kind("password")
   @S.required
   @S.createOnly
-  @S.minLength(8)
+  @minLength(8)
   password: string;
 }
 
@@ -63,7 +63,7 @@ model Post {
   @S.label("タイトル")
   @S.kind("text")
   @S.required
-  @S.maxLength(100)
+  @maxLength(100)
   title: string;
 
   @S.label("本文")
@@ -113,8 +113,8 @@ model Post {
   @S.label("タグ")
   @S.kind("relation")
   @S.relation(Tag, #{ labelField: "name" })
-  @S.minItems(1)
-  @S.maxItems(5)
+  @minItems(1)
+  @maxItems(5)
   tags: Tag[];
 
   @S.label("作成日時")
@@ -200,13 +200,13 @@ model ChangePasswordDialog {
   @S.label("新しいパスワード")
   @S.kind("password")
   @S.required
-  @S.minLength(8)
+  @minLength(8)
   password: string;
 
   @S.label("パスワード（確認）")
   @S.kind("password")
   @S.required
-  @S.minLength(8)
+  @minLength(8)
   @S.match("password")
   confirm_password: string;
 }

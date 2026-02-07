@@ -20,6 +20,17 @@ options:
     output-dir: "./dist"
 ```
 
+## Namespace
+
+specloom のデコレーターは `@S.` プレフィックスで使用します。
+
+```typespec
+@S.resource    // specloom デコレーター
+@maxLength(100) // TypeSpec 標準デコレーター（プレフィックス不要）
+```
+
+TypeSpec 標準デコレーター（プレフィックス不要）: `@minLength`, `@maxLength`, `@pattern`, `@minItems`, `@maxItems`
+
 ## クイックスタート
 
 ### 1. Resource を定義
@@ -28,39 +39,37 @@ options:
 // specs/post.tsp
 import "@specloom/typespec";
 
-using Specloom;
-
-@resource
-@label("投稿")
+@S.resource
+@S.label("投稿")
 model Post {
-  @readonly
+  @S.readonly
   id: string;
 
-  @label("タイトル")
-  @kind("text")
-  @required
+  @S.label("タイトル")
+  @S.kind("text")
+  @S.required
   @maxLength(100)
   title: string;
 
-  @label("状態")
-  @kind("enum")
-  @ui(#{ hint: "badge", inputHint: "select" })
-  @options(#[
+  @S.label("状態")
+  @S.kind("enum")
+  @S.ui(#{ hint: "badge", inputHint: "select" })
+  @S.options(#[
     #{ value: "draft", label: "下書き" },
     #{ value: "published", label: "公開中" }
   ])
   status: string;
 
-  @label("著者")
-  @kind("relation")
-  @relation(User, #{ labelField: "name" })
-  @ui(#{ hint: "avatar", inputHint: "autocomplete", searchable: true })
-  @required
+  @S.label("著者")
+  @S.kind("relation")
+  @S.relation(User, #{ labelField: "name" })
+  @S.ui(#{ hint: "avatar", inputHint: "autocomplete", searchable: true })
+  @S.required
   author: User;
 
-  @label("作成日時")
-  @kind("datetime")
-  @readonly
+  @S.label("作成日時")
+  @S.kind("datetime")
+  @S.readonly
   createdAt: utcDateTime;
 }
 ```
@@ -69,56 +78,56 @@ model Post {
 
 ```typespec
 // List View
-@view(Post, "list")
-@columns(["title", "status", "author", "createdAt"])
-@searchable(["title"])
-@defaultSort("createdAt", "desc")
-@clickAction("show")
+@S.view(Post, "list")
+@S.columns(["title", "status", "author", "createdAt"])
+@S.searchable(["title"])
+@S.defaultSort("createdAt", "desc")
+@S.clickAction("show")
 model PostList {
   // Page action
-  @action("create")
-  @label("新規作成")
-  @allowedWhen("role == 'admin' || role == 'editor'")
-  @ui(#{ icon: "plus", variant: "primary" })
+  @S.action("create")
+  @S.label("新規作成")
+  @S.allowedWhen("role == 'admin' || role == 'editor'")
+  @S.ui(#{ icon: "plus", variant: "primary" })
   create: never;
 
   // Row actions
-  @rowAction("edit")
-  @label("編集")
-  @allowedWhen("role == 'admin' || role == 'editor'")
-  @ui(#{ icon: "pencil" })
+  @S.rowAction("edit")
+  @S.label("編集")
+  @S.allowedWhen("role == 'admin' || role == 'editor'")
+  @S.ui(#{ icon: "pencil" })
   edit: never;
 
-  @rowAction("delete")
-  @label("削除")
-  @allowedWhen("role == 'admin'")
-  @confirm("本当に削除しますか？")
-  @ui(#{ icon: "trash", variant: "danger" })
+  @S.rowAction("delete")
+  @S.label("削除")
+  @S.allowedWhen("role == 'admin'")
+  @S.confirm("本当に削除しますか？")
+  @S.ui(#{ icon: "trash", variant: "danger" })
   delete: never;
 }
 
 // Form View
-@view(Post, "form")
-@fields(["title", "status", "author"])
+@S.view(Post, "form")
+@S.fields(["title", "status", "author"])
 model PostForm {
-  @action("save")
-  @label("保存")
-  @ui(#{ icon: "check", variant: "primary" })
+  @S.action("save")
+  @S.label("保存")
+  @S.ui(#{ icon: "check", variant: "primary" })
   save: never;
 
-  @action("cancel")
-  @label("キャンセル")
+  @S.action("cancel")
+  @S.label("キャンセル")
   cancel: never;
 }
 
 // Show View
-@view(Post, "show")
-@fields(["title", "status", "author", "createdAt"])
+@S.view(Post, "show")
+@S.fields(["title", "status", "author", "createdAt"])
 model PostShow {
-  @action("edit")
-  @label("編集")
-  @allowedWhen("role == 'admin' || role == 'editor'")
-  @ui(#{ icon: "pencil" })
+  @S.action("edit")
+  @S.label("編集")
+  @S.allowedWhen("role == 'admin' || role == 'editor'")
+  @S.ui(#{ icon: "pencil" })
   edit: never;
 }
 ```

@@ -6,9 +6,7 @@ Resource はデータの定義です。フィールド、バリデーション�
 ```typespec
 import "@specloom/typespec";
 
-using Specloom;
-
-@resource
+@S.resource
 model Post {
   id: string;
   title: string;
@@ -22,13 +20,13 @@ model Post {
 `@computed` は DB に保存しない計算値フィールドを表します。
 
 ```typespec
-@resource
+@S.resource
 model User {
   firstName: string;
   lastName: string;
 
-  @label("氏名")
-  @computed
+  @S.label("氏名")
+  @S.computed
   fullName: string;
 }
 ```
@@ -41,8 +39,8 @@ model User {
 
 表示名を設定します。
 ```typespec
-@resource
-@label("投稿")
+@S.resource
+@S.label("投稿")
 model Post {
   // ...
 }
@@ -60,10 +58,10 @@ model Post {
 フィールド名はプロジェクト内で統一してください。
 ```typespec
 // ⭕ 良い
-@resource
+@S.resource
 model Post { }
 
-@resource
+@S.resource
 model OrderItem { }
 
 // ❌ 悪い
@@ -83,25 +81,23 @@ specs/
 // post.tsp
 import "@specloom/typespec";
 
-using Specloom;
-
-@resource
-@label("投稿")
+@S.resource
+@S.label("投稿")
 model Post {
   // fields...
 }
 
-@view(Post, "list")
+@S.view(Post, "list")
 model PostList {
   // ...
 }
 
-@view(Post, "form")
+@S.view(Post, "form")
 model PostForm {
   // ...
 }
 
-@view(Post, "show")
+@S.view(Post, "show")
 model PostShow {
   // ...
 }
@@ -120,10 +116,8 @@ specs/
 // post/resource.tsp
 import "@specloom/typespec";
 
-using Specloom;
-
-@resource
-@label("投稿")
+@S.resource
+@S.label("投稿")
 model Post {
   // fields...
 }
@@ -133,9 +127,7 @@ model Post {
 import "@specloom/typespec";
 import "./resource.tsp";
 
-using Specloom;
-
-@view(Post, "list")
+@S.view(Post, "list")
 model PostList {
   // ...
 }
@@ -145,56 +137,54 @@ model PostList {
 ```typespec
 import "@specloom/typespec";
 
-using Specloom;
-
-@resource
-@label("投稿")
+@S.resource
+@S.label("投稿")
 model Post {
-  @readonly
+  @S.readonly
   id: string;
 
-  @label("タイトル")
-  @kind("text")
-  @required
+  @S.label("タイトル")
+  @S.kind("text")
+  @S.required
   @maxLength(100)
   title: string;
 
-  @label("本文")
-  @kind("longText")
-  @inputHint("richtext")
+  @S.label("本文")
+  @S.kind("longText")
+  @S.inputHint("richtext")
   body: string;
 
-  @label("状態")
-  @kind("enum")
-  @hint("badge")
-  @options(#[
+  @S.label("状態")
+  @S.kind("enum")
+  @S.hint("badge")
+  @S.options(#[
     #{ value: "draft", label: "下書き" },
     #{ value: "published", label: "公開中" },
     #{ value: "archived", label: "アーカイブ" }
   ])
   status: string;
 
-  @label("著者")
-  @kind("relation")
-  @hint("avatar")
-  @relation(User, #{ labelField: "name", searchable: true })
-  @required
+  @S.label("著者")
+  @S.kind("relation")
+  @S.hint("avatar")
+  @S.relation(User, #{ labelField: "name", searchable: true })
+  @S.required
   author: User;
 
-  @label("タグ")
-  @kind("relation")
-  @relation(Tag, #{ labelField: "name" })
-  @cardinality("many")
+  @S.label("タグ")
+  @S.kind("relation")
+  @S.relation(Tag, #{ labelField: "name" })
+  @S.cardinality("many")
   tags: Tag[];
 
-  @label("作成日時")
-  @kind("datetime")
-  @readonly
+  @S.label("作成日時")
+  @S.kind("datetime")
+  @S.readonly
   createdAt: utcDateTime;
 
-  @label("更新日時")
-  @kind("datetime")
-  @readonly
+  @S.label("更新日時")
+  @S.kind("datetime")
+  @S.readonly
   updatedAt: utcDateTime;
 }
 ```
