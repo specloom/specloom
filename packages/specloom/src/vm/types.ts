@@ -151,6 +151,7 @@ export interface ShowFieldVM {
   label: string;
   kind: FieldKind;
   value: unknown;
+  visible?: boolean;
   ui?: FieldUI;
   options?: Option[];
   relation?: Relation;

@@ -24,3 +24,9 @@ export * from "./filter/index.js";
 
 // i18n
 export * from "./i18n/index.js";
+
+// Facade (convenience functions)
+export * from "./facade/index.js";
+
+// Admin (registry)
+export * from "./admin/index.js";

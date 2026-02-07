@@ -250,6 +250,54 @@ password: string;
 - create モード: 通常入力可能
 - edit モード: ViewModel で `readonly: true` として評価
 
+## @visibleWhen
+
+条件付きでフィールドの表示/非表示を制御します。`@allowedWhen` と同じ式言語を使います。
+
+```typespec
+@label("公開日")
+@kind("date")
+@visibleWhen("status == 'published'")
+publishedAt?: plainDate;
+
+@label("カテゴリ")
+@visibleWhen("type == 'article'")
+category: string;
+```
+
+- 式が `true` → ViewModel で `visible: true`
+- 式が `false` → ViewModel で `visible: false`
+- 未指定 → ViewModel で `visible: undefined`（常時表示）
+
+UI は `visible` を見て表示/非表示を切り替えるだけ。条件ロジックを持ちません。
+
+## @requiredWhen
+
+条件付きでフィールドを必須化します。
+
+```typespec
+@label("URL")
+@kind("url")
+@requiredWhen("type == 'external'")
+url: string;
+
+@label("公開日")
+@kind("date")
+@requiredWhen("status == 'published'")
+publishedAt?: plainDate;
+```
+
+- 式が `true` → ViewModel で `required: true`
+- 式が `false` → `@required` がなければ `required: false`
+- `@required` と `@requiredWhen` は **OR** で結合されます
+
+```typespec
+// required: true が常に優先される
+@required
+@requiredWhen("status == 'published'")
+title: string;  // → 常に required: true
+```
+
 ## @label
 
 フィールドの表示名を設定します。

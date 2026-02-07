@@ -156,6 +156,26 @@ function validateField(field: unknown, path: string): void {
   if (field.relation !== undefined) {
     validateRelation(field.relation, `${path}.relation`);
   }
+  if (field.visibleWhen !== undefined) {
+    if (typeof field.visibleWhen !== "string") {
+      throw new SpecError(`${path}.visibleWhen must be a string`);
+    }
+    if (!isExpressionSyntaxValid(field.visibleWhen)) {
+      throw new SpecError(
+        `${path}.visibleWhen has invalid syntax: "${field.visibleWhen}"`,
+      );
+    }
+  }
+  if (field.requiredWhen !== undefined) {
+    if (typeof field.requiredWhen !== "string") {
+      throw new SpecError(`${path}.requiredWhen must be a string`);
+    }
+    if (!isExpressionSyntaxValid(field.requiredWhen)) {
+      throw new SpecError(
+        `${path}.requiredWhen has invalid syntax: "${field.requiredWhen}"`,
+      );
+    }
+  }
 }
 
 function validateFieldValidation(value: unknown, path: string): void {
@@ -208,10 +228,7 @@ function validateRelation(value: unknown, path: string): void {
   ) {
     throw new SpecError(`${path}.valueField must be a non-empty string`);
   }
-  if (
-    value.searchable !== undefined &&
-    typeof value.searchable !== "boolean"
-  ) {
+  if (value.searchable !== undefined && typeof value.searchable !== "boolean") {
     throw new SpecError(`${path}.searchable must be a boolean`);
   }
   if (
@@ -385,7 +402,10 @@ function validateDialog(value: unknown, path: string): void {
       throw new SpecError(`${path}.fields[${i}] must have name`);
     }
     if (field.validation !== undefined) {
-      validateFieldValidation(field.validation, `${path}.fields[${i}].validation`);
+      validateFieldValidation(
+        field.validation,
+        `${path}.fields[${i}].validation`,
+      );
     }
   }
 }

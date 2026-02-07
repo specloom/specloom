@@ -207,6 +207,18 @@ extern dec requiresSelection(target: ModelProperty, selection: valueof "selected
 extern dec allowedWhen(target: ModelProperty, expression: valueof string);
 
 /**
+ * Set conditional visibility expression (field is shown only when expression is true)
+ * @param expression Visibility expression
+ */
+extern dec visibleWhen(target: ModelProperty, expression: valueof string);
+
+/**
+ * Set conditional required expression (field becomes required when expression is true)
+ * @param expression Required expression
+ */
+extern dec requiredWhen(target: ModelProperty, expression: valueof string);
+
+/**
  * Set confirmation message
  * If omitted, emitted spec uses `confirm: true` (message resolved by i18n at runtime).
  * @param message Confirmation message

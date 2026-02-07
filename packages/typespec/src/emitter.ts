@@ -38,6 +38,8 @@ import {
   getPlacement,
   getRequiresSelection,
   getAllowedWhen,
+  getVisibleWhen,
+  getRequiredWhen,
   getConfirm,
   getDialog,
   getApi,
@@ -76,6 +78,8 @@ interface Field {
   computed?: boolean;
   createOnly?: boolean;
   filter?: true | string[];
+  visibleWhen?: string;
+  requiredWhen?: string;
   options?: { value: string; label: string }[];
   relation?: {
     resource: string;
@@ -326,6 +330,16 @@ function buildField(program: Program, prop: ModelProperty): Field {
       ...relation,
       ...(cardinality ? { cardinality } : {}),
     };
+  }
+
+  const visibleWhen = getVisibleWhen(program, prop);
+  if (visibleWhen) {
+    field.visibleWhen = visibleWhen;
+  }
+
+  const requiredWhen = getRequiredWhen(program, prop);
+  if (requiredWhen) {
+    field.requiredWhen = requiredWhen;
   }
 
   const ui = getUI(program, prop);

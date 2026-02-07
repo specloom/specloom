@@ -50,6 +50,8 @@ export const $lib = createTypeSpecLibrary({
       description: "State for @requiresSelection decorator",
     },
     allowedWhen: { description: "State for @allowedWhen decorator" },
+    visibleWhen: { description: "State for @visibleWhen decorator" },
+    requiredWhen: { description: "State for @requiredWhen decorator" },
     confirm: { description: "State for @confirm decorator" },
     dialog: { description: "State for @dialog decorator" },
     api: { description: "State for @api decorator" },

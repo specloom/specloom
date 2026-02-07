@@ -75,6 +75,10 @@ export interface Field {
   filter?: true | FilterOperator[];
   relation?: Relation;
   ui?: FieldUI;
+  /** 条件付き表示（式が true の場合のみ表示） */
+  visibleWhen?: string;
+  /** 条件付き必須（式が true の場合に必須化） */
+  requiredWhen?: string;
 }
 
 export interface FieldValidation {

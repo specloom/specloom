@@ -241,9 +241,9 @@ export function $cardinality(
   const extracted = extractString(cardinality);
   if (extracted) {
     context.program.stateMap(StateKeys.cardinality).set(target, extracted);
-    const relation = context.program.stateMap(StateKeys.relation).get(target) as
-      | Record<string, unknown>
-      | undefined;
+    const relation = context.program
+      .stateMap(StateKeys.relation)
+      .get(target) as Record<string, unknown> | undefined;
     if (relation) {
       context.program
         .stateMap(StateKeys.relation)
@@ -577,7 +577,11 @@ export function $requiresSelection(
 ) {
   const raw = extractValue(selection);
   const extracted =
-    typeof raw === "string" ? raw : typeof raw === "boolean" ? "selected" : undefined;
+    typeof raw === "string"
+      ? raw
+      : typeof raw === "boolean"
+        ? "selected"
+        : undefined;
   if (extracted !== undefined) {
     context.program
       .stateMap(StateKeys.requiresSelection)
@@ -596,6 +600,34 @@ export function $allowedWhen(
   const extracted = extractString(expression);
   if (extracted) {
     context.program.stateMap(StateKeys.allowedWhen).set(target, extracted);
+  }
+}
+
+/**
+ * @visibleWhen - Set conditional visibility expression
+ */
+export function $visibleWhen(
+  context: DecoratorContext,
+  target: ModelProperty,
+  expression: unknown,
+) {
+  const extracted = extractString(expression);
+  if (extracted) {
+    context.program.stateMap(StateKeys.visibleWhen).set(target, extracted);
+  }
+}
+
+/**
+ * @requiredWhen - Set conditional required expression
+ */
+export function $requiredWhen(
+  context: DecoratorContext,
+  target: ModelProperty,
+  expression: unknown,
+) {
+  const extracted = extractString(expression);
+  if (extracted) {
+    context.program.stateMap(StateKeys.requiredWhen).set(target, extracted);
   }
 }
 
@@ -821,13 +853,15 @@ export function getOptions(
 export function getRelation(
   program: DecoratorContext["program"],
   target: ModelProperty,
-): {
-  resource: string;
-  labelField?: string;
-  valueField?: string;
-  searchable?: boolean;
-  cardinality?: string;
-} | undefined {
+):
+  | {
+      resource: string;
+      labelField?: string;
+      valueField?: string;
+      searchable?: boolean;
+      cardinality?: string;
+    }
+  | undefined {
   return program.stateMap(StateKeys.relation).get(target);
 }
 
@@ -976,6 +1010,20 @@ export function getAllowedWhen(
   target: ModelProperty,
 ): string | undefined {
   return program.stateMap(StateKeys.allowedWhen).get(target);
+}
+
+export function getVisibleWhen(
+  program: DecoratorContext["program"],
+  target: ModelProperty,
+): string | undefined {
+  return program.stateMap(StateKeys.visibleWhen).get(target);
+}
+
+export function getRequiredWhen(
+  program: DecoratorContext["program"],
+  target: ModelProperty,
+): string | undefined {
+  return program.stateMap(StateKeys.requiredWhen).get(target);
 }
 
 export function getConfirm(

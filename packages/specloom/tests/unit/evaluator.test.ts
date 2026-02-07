@@ -411,7 +411,11 @@ describe("evaluator", () => {
           {
             id: "invalid",
             label: "Invalid",
-            filter: { field: "status", operator: "unknown_operator", value: "draft" },
+            filter: {
+              field: "status",
+              operator: "unknown_operator",
+              value: "draft",
+            },
           },
         ],
       };
@@ -936,6 +940,185 @@ describe("evaluator", () => {
           mode: "create",
         }),
       ).toThrow(EvaluateError);
+    });
+
+    it("visibleWhen でフィールドの表示/非表示を評価する", () => {
+      const resource = createResource();
+      resource.fields.push({
+        name: "category",
+        type: "string",
+        label: "カテゴリ",
+        visibleWhen: "status == 'draft'",
+      });
+      const viewWithVisible: FormView = {
+        ...formView,
+        fields: [...formView.fields, "category"],
+      };
+      const context = createContext("admin");
+
+      const draftVm = evaluateFormView({
+        view: viewWithVisible,
+        resource,
+        context,
+        data: { id: "1", status: "draft" },
+        mode: "edit",
+      });
+      const publishedVm = evaluateFormView({
+        view: viewWithVisible,
+        resource,
+        context,
+        data: { id: "1", status: "published" },
+        mode: "edit",
+      });
+
+      expect(draftVm.fields.find((f) => f.name === "category")?.visible).toBe(
+        true,
+      );
+      expect(
+        publishedVm.fields.find((f) => f.name === "category")?.visible,
+      ).toBe(false);
+    });
+
+    it("visibleWhen がないフィールドは visible が undefined", () => {
+      const resource = createResource();
+      const context = createContext("admin");
+
+      const vm = evaluateFormView({
+        view: formView,
+        resource,
+        context,
+        mode: "create",
+      });
+
+      expect(vm.fields[0].visible).toBeUndefined();
+    });
+
+    it("requiredWhen で条件付き必須を評価する", () => {
+      const resource = createResource();
+      resource.fields.push({
+        name: "url",
+        type: "string",
+        label: "URL",
+        requiredWhen: "status == 'published'",
+      });
+      const viewWithRequired: FormView = {
+        ...formView,
+        fields: [...formView.fields, "url"],
+      };
+      const context = createContext("admin");
+
+      const draftVm = evaluateFormView({
+        view: viewWithRequired,
+        resource,
+        context,
+        data: { id: "1", status: "draft" },
+        mode: "edit",
+      });
+      const publishedVm = evaluateFormView({
+        view: viewWithRequired,
+        resource,
+        context,
+        data: { id: "1", status: "published" },
+        mode: "edit",
+      });
+
+      expect(draftVm.fields.find((f) => f.name === "url")?.required).toBe(
+        false,
+      );
+      expect(publishedVm.fields.find((f) => f.name === "url")?.required).toBe(
+        true,
+      );
+    });
+
+    it("required と requiredWhen は OR で結合される", () => {
+      const resource = createResource();
+      resource.fields.push({
+        name: "note",
+        type: "string",
+        label: "備考",
+        required: true,
+        requiredWhen: "status == 'published'",
+      });
+      const viewWithBoth: FormView = {
+        ...formView,
+        fields: [...formView.fields, "note"],
+      };
+      const context = createContext("admin");
+
+      const vm = evaluateFormView({
+        view: viewWithBoth,
+        resource,
+        context,
+        data: { id: "1", status: "draft" },
+        mode: "edit",
+      });
+
+      // required: true なので requiredWhen が false でも必須
+      expect(vm.fields.find((f) => f.name === "note")?.required).toBe(true);
+    });
+  });
+
+  describe("evaluateShowView - visibleWhen", () => {
+    it("visibleWhen でフィールドの表示/非表示を評価する", () => {
+      const resource = createResource();
+      resource.fields.push({
+        name: "category",
+        type: "string",
+        label: "カテゴリ",
+        visibleWhen: "status == 'draft'",
+      });
+      const showView: ShowView = {
+        resource: "Post",
+        type: "show",
+        fields: ["title", "status", "category"],
+        actions: [],
+      };
+      const context = createContext("admin");
+
+      const draftVm = evaluateShowView({
+        view: showView,
+        resource,
+        context,
+        data: { id: "1", title: "Hello", status: "draft", category: "tech" },
+      });
+      const publishedVm = evaluateShowView({
+        view: showView,
+        resource,
+        context,
+        data: {
+          id: "1",
+          title: "Hello",
+          status: "published",
+          category: "tech",
+        },
+      });
+
+      expect(draftVm.fields.find((f) => f.name === "category")?.visible).toBe(
+        true,
+      );
+      expect(
+        publishedVm.fields.find((f) => f.name === "category")?.visible,
+      ).toBe(false);
+    });
+
+    it("visibleWhen がないフィールドは visible が undefined", () => {
+      const resource = createResource();
+      const showView: ShowView = {
+        resource: "Post",
+        type: "show",
+        fields: ["title"],
+        actions: [],
+      };
+      const context = createContext("admin");
+
+      const vm = evaluateShowView({
+        view: showView,
+        resource,
+        context,
+        data: { id: "1", title: "Hello" },
+      });
+
+      expect(vm.fields[0].visible).toBeUndefined();
     });
   });
 });

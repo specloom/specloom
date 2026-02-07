@@ -247,7 +247,9 @@ describe("loader", () => {
         ],
       };
 
-      expect(() => validateSpec(data)).toThrow("columns[0] references unknown field");
+      expect(() => validateSpec(data)).toThrow(
+        "columns[0] references unknown field",
+      );
     });
 
     it("form/show.fields が resource の未知フィールドを参照するとエラー", () => {
@@ -269,7 +271,9 @@ describe("loader", () => {
         ],
       };
 
-      expect(() => validateSpec(data)).toThrow("fields[0] references unknown field");
+      expect(() => validateSpec(data)).toThrow(
+        "fields[0] references unknown field",
+      );
     });
 
     it("action.allowedWhen の構文が不正な場合はエラー", () => {
@@ -293,6 +297,77 @@ describe("loader", () => {
       };
 
       expect(() => validateSpec(data)).toThrow("invalid expression syntax");
+    });
+
+    it("visibleWhen の構文エラーを検出する", () => {
+      const data = {
+        version: "0.1",
+        resources: [
+          {
+            name: "Post",
+            fields: [
+              { name: "id", type: "string" },
+              {
+                name: "category",
+                type: "string",
+                visibleWhen: "status == (",
+              },
+            ],
+          },
+        ],
+        views: [],
+      };
+
+      expect(() => validateSpec(data)).toThrow(
+        "visibleWhen has invalid syntax",
+      );
+    });
+
+    it("requiredWhen の構文エラーを検出する", () => {
+      const data = {
+        version: "0.1",
+        resources: [
+          {
+            name: "Post",
+            fields: [
+              { name: "id", type: "string" },
+              {
+                name: "url",
+                type: "string",
+                requiredWhen: "invalid !!",
+              },
+            ],
+          },
+        ],
+        views: [],
+      };
+
+      expect(() => validateSpec(data)).toThrow(
+        "requiredWhen has invalid syntax",
+      );
+    });
+
+    it("有効な visibleWhen/requiredWhen を受け入れる", () => {
+      const data = {
+        version: "0.1",
+        resources: [
+          {
+            name: "Post",
+            fields: [
+              { name: "id", type: "string" },
+              {
+                name: "category",
+                type: "string",
+                visibleWhen: "status == 'draft'",
+                requiredWhen: "role == 'admin'",
+              },
+            ],
+          },
+        ],
+        views: [],
+      };
+
+      expect(() => validateSpec(data)).not.toThrow();
     });
   });
 });

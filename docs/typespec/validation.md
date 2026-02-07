@@ -156,6 +156,25 @@ UI: リアルタイムチェック（UX）
 サーバー: 最終判定（セキュリティ）
 ```
 
+## @requiredWhen
+
+条件付きで必須にします。`@allowedWhen` と同じ式言語を使います。
+
+```typespec
+@label("URL")
+@kind("url")
+@requiredWhen("type == 'external'")
+url: string;
+
+@label("公開日")
+@requiredWhen("status == 'published'")
+publishedAt?: plainDate;
+```
+
+`@required` と `@requiredWhen` は **OR** で結合されます。`@required` がある場合は常に必須です。
+
+詳細は [Field - @requiredWhen](./field.md#requiredwhen) を参照。
+
 ## サーバー側で実装するもの
 
 以下は spec では対応しません。サーバー側で実装してください。
@@ -164,7 +183,6 @@ UI: リアルタイムチェック（UX）
 |---------|-----|
 | ユニーク制約 | email は重複不可 |
 | 存在チェック | author が DB に存在するか |
-| 条件付き必須 | status が published なら publishedAt 必須 |
 | フィールド比較 | startDate < endDate |
 
 ## 次のステップ

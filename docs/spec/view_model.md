@@ -288,6 +288,7 @@ ViewModel の特徴：
 | label | string | 表示ラベル |
 | kind | string | フィールド種別 |
 | value | any | フィールド値 |
+| visible? | boolean | **評価済み**の表示状態（`visibleWhen` の結果） |
 | ui? | FieldUI | UI ヒント |
 | options? | Option[] | enum の場合の選択肢 |
 
@@ -391,9 +392,10 @@ ViewModel の特徴：
 | label | string | 表示ラベル |
 | kind | string | フィールド種別 |
 | value | any | 現在値 |
-| required | boolean | 必須フラグ |
+| required | boolean | **評価済み**の必須状態（`required` OR `requiredWhen` の結果） |
 | readonly | boolean | 読み取り専用フラグ |
 | createOnly? | boolean | create 専用フィールド |
+| visible? | boolean | **評価済み**の表示状態（`visibleWhen` の結果） |
 | validation? | Validation | バリデーションルール |
 | errors | string[] | バリデーションエラー |
 | ui? | FieldUI | UI ヒント |

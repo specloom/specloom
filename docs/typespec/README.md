@@ -160,7 +160,7 @@ specloom の spec は 3 つの要素で構成されます。
 | ドキュメント | 内容 |
 |-------------|------|
 | [Resource](./resource.md) | Resource の定義方法 |
-| [Field](./field.md) | フィールドの種類、@ui、@filter |
+| [Field](./field.md) | フィールドの種類、@ui、@filter、@visibleWhen、@requiredWhen |
 | [Validation](./validation.md) | バリデーション |
 | [Relation](./relation.md) | リレーション |
 | [List View](./list.md) | 一覧画面、namedFilter |

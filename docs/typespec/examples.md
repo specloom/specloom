@@ -67,6 +67,8 @@ model Post {
 
   @label("公開日")
   @kind("datetime")
+  @visibleWhen("status == 'published'")
+  @requiredWhen("status == 'published'")
   publishedAt?: utcDateTime;
 
   @label("作成日時")
@@ -372,5 +374,158 @@ model OrderShow {
   @confirm("注文をキャンセルしますか？")
   @ui(#{ icon: "x", variant: "danger" })
   cancel: never;
+}
+
+---
+
+## 条件付き UI パターン
+
+`@visibleWhen` / `@requiredWhen` の典型的なユースケース集です。
+
+### 状態依存フィールド
+
+公開状態に応じてフィールドを出し分ける。
+
+```typespec
+@resource
+@label("記事")
+model Article {
+  @readonly
+  id: string;
+
+  @label("タイトル")
+  @kind("text")
+  @required
+  title: string;
+
+  @label("状態")
+  @kind("enum")
+  @options(#[
+    #{ value: "draft", label: "下書き" },
+    #{ value: "scheduled", label: "予約公開" },
+    #{ value: "published", label: "公開中" }
+  ])
+  status: string;
+
+  // 予約公開・公開中の場合のみ表示＆必須
+  @label("公開日時")
+  @kind("datetime")
+  @visibleWhen("status == 'scheduled' || status == 'published'")
+  @requiredWhen("status == 'scheduled' || status == 'published'")
+  publishedAt?: utcDateTime;
+
+  // 下書きでない場合のみ表示
+  @label("OGP 画像")
+  @kind("image")
+  @visibleWhen("status != 'draft'")
+  ogImage?: string;
+}
+```
+
+### 種別による分岐
+
+リンクの種別に応じて入力欄を切り替える。
+
+```typespec
+@resource
+@label("リンク")
+model Link {
+  @readonly
+  id: string;
+
+  @label("種別")
+  @kind("enum")
+  @options(#[
+    #{ value: "internal", label: "内部ページ" },
+    #{ value: "external", label: "外部URL" },
+    #{ value: "file", label: "ファイル" }
+  ])
+  @required
+  type: string;
+
+  @label("ページ")
+  @kind("relation")
+  @relation(Page, #{ labelField: "title" })
+  @visibleWhen("type == 'internal'")
+  @requiredWhen("type == 'internal'")
+  page?: Page;
+
+  @label("URL")
+  @kind("url")
+  @visibleWhen("type == 'external'")
+  @requiredWhen("type == 'external'")
+  url?: string;
+
+  @label("ファイル")
+  @kind("file")
+  @visibleWhen("type == 'file'")
+  @requiredWhen("type == 'file'")
+  file?: string;
+}
+```
+
+### ロール依存フィールド
+
+管理者のみに見える管理用フィールド。
+
+```typespec
+@resource
+@label("ユーザー")
+model User {
+  @readonly
+  id: string;
+
+  @label("名前")
+  @required
+  name: string;
+
+  @label("メール")
+  @kind("email")
+  @required
+  email: string;
+
+  // 管理者のみ閲覧・編集可能
+  @label("内部メモ")
+  @kind("longText")
+  @visibleWhen("role == 'admin'")
+  internalNote?: string;
+
+  // 管理者のみ表示
+  @label("API キー")
+  @kind("text")
+  @visibleWhen("role == 'admin'")
+  @createOnly
+  apiKey?: string;
+}
+```
+
+### パスワード変更フォーム
+
+`@match` と `@requiredWhen` の組み合わせ。
+
+```typespec
+@resource
+@label("プロフィール")
+model Profile {
+  @readonly
+  id: string;
+
+  @label("名前")
+  @required
+  name: string;
+
+  // パスワードを入力した場合のみ確認欄を必須に
+  @label("新しいパスワード")
+  @kind("text")
+  @ui(#{ inputHint: "password" })
+  @minLength(8)
+  newPassword?: string;
+
+  @label("パスワード確認")
+  @kind("text")
+  @ui(#{ inputHint: "password" })
+  @match("newPassword")
+  @requiredWhen("newPassword != ''")
+  newPasswordConfirm?: string;
 }
 ```

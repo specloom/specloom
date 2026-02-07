@@ -116,7 +116,7 @@ export function evaluateShowView(options: EvaluateShowOptions): ShowViewModel {
     if (!field) {
       throw new EvaluateError(`Field not found: ${fieldName}`);
     }
-    return toShowFieldVM(field, data[fieldName]);
+    return toShowFieldVM(field, data[fieldName], context, data);
   });
 
   const actions = view.actions.map((a) => toActionVM(a, context, data));
@@ -146,7 +146,7 @@ export function evaluateFormView(options: EvaluateFormOptions): FormViewModel {
     }
     const value = data?.[fieldName];
     const fieldErrors = errors?.[fieldName] ?? [];
-    return toFormFieldVM(field, value, fieldErrors, mode);
+    return toFormFieldVM(field, value, fieldErrors, mode, context, data ?? {});
   });
 
   const actions = view.actions.map((a) => toActionVM(a, context, data ?? {}));
@@ -182,12 +182,22 @@ function toListFieldVM(field: Field, view: ListView): ListFieldVM {
   };
 }
 
-function toShowFieldVM(field: Field, value: unknown): ShowFieldVM {
+function toShowFieldVM(
+  field: Field,
+  value: unknown,
+  context: Context,
+  data: Record<string, unknown>,
+): ShowFieldVM {
+  const visible = field.visibleWhen
+    ? evaluateExpression(field.visibleWhen, context, data)
+    : undefined;
+
   return {
     name: field.name,
     label: field.label ?? field.name,
     kind: field.kind ?? "text",
     value,
+    visible,
     ui: field.ui,
     options: field.options,
     relation: field.relation,
@@ -199,18 +209,31 @@ function toFormFieldVM(
   value: unknown,
   errors: string[],
   mode: "create" | "edit",
+  context: Context,
+  data: Record<string, unknown>,
 ): FormFieldVM {
   const createOnly = field.createOnly ?? false;
   const readonly = field.readonly === true || (mode === "edit" && createOnly);
+
+  const visible = field.visibleWhen
+    ? evaluateExpression(field.visibleWhen, context, data)
+    : undefined;
+
+  const requiredBySpec = field.required ?? false;
+  const requiredByWhen = field.requiredWhen
+    ? evaluateExpression(field.requiredWhen, context, data)
+    : false;
+  const required = requiredBySpec || requiredByWhen;
 
   return {
     name: field.name,
     label: field.label ?? field.name,
     kind: field.kind ?? "text",
     value,
-    required: field.required ?? false,
+    required,
     readonly,
     createOnly,
+    visible,
     validation: field.validation,
     errors,
     ui: field.ui,
@@ -346,7 +369,9 @@ function normalizeFilterExpression(value: unknown): Filters["custom"] {
     if (!Array.isArray(obj.and)) return undefined;
     const and = obj.and
       .map((child) => normalizeFilterExpression(child))
-      .filter((child): child is NonNullable<Filters["custom"]> => child != null);
+      .filter(
+        (child): child is NonNullable<Filters["custom"]> => child != null,
+      );
     if (and.length !== obj.and.length) return undefined;
     return { and };
   }
@@ -355,7 +380,9 @@ function normalizeFilterExpression(value: unknown): Filters["custom"] {
     if (!Array.isArray(obj.or)) return undefined;
     const or = obj.or
       .map((child) => normalizeFilterExpression(child))
-      .filter((child): child is NonNullable<Filters["custom"]> => child != null);
+      .filter(
+        (child): child is NonNullable<Filters["custom"]> => child != null,
+      );
     if (or.length !== obj.or.length) return undefined;
     return { or };
   }
@@ -800,7 +827,9 @@ function compareValues(
         if (operator === "LT") return lhs < rhs;
         return lhs <= rhs;
       }
-      throw new Error(`Operator ${operator} requires matching number or string operands`);
+      throw new Error(
+        `Operator ${operator} requires matching number or string operands`,
+      );
     }
   }
 }
