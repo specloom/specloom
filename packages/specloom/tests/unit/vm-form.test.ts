@@ -135,6 +135,45 @@ describe("FormVM (OOP Style)", () => {
       expect(values.content).toBe("本文です");
       expect(values.status).toBe("draft");
     });
+
+    it("submittableValues で readonly・非表示を除外した値を取得できる", () => {
+      const vm = createFormVM();
+      const values = vm.submittableValues;
+      expect(values).toEqual({
+        title: "テスト記事",
+        content: "本文です",
+        status: "draft",
+      });
+      expect(values).not.toHaveProperty("createdAt");
+    });
+
+    it("submittableValues は visible 未指定のフィールドを含む", () => {
+      const vm = createFormVM({
+        fields: [
+          {
+            name: "name",
+            label: "名前",
+            kind: "text",
+            value: "Alice",
+            required: true,
+            readonly: false,
+            errors: [],
+            // visible 未指定 → 表示扱い
+          },
+          {
+            name: "secret",
+            label: "秘密",
+            kind: "text",
+            value: "hidden",
+            required: false,
+            readonly: true,
+            errors: [],
+          },
+        ],
+      });
+      const values = vm.submittableValues;
+      expect(values).toEqual({ name: "Alice" });
+    });
   });
 
   describe("バリデーション状態", () => {

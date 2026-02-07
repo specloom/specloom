@@ -348,9 +348,12 @@ model UserShow {
 
 | Decorator | Description |
 |-----------|-------------|
-| `@kind(string)` | Field type: text, longText, number, boolean, date, datetime, enum, relation, file, email, tel, url |
+| `@kind(string)` | Field type: text, longText, number, boolean, date, datetime, enum, relation, file, image, password, email, tel, url |
 | `@readonly` | Read-only field |
 | `@computed` | Computed field (not in DB) |
+| `@createOnly` | Editable only on create, readonly on edit |
+| `@visibleWhen(expr)` | Conditional visibility (expression) |
+| `@requiredWhen(expr)` | Conditional required (expression) |
 | `@options([...])` | Enum options with labels |
 | `@relation(Model, opts)` | Relation config with labelField |
 | `@ui({...})` | UI hints |
@@ -432,6 +435,10 @@ model UserShow {
 | modal | Modal select | relation |
 | checkbox | Checkbox | boolean |
 | switch | Toggle switch | boolean |
+| date | Date picker | date |
+| datetime | Datetime picker | datetime |
+| file | File upload | file, image |
+| password | Password input | password, text |
 
 ### format (Display Format)
 
@@ -662,6 +669,52 @@ model PostShow {
   delete: never;
 }
 ```
+
+## FormVM Usage
+
+### Submitting Form Data
+
+`FormVM.submittableValues` returns only editable, visible field values (excludes `readonly` and `visible: false` fields):
+
+```typescript
+import { createAdmin, parseSpec } from 'specloom'
+
+const spec = parseSpec(jsonString)
+const admin = createAdmin(spec, { role: 'admin' })
+
+// Create form ViewModel
+const form = admin.form('Post', { mode: 'create', data: initialValues })
+
+// User edits
+const updated = form
+  .setValue('title', 'Hello')
+  .setValue('status', 'draft')
+  .validate()
+
+if (updated.canSubmit) {
+  // submittableValues excludes readonly fields (id, createdAt, etc.)
+  await fetch('/api/posts', {
+    method: 'POST',
+    body: JSON.stringify(updated.submittableValues),
+  })
+}
+
+// All values (including readonly) - use `values` instead
+const allValues = form.values
+```
+
+### Key FormVM Properties
+
+| Property / Method | Description |
+|-------------------|-------------|
+| `values` | All field values as `{ name: value }` |
+| `submittableValues` | Editable + visible field values only |
+| `visibleFields` | Fields where `visible !== false` |
+| `requiredFields` | Fields where `required === true` |
+| `readonlyFields` | Fields where `readonly === true` |
+| `canSubmit` | `isValid && !isSubmitting` |
+| `validate()` | Run client-side validation, returns new FormVM |
+| `setValue(name, value)` | Set field value, returns new FormVM (immutable) |
 
 ## Checklist
 

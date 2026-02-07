@@ -91,6 +91,19 @@ export class FormVM {
     );
   }
 
+  /** 送信可能なフィールドの値のみ取得（readonly・非表示を除外） */
+  get submittableValues(): Record<string, unknown> {
+    return this.data.fields
+      .filter((f) => !f.readonly && f.visible !== false)
+      .reduce(
+        (acc, f) => {
+          acc[f.name] = f.value;
+          return acc;
+        },
+        {} as Record<string, unknown>,
+      );
+  }
+
   // ============================================================
   // バリデーション
   // ============================================================
