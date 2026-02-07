@@ -44,6 +44,8 @@ status: string;
 | enum | 列挙型 | `@options` と一緒に使う |
 | relation | リレーション | `@relation` と一緒に使う |
 | file | ファイル | |
+| image | 画像 | |
+| password | パスワード | `@ui(#{ inputHint: "password" })` 自動設定 |
 | email | メールアドレス | 自動で pattern + inputHint |
 | tel | 電話番号 | 自動で pattern + inputHint |
 | url | URL | 自動で pattern + inputHint |
@@ -52,7 +54,7 @@ status: string;
 
 ### 自動設定される kind
 
-`email`, `tel`, `url` は自動的に適切な `pattern` と `inputHint` が設定されます。
+`email`, `tel`, `url`, `password` は自動的に適切な `pattern` と `inputHint` が設定されます。
 
 ```typespec
 // これだけで OK
@@ -62,6 +64,14 @@ email: string;
 // 内部的にはこうなる
 // pattern: "email"
 // inputHint: "email"
+```
+
+`image` は `file` の特殊化で、画像プレビューや画像専用アップローダーを示します。
+
+```typespec
+@kind("image")
+@ui(#{ inputHint: "file" })
+avatar?: string;
 ```
 
 ## @ui

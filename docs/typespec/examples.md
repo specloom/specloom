@@ -375,6 +375,7 @@ model OrderShow {
   @ui(#{ icon: "x", variant: "danger" })
   cancel: never;
 }
+```
 
 ---
 
