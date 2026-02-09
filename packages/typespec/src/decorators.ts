@@ -8,6 +8,40 @@ import type {
 import { StateKeys } from "./lib.js";
 
 // ============================================================
+// TypeSpec Standard State Bridge
+// ============================================================
+// These well-known Symbols are used by the TypeSpec compiler internally
+// to store validation constraints. By writing to them directly, we ensure
+// that other emitters (e.g. @typespec/openapi3) can read constraints set
+// via @S.minLength, @S.maxLength, etc.
+
+const TypeSpecStateKeys = {
+  minLength: Symbol.for("TypeSpec.minLengthValues"),
+  maxLength: Symbol.for("TypeSpec.maxLengthValues"),
+  minItems: Symbol.for("TypeSpec.minItems"),
+  maxItems: Symbol.for("TypeSpec.maxItems"),
+  pattern: Symbol.for("TypeSpec.patternValues"),
+} as const;
+
+/**
+ * Create a minimal Numeric-compatible object for TypeSpec state maps.
+ * TypeSpec getters call .asNumber() on stored values.
+ */
+function createNumericValue(n: number): {
+  asNumber(): number;
+  toString(): string;
+} {
+  return {
+    asNumber() {
+      return n;
+    },
+    toString() {
+      return String(n);
+    },
+  };
+}
+
+// ============================================================
 // Value Extraction Helpers
 // ============================================================
 
@@ -742,7 +776,7 @@ export function $max(
 }
 
 /**
- * @minLength - Set minimum string length (wrapper for TypeSpec standard)
+ * @minLength - Set minimum string length (also sets TypeSpec standard state for OpenAPI)
  */
 export function $minLength(
   context: DecoratorContext,
@@ -752,11 +786,14 @@ export function $minLength(
   const extracted = extractNumber(value);
   if (extracted !== undefined) {
     context.program.stateMap(StateKeys.minLength).set(target, extracted);
+    context.program
+      .stateMap(TypeSpecStateKeys.minLength)
+      .set(target, createNumericValue(extracted));
   }
 }
 
 /**
- * @maxLength - Set maximum string length (wrapper for TypeSpec standard)
+ * @maxLength - Set maximum string length (also sets TypeSpec standard state for OpenAPI)
  */
 export function $maxLength(
   context: DecoratorContext,
@@ -766,11 +803,14 @@ export function $maxLength(
   const extracted = extractNumber(value);
   if (extracted !== undefined) {
     context.program.stateMap(StateKeys.maxLength).set(target, extracted);
+    context.program
+      .stateMap(TypeSpecStateKeys.maxLength)
+      .set(target, createNumericValue(extracted));
   }
 }
 
 /**
- * @pattern - Set pattern constraint (wrapper for TypeSpec standard)
+ * @pattern - Set pattern constraint (also sets TypeSpec standard state for OpenAPI)
  */
 export function $pattern(
   context: DecoratorContext,
@@ -780,11 +820,14 @@ export function $pattern(
   const extracted = extractString(pattern);
   if (extracted) {
     context.program.stateMap(StateKeys.pattern).set(target, extracted);
+    context.program
+      .stateMap(TypeSpecStateKeys.pattern)
+      .set(target, { pattern: extracted });
   }
 }
 
 /**
- * @minItems - Set minimum array items (wrapper for TypeSpec standard)
+ * @minItems - Set minimum array items (also sets TypeSpec standard state for OpenAPI)
  */
 export function $minItems(
   context: DecoratorContext,
@@ -794,11 +837,14 @@ export function $minItems(
   const extracted = extractNumber(value);
   if (extracted !== undefined) {
     context.program.stateMap(StateKeys.minItems).set(target, extracted);
+    context.program
+      .stateMap(TypeSpecStateKeys.minItems)
+      .set(target, createNumericValue(extracted));
   }
 }
 
 /**
- * @maxItems - Set maximum array items (wrapper for TypeSpec standard)
+ * @maxItems - Set maximum array items (also sets TypeSpec standard state for OpenAPI)
  */
 export function $maxItems(
   context: DecoratorContext,
@@ -808,6 +854,9 @@ export function $maxItems(
   const extracted = extractNumber(value);
   if (extracted !== undefined) {
     context.program.stateMap(StateKeys.maxItems).set(target, extracted);
+    context.program
+      .stateMap(TypeSpecStateKeys.maxItems)
+      .set(target, createNumericValue(extracted));
   }
 }
 
