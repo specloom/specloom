@@ -1,0 +1,16 @@
+{
+  "name": "openapi-example",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "tsp": "tsp compile spec/"
+  },
+  "dependencies": {
+    "@specloom/typespec": "workspace:*",
+    "@typespec/compiler": "^0.64.0",
+    "@typespec/http": "^0.64.0",
+    "@typespec/openapi3": "^0.64.0",
+    "specloom": "workspace:*"
+  }
+}

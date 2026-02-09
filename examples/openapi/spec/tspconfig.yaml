@@ -1,0 +1,10 @@
+output-dir: "{project-root}/../generated"
+emit:
+  - "@specloom/typespec"
+  - "@typespec/openapi3"
+options:
+  "@specloom/typespec":
+    emitter-output-dir: "{output-dir}/admin"
+    output-file: "spec.json"
+  "@typespec/openapi3":
+    emitter-output-dir: "{output-dir}/openapi"
