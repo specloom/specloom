@@ -18,13 +18,13 @@ model Post {
   @S.label("タイトル")
   @S.kind("text")
   @S.required
-  @maxLength(100)
+  @S.maxLength(100)
   title: string;
 
   @S.label("スラッグ")
   @S.kind("text")
-  @pattern("slug")
-  @maxLength(100)
+  @S.pattern("slug")
+  @S.maxLength(100)
   slug: string;
 
   @S.label("本文")
@@ -60,7 +60,7 @@ model Post {
   @S.kind("relation")
   @S.relation(Tag, #{ labelField: "name" })
   @S.ui(#{ hint: "badge", inputHint: "autocomplete", searchable: true })
-  @maxItems(5)
+  @S.maxItems(5)
   tags: Tag[];
 
   @S.label("公開日")
@@ -202,17 +202,17 @@ model User {
   @S.label("名前")
   @S.kind("text")
   @S.required
-  @maxLength(50)
+  @S.maxLength(50)
   name: string;
 
   @S.label("メール")
   @S.kind("email")
-  @pattern("email")
+  @S.pattern("email")
   email?: string;
 
   @S.label("電話")
   @S.kind("text")
-  @pattern("phone")
+  @S.pattern("phone")
   phone?: string;
 
   @S.label("ロール")
@@ -302,7 +302,7 @@ model Order {
   @S.kind("relation")
   @S.relation(Product, #{ labelField: "name" })
   @S.ui(#{ inputHint: "modal" })
-  @minItems(1)
+  @S.minItems(1)
   products: Product[];
 
   @S.label("小計")
@@ -517,7 +517,7 @@ model Profile {
   @S.label("新しいパスワード")
   @S.kind("text")
   @S.ui(#{ inputHint: "password" })
-  @minLength(8)
+  @S.minLength(8)
   newPassword?: string;
 
   @S.label("パスワード確認")

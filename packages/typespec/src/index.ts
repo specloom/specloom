@@ -42,6 +42,11 @@ import {
   $required,
   $min,
   $max,
+  $minLength,
+  $maxLength,
+  $pattern,
+  $minItems,
+  $maxItems,
 } from "./decorators.js";
 
 export const $decorators = {
@@ -84,5 +89,10 @@ export const $decorators = {
     required: $required,
     min: $min,
     max: $max,
+    minLength: $minLength,
+    maxLength: $maxLength,
+    pattern: $pattern,
+    minItems: $minItems,
+    maxItems: $maxItems,
   },
 };

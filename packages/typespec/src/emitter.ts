@@ -3,11 +3,11 @@ import {
   resolvePath,
   navigateProgram,
   getSourceLocation,
-  getMinLength,
-  getMaxLength,
-  getPattern,
-  getMinItems,
-  getMaxItems,
+  getMinLength as getMinLengthStd,
+  getMaxLength as getMaxLengthStd,
+  getPattern as getPatternStd,
+  getMinItems as getMinItemsStd,
+  getMaxItems as getMaxItemsStd,
   type EmitContext,
   type Model,
   type ModelProperty,
@@ -51,6 +51,11 @@ import {
   getMatch,
   getMin,
   getMax,
+  getMinLength,
+  getMaxLength,
+  getPattern,
+  getMinItems,
+  getMaxItems,
 } from "./decorators.js";
 
 interface Spec {
@@ -367,12 +372,14 @@ function buildValidation(
     validation.required = true;
   }
 
-  const minLength = getMinLength(program, prop);
+  const minLength =
+    getMinLength(program, prop) ?? getMinLengthStd(program, prop);
   if (minLength !== undefined) {
     validation.minLength = minLength;
   }
 
-  const maxLength = getMaxLength(program, prop);
+  const maxLength =
+    getMaxLength(program, prop) ?? getMaxLengthStd(program, prop);
   if (maxLength !== undefined) {
     validation.maxLength = maxLength;
   }
@@ -387,7 +394,7 @@ function buildValidation(
     validation.max = max;
   }
 
-  const pattern = getPattern(program, prop);
+  const pattern = getPattern(program, prop) ?? getPatternStd(program, prop);
   if (pattern !== undefined) {
     validation.pattern = pattern;
   }
@@ -397,12 +404,12 @@ function buildValidation(
     validation.match = match;
   }
 
-  const minItems = getMinItems(program, prop);
+  const minItems = getMinItems(program, prop) ?? getMinItemsStd(program, prop);
   if (minItems !== undefined) {
     validation.minItems = minItems;
   }
 
-  const maxItems = getMaxItems(program, prop);
+  const maxItems = getMaxItems(program, prop) ?? getMaxItemsStd(program, prop);
   if (maxItems !== undefined) {
     validation.maxItems = maxItems;
   }
@@ -586,12 +593,14 @@ function buildDialogFieldValidation(
     validation.required = true;
   }
 
-  const minLength = getMinLength(program, prop);
+  const minLength =
+    getMinLength(program, prop) ?? getMinLengthStd(program, prop);
   if (minLength !== undefined) {
     validation.minLength = minLength;
   }
 
-  const maxLength = getMaxLength(program, prop);
+  const maxLength =
+    getMaxLength(program, prop) ?? getMaxLengthStd(program, prop);
   if (maxLength !== undefined) {
     validation.maxLength = maxLength;
   }
@@ -606,7 +615,7 @@ function buildDialogFieldValidation(
     validation.max = max;
   }
 
-  const pattern = getPattern(program, prop);
+  const pattern = getPattern(program, prop) ?? getPatternStd(program, prop);
   if (pattern !== undefined) {
     validation.pattern = pattern;
   }

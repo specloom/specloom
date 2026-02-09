@@ -25,11 +25,11 @@ options:
 specloom のデコレーターは `@S.` プレフィックスで使用します。
 
 ```typespec
-@S.resource    // specloom デコレーター
-@maxLength(100) // TypeSpec 標準デコレーター（プレフィックス不要）
+@S.resource
+@S.maxLength(100)
 ```
 
-TypeSpec 標準デコレーター（プレフィックス不要）: `@minLength`, `@maxLength`, `@pattern`, `@minItems`, `@maxItems`
+すべてのデコレーターに `@S.` プレフィックスを付けます。
 
 ## クイックスタート
 
@@ -48,7 +48,7 @@ model Post {
   @S.label("タイトル")
   @S.kind("text")
   @S.required
-  @maxLength(100)
+  @S.maxLength(100)
   title: string;
 
   @S.label("状態")

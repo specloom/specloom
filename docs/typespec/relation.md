@@ -117,8 +117,8 @@ category: Category;
 @S.kind("relation")
 @S.ui(#{ inputHint: "autocomplete" })
 @S.relation(Tag, #{ labelField: "name" })
-@minItems(1)
-@maxItems(5)
+@S.minItems(1)
+@S.maxItems(5)
 tags: Tag[];
 
 @S.label("関連記事")
@@ -135,8 +135,8 @@ relatedPosts: Post[];
 @S.kind("relation")
 @S.relation(Tag, #{ labelField: "name" })
 @S.required          // 1つ以上必須
-@minItems(1)       // 最小1個
-@maxItems(5)       // 最大5個
+@S.minItems(1)       // 最小1個
+@S.maxItems(5)       // 最大5個
 tags: Tag[];
 ```
 

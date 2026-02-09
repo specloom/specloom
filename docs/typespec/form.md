@@ -55,8 +55,8 @@ model Post {
   @S.label("タグ")
   @S.kind("relation")
   @S.relation(Tag, #{ labelField: "name" })
-  @minItems(1)
-  @maxItems(5)
+  @S.minItems(1)
+  @S.maxItems(5)
   @S.ui(#{ inputHint: "autocomplete", searchable: true })
   tags: Tag[];
 }

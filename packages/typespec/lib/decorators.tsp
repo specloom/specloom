@@ -274,5 +274,32 @@ extern dec min(target: ModelProperty, value: valueof int32);
  */
 extern dec max(target: ModelProperty, value: valueof int32);
 
-// @minLength, @maxLength, @pattern, @minItems, @maxItems は
-// TypeSpec 標準デコレーターを使用してください。
+/**
+ * Set minimum string length
+ * @param value Minimum length
+ */
+extern dec minLength(target: ModelProperty, value: valueof int32);
+
+/**
+ * Set maximum string length
+ * @param value Maximum length
+ */
+extern dec maxLength(target: ModelProperty, value: valueof int32);
+
+/**
+ * Set pattern constraint
+ * @param pattern Pattern name or regex
+ */
+extern dec pattern(target: ModelProperty, pattern: valueof string);
+
+/**
+ * Set minimum array items
+ * @param value Minimum items
+ */
+extern dec minItems(target: ModelProperty, value: valueof int32);
+
+/**
+ * Set maximum array items
+ * @param value Maximum items
+ */
+extern dec maxItems(target: ModelProperty, value: valueof int32);

@@ -12,12 +12,10 @@ title: string;
 
 ## @minLength / @maxLength
 
-> **Note**: これらは TypeSpec 標準のデコレーターです。
-
 文字数制限を設定します。
 ```typespec
-@minLength(1)
-@maxLength(100)
+@S.minLength(1)
+@S.maxLength(100)
 title: string;
 ```
 
@@ -34,13 +32,13 @@ progress: int32;
 
 パターンを指定します。
 ```typespec
-@pattern("email")
+@S.pattern("email")
 email: string;
 
-@pattern("url")
+@S.pattern("url")
 website: string;
 
-@pattern("slug")
+@S.pattern("slug")
 slug: string;
 ```
 
@@ -56,15 +54,13 @@ slug: string;
 
 ## @minItems / @maxItems
 
-> **Note**: これらは TypeSpec 標準のデコレーターです。
-
 配列の要素数を制限します。
 ```typespec
 @S.kind("relation")
 @S.relation(Tag, #{ labelField: "name" })
 @S.cardinality("many")
-@minItems(1)
-@maxItems(5)
+@S.minItems(1)
+@S.maxItems(5)
 tags: Tag[];
 ```
 
@@ -125,22 +121,22 @@ passwordConfirm: string;
 @S.label("タイトル")
 @S.kind("text")
 @S.required
-@minLength(1)
-@maxLength(100)
+@S.minLength(1)
+@S.maxLength(100)
 title: string;
 
 @S.label("メールアドレス")
 @S.kind("email")
 @S.required
-@pattern("email")
+@S.pattern("email")
 email: string;
 
 @S.label("タグ")
 @S.kind("relation")
 @S.relation(Tag, #{ labelField: "name" })
 @S.cardinality("many")
-@minItems(1)
-@maxItems(5)
+@S.minItems(1)
+@S.maxItems(5)
 tags: Tag[];
 ```
 

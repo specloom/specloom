@@ -741,7 +741,75 @@ export function $max(
   }
 }
 
-// @minLength, @maxLength, @pattern, @minItems, @maxItems は TypeSpec 標準を使用
+/**
+ * @minLength - Set minimum string length (wrapper for TypeSpec standard)
+ */
+export function $minLength(
+  context: DecoratorContext,
+  target: ModelProperty,
+  value: unknown,
+) {
+  const extracted = extractNumber(value);
+  if (extracted !== undefined) {
+    context.program.stateMap(StateKeys.minLength).set(target, extracted);
+  }
+}
+
+/**
+ * @maxLength - Set maximum string length (wrapper for TypeSpec standard)
+ */
+export function $maxLength(
+  context: DecoratorContext,
+  target: ModelProperty,
+  value: unknown,
+) {
+  const extracted = extractNumber(value);
+  if (extracted !== undefined) {
+    context.program.stateMap(StateKeys.maxLength).set(target, extracted);
+  }
+}
+
+/**
+ * @pattern - Set pattern constraint (wrapper for TypeSpec standard)
+ */
+export function $pattern(
+  context: DecoratorContext,
+  target: ModelProperty,
+  pattern: unknown,
+) {
+  const extracted = extractString(pattern);
+  if (extracted) {
+    context.program.stateMap(StateKeys.pattern).set(target, extracted);
+  }
+}
+
+/**
+ * @minItems - Set minimum array items (wrapper for TypeSpec standard)
+ */
+export function $minItems(
+  context: DecoratorContext,
+  target: ModelProperty,
+  value: unknown,
+) {
+  const extracted = extractNumber(value);
+  if (extracted !== undefined) {
+    context.program.stateMap(StateKeys.minItems).set(target, extracted);
+  }
+}
+
+/**
+ * @maxItems - Set maximum array items (wrapper for TypeSpec standard)
+ */
+export function $maxItems(
+  context: DecoratorContext,
+  target: ModelProperty,
+  value: unknown,
+) {
+  const extracted = extractNumber(value);
+  if (extracted !== undefined) {
+    context.program.stateMap(StateKeys.maxItems).set(target, extracted);
+  }
+}
 
 // ============================================================
 // Helper functions to get decorator data
@@ -965,7 +1033,40 @@ export function getConfirm(
   return program.stateMap(StateKeys.confirm).get(target);
 }
 
-// getMinLength, getMaxLength は @typespec/compiler から使用
+export function getMinLength(
+  program: DecoratorContext["program"],
+  target: ModelProperty,
+): number | undefined {
+  return program.stateMap(StateKeys.minLength).get(target);
+}
+
+export function getMaxLength(
+  program: DecoratorContext["program"],
+  target: ModelProperty,
+): number | undefined {
+  return program.stateMap(StateKeys.maxLength).get(target);
+}
+
+export function getPattern(
+  program: DecoratorContext["program"],
+  target: ModelProperty,
+): string | undefined {
+  return program.stateMap(StateKeys.pattern).get(target);
+}
+
+export function getMinItems(
+  program: DecoratorContext["program"],
+  target: ModelProperty,
+): number | undefined {
+  return program.stateMap(StateKeys.minItems).get(target);
+}
+
+export function getMaxItems(
+  program: DecoratorContext["program"],
+  target: ModelProperty,
+): number | undefined {
+  return program.stateMap(StateKeys.maxItems).get(target);
+}
 
 export function getMin(
   program: DecoratorContext["program"],
@@ -980,8 +1081,6 @@ export function getMax(
 ): number | undefined {
   return program.stateMap(StateKeys.max).get(target);
 }
-
-// getPattern, getMinItems, getMaxItems は @typespec/compiler から使用
 
 export function getDialog(
   program: DecoratorContext["program"],

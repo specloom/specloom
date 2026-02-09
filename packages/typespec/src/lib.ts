@@ -60,7 +60,11 @@ export const $lib = createTypeSpecLibrary({
     required: { description: "State for @required decorator" },
     min: { description: "State for @min decorator" },
     max: { description: "State for @max decorator" },
-    // @minLength, @maxLength, @pattern, @minItems, @maxItems は TypeSpec 標準を使用
+    minLength: { description: "State for @minLength decorator" },
+    maxLength: { description: "State for @maxLength decorator" },
+    pattern: { description: "State for @pattern decorator" },
+    minItems: { description: "State for @minItems decorator" },
+    maxItems: { description: "State for @maxItems decorator" },
   },
 });
 

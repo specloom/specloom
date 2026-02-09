@@ -146,7 +146,7 @@ model Post {
   @S.label("タイトル")
   @S.kind("text")
   @S.required
-  @maxLength(100)
+  @S.maxLength(100)
   title: string;
 
   @S.label("本文")
