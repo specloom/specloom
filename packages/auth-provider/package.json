@@ -1,0 +1,47 @@
+{
+  "name": "@specloom/auth-provider",
+  "version": "0.1.0",
+  "description": "Authentication provider abstraction for specloom",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./firebase": {
+      "types": "./src/providers/firebase/index.ts",
+      "default": "./src/providers/firebase/index.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest"
+  },
+  "keywords": [
+    "specloom",
+    "auth",
+    "provider"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "firebase": "^11.0.0"
+  },
+  "peerDependenciesMeta": {
+    "firebase": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "firebase": "^11.0.0",
+    "typescript": "^5.7.0",
+    "vitest": "4.0.17"
+  }
+}

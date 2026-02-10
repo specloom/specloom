@@ -26,12 +26,22 @@ specloom (core) - フレームワーク非依存
 ├── builder/        # Spec 構築
 └── evaluator/      # Spec + Context → ViewModel
 
+認証・データアクセス
+│
+├── @specloom/auth-provider   # 認証プロバイダー抽象化
+│   ├── core/                 #   AuthProvider<TTenant> インターフェース
+│   └── providers/firebase/   #   Firebase Identity Platform 実装
+│
+└── @specloom/data-provider   # データプロバイダー抽象化
+    ├── core/                 #   DataProvider インターフェース
+    ├── http/                 #   認証付き HTTP クライアント
+    └── providers/rest/       #   REST 実装
+
 フレームワークアダプター（オプション）
 │
-├── @specloom/react    # React hooks
-├── @specloom/solid    # Solid signals
-├── @specloom/vue      # Vue composables
-└── @specloom/svelte   # Svelte stores
+├── @specloom/solidjs  # SolidJS コンポーネント
+├── @specloom/svelte   # Svelte コンポーネント
+└── @specloom/api      # OpenAPI 定義
 ```
 
 ---
@@ -41,8 +51,20 @@ specloom (core) - フレームワーク非依存
 | レイヤー | 責務 | 状態 |
 |---------|------|------|
 | specloom (core) | 型 + 純粋関数 | 持たない |
-| @specloom/xxx | フレームワーク固有の状態管理 | 持つ |
+| @specloom/auth-provider | 認証抽象化（login, logout, token, permissions） | 認証状態 |
+| @specloom/data-provider | データアクセス抽象化（CRUD, カスタムアクション） | 持たない |
+| @specloom/xxx (UI) | フレームワーク固有の状態管理 | 持つ |
 | UI コンポーネント | 描画のみ | アダプター経由 |
+
+## パッケージ依存関係
+
+```
+@specloom/auth-provider    外部依存なし（firebase は peerDep/optional）
+          ↑
+@specloom/data-provider    auth-provider の AuthProvider 型 + getToken/checkError
+          ↑
+アプリケーション            auth-provider + data-provider + core + UI アダプター
+```
 
 ---
 
@@ -239,6 +261,117 @@ Spec + Context → ViewModel 変換（allowedWhen 評価等）。
 | `confirmMsg(action)` | 確認メッセージ |
 | `variant(action)` | UIバリアント |
 | `icon(action)` | アイコン |
+
+---
+
+## Auth Provider (`@specloom/auth-provider`)
+
+認証プロバイダーの抽象化レイヤー。テナント型 `TTenant` をジェネリクスで受け取る。
+
+### AuthProvider インターフェース
+
+| メソッド | 説明 |
+|---------|------|
+| `login(params)` | テナント指定でログイン → `AuthIdentity` を返す |
+| `logout()` | ログアウト |
+| `checkAuth(params?)` | 認証状態チェック（未認証なら throw） |
+| `checkError(error)` | API エラーをチェック（401/403 なら自動ログアウト） |
+| `getIdentity()` | 現在のユーザー情報を取得 |
+| `getToken()` | Bearer トークンを取得 |
+| `checkPermissions(params)` | 権限チェック（`requiredRoles` による制御） |
+| `getPermissions()` | 現在のテナント種別を取得 |
+| `onAuthStateChanged?(cb)` | 認証状態変更の購読（オプション） |
+
+### SignInMethod
+
+`EMAIL_PASSWORD` | `GOOGLE` | `LINE` | `APPLE` | `OIDC`
+
+### Firebase 実装
+
+`@specloom/auth-provider/firebase` サブパスから import。
+
+```ts
+import { createFirebaseAuthProvider } from "@specloom/auth-provider/firebase";
+
+const authProvider = createFirebaseAuthProvider<MyTenant>({
+  firebase: { apiKey, authDomain, projectId },
+  tenants: { tenantIds: { ADMIN: "admin-xxx", USER: "user-xxx" } },
+});
+```
+
+- Google Identity Platform のマルチテナント対応
+- `tenantIds` マッピングで tenantId → TTenant 変換
+- EMAIL_PASSWORD / GOOGLE サインインをサポート
+
+---
+
+## Data Provider (`@specloom/data-provider`)
+
+REST API との通信を抽象化。リソースごとの URL マッピング、リクエスト/レスポンス変換をプラグイン的に注入できる。
+
+### DataProvider インターフェース
+
+| メソッド | 説明 |
+|---------|------|
+| `getList(resource, params)` | 一覧取得（ページネーション、ソート、フィルター） |
+| `getOne(resource, params)` | 単一リソース取得 |
+| `create(resource, params)` | リソース作成 |
+| `update(resource, params)` | リソース更新 |
+| `delete(resource, params)` | リソース削除 |
+| `getMany?(resource, params)` | 複数ID一括取得（オプション） |
+
+### HTTP クライアント
+
+`createHttpClient(authProvider, config)` で作成。AuthProvider からトークンを取得し自動付与。
+
+```ts
+import { createHttpClient } from "@specloom/data-provider";
+
+const http = createHttpClient(authProvider, { baseUrl: "http://localhost:8080" });
+```
+
+- 全リクエストに `Authorization: Bearer <token>` を自動付与
+- 401/403 レスポンスで `authProvider.checkError()` を呼び出し
+
+### REST 実装
+
+`@specloom/data-provider/rest` サブパスから import。
+
+```ts
+import { createRestDataProvider } from "@specloom/data-provider/rest";
+
+const dataProvider = createRestDataProvider(http, {
+  apiPrefix: "/api",
+  resources: {
+    orders: {
+      endpoint: "/api/v1/orders",
+      transformResponse: (raw) => ({ id: raw.id, status: raw.order_status }),
+      transformRequest: (data) => ({ order_status: data.status }),
+      actions: {
+        approve: { method: "POST", path: (id) => `/api/v1/orders/${id}/approve` },
+      },
+    },
+  },
+});
+
+// カスタムアクション実行
+await dataProvider.action("orders", "approve", orderId);
+```
+
+### ResourceConfig
+
+| プロパティ | 説明 |
+|-----------|------|
+| `endpoint` | リソースのベース URL（文字列 or 関数） |
+| `itemEndpoint` | 個別リソースの URL 関数 |
+| `transformResponse` | レスポンス変換 |
+| `transformListResponse` | 一覧レスポンス変換 |
+| `transformRequest` | リクエスト変換 |
+| `transformFilter` | フィルターパラメータ変換 |
+| `transformSort` | ソートフィールド名変換 |
+| `defaultFilter` | デフォルトフィルター |
+| `defaultSort` | デフォルトソート |
+| `actions` | カスタムアクション定義 |
 
 ---
 

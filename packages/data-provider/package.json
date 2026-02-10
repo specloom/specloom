@@ -1,0 +1,42 @@
+{
+  "name": "@specloom/data-provider",
+  "version": "0.1.0",
+  "description": "Data provider abstraction for specloom",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./rest": {
+      "types": "./src/providers/rest/index.ts",
+      "default": "./src/providers/rest/index.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest"
+  },
+  "keywords": [
+    "specloom",
+    "data",
+    "provider",
+    "rest"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@specloom/auth-provider": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vitest": "4.0.17"
+  }
+}

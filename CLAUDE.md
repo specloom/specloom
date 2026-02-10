@@ -48,6 +48,11 @@ pnpm dev
 |---------|---------|
 | `packages/specloom` | Core library: spec types, ViewModel, builder, loader, evaluator, validation |
 | `packages/typespec` | TypeSpec decorators + emitter for compiling `.tsp` to JSON spec |
+| `packages/auth-provider` | Authentication provider abstraction (Firebase Identity Platform impl) |
+| `packages/data-provider` | Data provider abstraction with REST impl and authenticated HTTP client |
+| `packages/solidjs` | SolidJS UI components |
+| `packages/svelte` | Svelte UI components |
+| `packages/api` | OpenAPI spec definition |
 
 ### Core specloom Modules
 
@@ -65,6 +70,19 @@ Three main elements define an admin UI:
 1. **Resource** - Data model with fields, kinds, validation, relations
 2. **View** - Screen type (list/form/show) with columns, filters, sorting
 3. **Action** - Operations with placement, permissions (`allowedWhen`), confirmation
+
+### Auth Provider (`@specloom/auth-provider`)
+
+- **core/** - `AuthProvider<TTenant>` interface, `AuthIdentity`, `LoginParams`, `SignInMethod` types
+- **providers/firebase/** - `createFirebaseAuthProvider()` - Firebase Identity Platform multi-tenant impl
+- Firebase is optional peer dependency, imported via `@specloom/auth-provider/firebase` subpath
+
+### Data Provider (`@specloom/data-provider`)
+
+- **core/** - `DataProvider` interface, `ListParams`, `ResourceConfig`, `CustomAction` types
+- **http/** - `createHttpClient()` - Bearer token auto-injection, 401/403 error handling via AuthProvider
+- **providers/rest/** - `createRestDataProvider()` - REST impl with per-resource endpoint/transform/action config
+- Depends on `@specloom/auth-provider` for token management
 
 ### TypeSpec Decorators
 

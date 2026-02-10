@@ -17,6 +17,8 @@
   "references": [
     { "path": "./packages/specloom" },
     { "path": "./packages/typespec" },
+    { "path": "./packages/auth-provider" },
+    { "path": "./packages/data-provider" },
   ],
   "files": [],
 }
