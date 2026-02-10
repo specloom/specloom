@@ -98,6 +98,7 @@ The `@specloom/typespec` package provides decorators:
 - `docs/spec/v0.1.md` - JSON spec format reference
 - `docs/spec/view_model.md` - ViewModel spec reference
 - `docs/spec/api.md` - API spec reference
+- `docs/guides/solid-integration.md` - SolidJS integration guide (AuthContext, DataContext, AuthGuard)
 
 ## Git ワークフロー
 

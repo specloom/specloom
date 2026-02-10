@@ -572,34 +572,28 @@ const orders = await dataProvider.getList("orders", {
 await dataProvider.action("orders", "approve", "order-123");
 ```
 
-## SolidJS App-Side Wiring (Reference)
+## SolidJS Integration
 
-SolidJS の Context/Guard はアプリ側で実装する（@specloom パッケージには含まない）。
+SolidJS の Context / Hook / Guard はアプリ側で実装する（@specloom パッケージには含まない）。
 
-```typescript
-// app-config.ts (アプリ側)
-import { createContext, useContext, type ParentComponent } from "solid-js";
-import type { AuthProvider } from "@specloom/auth-provider";
-import type { DataProvider } from "@specloom/data-provider";
+詳細なガイドは **[docs/guides/solid-integration.md](../../docs/guides/solid-integration.md)** を参照。
 
-interface AppContext {
-  authProvider: AuthProvider<MyTenant>;
-  dataProvider: DataProvider & { action: Function };
-}
+実装するファイル:
 
-const AppCtx = createContext<AppContext>();
-
-export const AppProvider: ParentComponent = (props) => {
-  return (
-    <AppCtx.Provider value={{ authProvider, dataProvider }}>
-      {props.children}
-    </AppCtx.Provider>
-  );
-};
-
-export const useAuth = () => useContext(AppCtx)!.authProvider;
-export const useData = () => useContext(AppCtx)!.dataProvider;
 ```
+src/auth/
+├── context.tsx        # createAuthContext<TTenant>() - 型付き Provider + Hook 生成
+├── data-context.tsx   # DataContextProvider + useDataProvider
+├── guard.tsx          # AuthGuard - ロールベースルートガード
+├── setup.ts           # createOysterApp() - auth + http + data の組み立て
+└── index.ts           # テナント定義 + re-export
+```
+
+主なパターン:
+- `createAuthContext<TTenant>()` で型安全な AuthProvider/useAuth を生成
+- `onAuthStateChanged` があれば Solid の signal にリアルタイム同期
+- `AuthGuard` で `allowedRoles` によるルート保護
+- `createResource` + `useDataProvider()` でデータ取得
 
 ## Checklist
 
