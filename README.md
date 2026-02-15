@@ -45,45 +45,56 @@ UI (描画するだけ)
 ```typespec
 import "@specloom/typespec";
 
-@Specloom.resource
-@Specloom.label("投稿")
+@S.resource
+@S.label("投稿")
 model Post {
-  @Specloom.readonly
+  @S.readonly
   id: string;
 
-  @Specloom.label("タイトル")
-  @Specloom.kind("text")
-  @Specloom.required
-  @Specloom.maxLength(100)
+  @S.label("タイトル")
+  @S.kind("text")
+  @S.required
+  @S.maxLength(100)
   title: string;
 
-  @Specloom.label("状態")
-  @Specloom.kind("enum")
-  @Specloom.options(#[
+  @S.label("状態")
+  @S.kind("enum")
+  @S.options(#[
     #{ value: "draft", label: "下書き" },
     #{ value: "published", label: "公開中" }
   ])
-  @Specloom.ui(#{ hint: "badge", inputHint: "select" })
+  @S.ui(#{ hint: "badge", inputHint: "select" })
   status: PostStatus;
 
-  @Specloom.label("著者")
-  @Specloom.kind("relation")
-  @Specloom.relation(User, #{ labelField: "name" })
-  @Specloom.required
+  @S.label("著者")
+  @S.kind("relation")
+  @S.relation(User, #{ labelField: "name" })
+  @S.required
   author: User;
+
+  @S.label("公開日時")
+  @S.kind("datetime")
+  @S.visibleWhen("data.status == 'published'")
+  @S.requiredWhen("data.status == 'published'")
+  publishedAt: utcDateTime;
 }
 
-@Specloom.view(Post, "list")
-@Specloom.columns(#["title", "status", "author"])
-@Specloom.sortable(#["title"])
-@Specloom.searchable(#["title"])
+@S.view(Post, "list")
+@S.columns(#["title", "status", "author"])
+@S.sortable(#["title"])
+@S.searchable(#["title"])
 model PostList {
-  @Specloom.action("delete")
-  @Specloom.label("削除")
-  @Specloom.placement("row")
-  @Specloom.allowedWhen("role == 'admin'")
-  @Specloom.confirm("本当に削除しますか？")
-  @Specloom.ui(#{ icon: "trash", variant: "danger" })
+  @S.action("create")
+  @S.label("新規作成")
+  @S.allowedWhen("role == 'admin' || role == 'editor'")
+  @S.ui(#{ icon: "plus", variant: "primary" })
+  create: never;
+
+  @S.rowAction("delete")
+  @S.label("削除")
+  @S.allowedWhen("role == 'admin'")
+  @S.confirm("本当に削除しますか？")
+  @S.ui(#{ icon: "trash", variant: "danger" })
   delete: never;
 }
 ```
@@ -249,9 +260,70 @@ const updated = form
 
 ### @specloom/typespec
 
-- **30+ デコレーター**: `@resource`, `@label`, `@kind`, `@relation`, `@required`, `@ui`, etc.
-- **JSON Spec エミッター**: `tsp compile` で JSON Spec を出力
+- **40+ デコレーター**: `@resource`, `@label`, `@kind`, `@relation`, `@required`, `@ui`, `@visibleWhen`, `@requiredWhen`, etc.
+- **JSON Spec エミッター**: `tsp compile` で JSON Spec を出力（tsp ファイルごとに分割出力）
 - **TypeSpec enum サポート**: enum 型から options を自動生成
+
+## TypeSpec Decorators
+
+### Resource
+
+| デコレーター | 対象 | 説明 |
+|-------------|------|------|
+| `@resource` | Model | リソースとしてマーク |
+| `@label` | Model / Field | 表示ラベル |
+| `@kind` | Field | フィールド種類（text, longText, enum, relation, etc.） |
+| `@required` | Field | 必須 |
+| `@readonly` | Field | 読み取り専用 |
+| `@computed` | Field | 算出フィールド（DB に保存しない） |
+| `@createOnly` | Field | 作成時のみ表示（編集時は読み取り専用） |
+| `@options` | Field | enum の選択肢（value / label） |
+| `@relation` | Field | 他リソースへの参照 |
+| `@filter` | Field | フィルター可能 |
+| `@ui` | Model / Field | UI ヒント（hint, inputHint, icon, variant, etc.） |
+| `@visibleWhen` | Field | 条件付き表示（式が true の場合のみ表示） |
+| `@requiredWhen` | Field | 条件付き必須（式が true の場合に必須化） |
+
+### View
+
+| デコレーター | 対象 | 説明 |
+|-------------|------|------|
+| `@view` | Model | ビュー定義（list / form / show） |
+| `@columns` | Model | リスト表示列 |
+| `@fields` | Model | フォーム / 詳細表示フィールド |
+| `@searchable` | Model | 検索対象フィールド |
+| `@sortable` | Model | ソート可能フィールド |
+| `@defaultSort` | Model | デフォルトソート |
+| `@clickAction` | Model | 行クリック時のアクション |
+| `@selection` | Model | 選択モード（none / single / multi） |
+| `@namedFilter` | Model | 名前付きフィルター |
+
+### Action
+
+| デコレーター | 対象 | 説明 |
+|-------------|------|------|
+| `@action` | Field | ページレベルアクション |
+| `@rowAction` | Field | 行アクション |
+| `@requiresSelection` | Field | バルクアクションの選択要件 |
+| `@allowedWhen` | Field | 権限式（`role == 'admin'` など） |
+| `@confirm` | Field | 確認ダイアログ |
+| `@dialog` | Field | ダイアログフォーム |
+| `@api` | Field | API エンドポイント定義 |
+
+### Validation
+
+| デコレーター | 対象 | 説明 |
+|-------------|------|------|
+| `@required` | Field | 必須 |
+| `@minLength` | Field | 最小文字数 |
+| `@maxLength` | Field | 最大文字数 |
+| `@min` | Field | 最小値 |
+| `@max` | Field | 最大値 |
+| `@pattern` | Field | 正規表現 |
+| `@match` | Field | 他フィールドとの一致（パスワード確認など） |
+| `@minItems` | Field | 配列の最小要素数 |
+| `@maxItems` | Field | 配列の最大要素数 |
+| `@requiredWhen` | Field | 条件付き必須 |
 
 ## Field Kinds
 
@@ -265,47 +337,27 @@ const updated = form
 | `datetime` | 日時 | datetimepicker |
 | `enum` | 列挙値 | select, radio, badge |
 | `relation` | 他リソースへの参照 | autocomplete, select, modal |
-
-## Validation
-
-フィールドに設定可能なバリデーション：
-
-```typespec
-@Specloom.required           // 必須
-@Specloom.minLength(1)       // 最小文字数
-@Specloom.maxLength(100)     // 最大文字数
-@Specloom.min(0)             // 最小値
-@Specloom.max(100)           // 最大値
-@Specloom.pattern("[a-z]+")  // 正規表現
-@Specloom.minItems(1)        // 配列の最小要素数
-@Specloom.maxItems(5)        // 配列の最大要素数
-```
-
-## Actions
-
-```typespec
-@Specloom.action("delete")
-@Specloom.label("削除")
-@Specloom.placement("row")           // header | row | bulk
-@Specloom.allowedWhen("role == 'admin'")
-@Specloom.confirm("本当に削除しますか？")
-@Specloom.ui(#{ icon: "trash", variant: "danger" })
-delete: never;
-```
-
-- **placement**: `header`（ヘッダー）, `row`（行ごと）, `bulk`（一括選択）
-- **allowedWhen**: 式を評価して `allowed: true/false` を返す
-- **confirm**: 確認ダイアログのメッセージ
+| `password` | パスワード | input[type=password] |
 
 ## Documentation
 
 - [TypeSpec Guide](./docs/typespec/README.md) - TypeSpec での定義方法
 - [Resource](./docs/typespec/resource.md) - リソース定義
-- [Relation](./docs/typespec/relation.md) - リレーション
+- [Field](./docs/typespec/field.md) - フィールド（@ui, @filter, @visibleWhen, @requiredWhen）
 - [Validation](./docs/typespec/validation.md) - バリデーション
-- [Action](./docs/typespec/action.md) - アクション
-- [Form](./docs/typespec/form.md) - フォーム画面
-- [Show](./docs/typespec/show.md) - 詳細画面
+- [Relation](./docs/typespec/relation.md) - リレーション
+- [List View](./docs/typespec/list.md) - 一覧画面、namedFilter
+- [Form View](./docs/typespec/form.md) - 作成・編集画面
+- [Show View](./docs/typespec/show.md) - 詳細画面
+- [Action](./docs/typespec/action.md) - アクション（@dialog, @api）
+- [Examples](./docs/typespec/examples.md) - 完全な例
+
+### Spec Reference
+
+- [JSON Spec v0.1](./docs/spec/v0.1.md) - JSON Spec フォーマットリファレンス
+- [ViewModel Spec](./docs/spec/view_model.md) - ViewModel 仕様
+- [Filter Spec](./docs/spec/filter.md) - フィルター式仕様
+- [Philosophy](./docs/spec/philosophy.md) - 設計思想
 
 ## Development
 
@@ -318,6 +370,9 @@ pnpm build
 
 # テスト
 pnpm test
+
+# 型チェック
+pnpm typecheck
 
 # TypeSpec サンプルのコンパイル
 cd packages/typespec/test
@@ -333,7 +388,8 @@ npx tsp compile sample.tsp
 | Evaluator (ListView, FormView, ShowView) | ✅ |
 | ViewModel Classes (ListVM, ShowVM, FormVM) | ✅ |
 | Filter (client-side) | ✅ |
-| TypeSpec デコレーター | ✅ |
+| visibleWhen / requiredWhen | ✅ |
+| TypeSpec デコレーター (40+) | ✅ |
 | TypeSpec エミッター | ✅ |
 | SolidJS コンポーネント | ✅ |
 | Svelte コンポーネント | ✅ |
