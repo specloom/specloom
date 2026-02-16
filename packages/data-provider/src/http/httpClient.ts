@@ -1,4 +1,7 @@
-import type { AuthProvider } from "@specloom/auth-provider";
+export interface TokenProvider {
+  getToken(): Promise<string | null>;
+  checkError?(error: { message: string; status: number }): Promise<void>;
+}
 
 export interface HttpClient {
   get: <T>(path: string) => Promise<T>;
@@ -13,14 +16,14 @@ export interface HttpClientConfig {
 }
 
 export function createHttpClient(
-  authProvider: AuthProvider,
+  tokenProvider: TokenProvider,
   config: HttpClientConfig,
 ): HttpClient {
   async function request<T>(
     path: string,
     options: RequestInit = {},
   ): Promise<T> {
-    const token = await authProvider.getToken();
+    const token = await tokenProvider.getToken();
     if (!token) throw { message: "Not authenticated", status: 401 };
 
     const res = await fetch(`${config.baseUrl}${path}`, {
@@ -35,7 +38,7 @@ export function createHttpClient(
 
     if (!res.ok) {
       const error = { message: await res.text(), status: res.status };
-      await authProvider.checkError(error).catch(() => {});
+      await tokenProvider.checkError?.(error).catch(() => {});
       throw error;
     }
     return res.json() as Promise<T>;

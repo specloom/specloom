@@ -32,9 +32,6 @@
     "rest"
   ],
   "license": "MIT",
-  "dependencies": {
-    "@specloom/auth-provider": "workspace:*"
-  },
   "devDependencies": {
     "typescript": "^5.7.0",
     "vitest": "4.0.17"

@@ -13,4 +13,8 @@ export type {
 } from "./core/index.js";
 
 export { createHttpClient } from "./http/index.js";
-export type { HttpClient, HttpClientConfig } from "./http/index.js";
+export type {
+  TokenProvider,
+  HttpClient,
+  HttpClientConfig,
+} from "./http/index.js";
