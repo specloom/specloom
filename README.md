@@ -166,7 +166,7 @@ const identity = await auth.getIdentity();
 import { createHttpClient } from "@specloom/data-provider";
 import { createRestDataProvider } from "@specloom/data-provider/rest";
 
-const http = createHttpClient({ baseUrl: "/api", authProvider: auth });
+const http = createHttpClient(auth, { baseUrl: "/api" });
 const dataProvider = createRestDataProvider({ httpClient: http });
 
 const { data, total } = await dataProvider.getList("posts", {
@@ -177,6 +177,7 @@ const { data, total } = await dataProvider.getList("posts", {
 ```
 
 - `DataProvider` インターフェース: getList, getOne, create, update, delete, getMany
+- `TokenProvider` インターフェース: `getToken()` + オプショナル `checkError()` — auth-provider への依存なし
 - `createHttpClient`: Bearer トークン自動付与、401/403 エラーハンドリング
 - REST 実装: リソース毎のエンドポイント・変換・カスタムアクション設定
 

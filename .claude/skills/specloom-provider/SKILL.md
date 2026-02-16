@@ -52,9 +52,9 @@ import { createRestDataProvider } from "@specloom/data-provider/rest";
 
 ```
 @specloom/auth-provider    外部依存なし (firebase は optional peerDep)
-          ↑
-@specloom/data-provider    auth-provider の AuthProvider.getToken / checkError を使用
-          ↑
+
+@specloom/data-provider    外部依存なし (TokenProvider インターフェースで抽象化)
+
 アプリケーション
 ```
 
@@ -303,11 +303,14 @@ interface GetManyParams { ids: (string | number)[]; }
 
 ### HTTP Client
 
-AuthProvider からトークンを取得し、全リクエストに Bearer ヘッダーを自動付与。
+`TokenProvider` からトークンを取得し、全リクエストに Bearer ヘッダーを自動付与。
+`AuthProvider` は `TokenProvider` を満たすのでそのまま渡せる。
 
 ```typescript
 import { createHttpClient } from "@specloom/data-provider";
+import type { TokenProvider } from "@specloom/data-provider";
 
+// AuthProvider をそのまま渡せる
 const http = createHttpClient(authProvider, {
   baseUrl: "https://api.example.com",
   defaultHeaders: {
@@ -320,7 +323,7 @@ const http = createHttpClient(authProvider, {
 - 全リクエストに `Authorization: Bearer <token>` を付与
 - `Content-Type: application/json` を自動設定
 - トークンが取得できない場合は `{ message: "Not authenticated", status: 401 }` を throw
-- レスポンスが `!res.ok` の場合、`authProvider.checkError()` を呼び出してから throw
+- レスポンスが `!res.ok` の場合、`tokenProvider.checkError?.()` を呼び出してから throw
 
 ```typescript
 interface HttpClient {

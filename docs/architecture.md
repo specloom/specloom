@@ -60,9 +60,9 @@ specloom (core) - フレームワーク非依存
 
 ```
 @specloom/auth-provider    外部依存なし（firebase は peerDep/optional）
-          ↑
-@specloom/data-provider    auth-provider の AuthProvider 型 + getToken/checkError
-          ↑
+
+@specloom/data-provider    外部依存なし（TokenProvider インターフェースで抽象化）
+
 アプリケーション            auth-provider + data-provider + core + UI アダプター
 ```
 
@@ -322,16 +322,18 @@ REST API との通信を抽象化。リソースごとの URL マッピング、
 
 ### HTTP クライアント
 
-`createHttpClient(authProvider, config)` で作成。AuthProvider からトークンを取得し自動付与。
+`createHttpClient(tokenProvider, config)` で作成。`TokenProvider` からトークンを取得し自動付与。
 
 ```ts
 import { createHttpClient } from "@specloom/data-provider";
+import type { TokenProvider } from "@specloom/data-provider";
 
+// AuthProvider は TokenProvider を満たすのでそのまま渡せる
 const http = createHttpClient(authProvider, { baseUrl: "http://localhost:8080" });
 ```
 
 - 全リクエストに `Authorization: Bearer <token>` を自動付与
-- 401/403 レスポンスで `authProvider.checkError()` を呼び出し
+- 401/403 レスポンスで `tokenProvider.checkError?.()` を呼び出し（オプショナル）
 
 ### REST 実装
 

@@ -80,9 +80,9 @@ Three main elements define an admin UI:
 ### Data Provider (`@specloom/data-provider`)
 
 - **core/** - `DataProvider` interface, `ListParams`, `ResourceConfig`, `CustomAction` types
-- **http/** - `createHttpClient()` - Bearer token auto-injection, 401/403 error handling via AuthProvider
+- **http/** - `createHttpClient()` - Bearer token auto-injection, 401/403 error handling via `TokenProvider` interface
 - **providers/rest/** - `createRestDataProvider()` - REST impl with per-resource endpoint/transform/action config
-- Depends on `@specloom/auth-provider` for token management
+- No dependency on `@specloom/auth-provider` — uses `TokenProvider` (getToken + optional checkError)
 
 ### TypeSpec Decorators
 
