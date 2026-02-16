@@ -1,345 +1,147 @@
 # specloom
 
-Headless Admin ViewModel Spec
+Headless admin ViewModel specification library.
 
-## What is specloom?
-
-specloom は管理画面の「意味」を定義する仕様（spec）と、それを評価して ViewModel を生成するライブラリです。
-
-- **Headless**: UI を含まない。React / Solid / Vue どれでも使える
-- **Spec-driven**: TypeSpec で画面の意味を定義
-- **ViewModel**: 評価済みの結果を返す。UI は描画するだけ
-
-## Why?
-
-管理画面の課題：
-
-- 権限ロジックが UI に散らばる
-- フロントエンドが肥大化する
-- UI フレームワークに縛られる
-
-specloom の答え：
-
-- **spec** で意味を定義
-- **VM** で評価済みの結果を返す
-- **UI** は描画するだけ
-
-## How it works
+TypeSpec で管理画面の「意味」を定義し、JSON spec にコンパイルし、ランタイムコンテキスト（ユーザー、ロール）で評価して ViewModel を生成します。UI フレームワークは ViewModel を描画するだけです。
 
 ```
-TypeSpec (定義)
-    ↓ tsp compile
-JSON Spec (仕様)
-    ↓ loadSpec()
-Spec Object
-    ↓ evaluateListView() + context + data
-EvaluatedViewModel
-    ↓
-UI (描画するだけ)
+TypeSpec (定義) → JSON spec (仕様) → ViewModel (評価済み) → UI (描画)
 ```
 
-## Quick Example
+**原則: UI は権限ロジックを持たない** — `allowed` フラグを読むだけ。
 
-### 1. TypeSpec で定義
+## インストール
+
+```bash
+npm install specloom
+# TypeSpec で定義する場合
+npm install @specloom/typespec --save-dev
+```
+
+## クイックスタート
+
+### 1. TypeSpec でリソースとビューを定義
 
 ```typespec
 import "@specloom/typespec";
 
-@Specloom.resource
-@Specloom.label("投稿")
+@S.resource
+@S.label("投稿")
 model Post {
-  @Specloom.readonly
-  id: string;
-
-  @Specloom.label("タイトル")
-  @Specloom.kind("text")
-  @Specloom.required
-  @Specloom.maxLength(100)
-  title: string;
-
-  @Specloom.label("状態")
-  @Specloom.kind("enum")
-  @Specloom.options(#[
+  @S.readonly id: string;
+  @S.label("タイトル") @S.kind("text") @S.required title: string;
+  @S.label("状態") @S.kind("enum") @S.options(#[
     #{ value: "draft", label: "下書き" },
     #{ value: "published", label: "公開中" }
-  ])
-  @Specloom.ui(#{ hint: "badge", inputHint: "select" })
-  status: PostStatus;
-
-  @Specloom.label("著者")
-  @Specloom.kind("relation")
-  @Specloom.relation(User, #{ labelField: "name" })
-  @Specloom.required
-  author: User;
+  ]) status: string;
+  @S.label("作成日時") @S.kind("datetime") @S.readonly createdAt: utcDateTime;
 }
 
-@Specloom.view(Post, "list")
-@Specloom.columns(#["title", "status", "author"])
-@Specloom.sortable(#["title"])
-@Specloom.searchable(#["title"])
+@S.view(Post, "list")
+@S.columns(["title", "status", "createdAt"])
+@S.searchable(["title"])
+@S.defaultSort("createdAt", "desc")
 model PostList {
-  @Specloom.action("delete")
-  @Specloom.label("削除")
-  @Specloom.placement("row")
-  @Specloom.allowedWhen("role == 'admin'")
-  @Specloom.confirm("本当に削除しますか？")
-  @Specloom.ui(#{ icon: "trash", variant: "danger" })
+  @S.action("create") @S.label("新規作成")
+  @S.allowedWhen("role == 'admin' || role == 'editor'")
+  create: never;
+
+  @S.rowAction("delete") @S.label("削除")
+  @S.allowedWhen("role == 'admin'")
+  @S.confirm("本当に削除しますか？")
   delete: never;
 }
 ```
 
-### 2. コンパイル
+### 2. JSON spec にコンパイル
 
 ```bash
-tsp compile .
-# → spec.json が生成される
+npx tsp compile .
 ```
 
-### 3. Evaluator で ViewModel 生成
+### 3. ViewModel を評価して UI で描画
 
-```typescript
-import { loadSpec, validateSpec, evaluateListView } from "specloom";
+```ts
+import { ListVM, Format, ActionVM } from "specloom";
 
-// JSON Spec を読み込み・検証
-const spec = loadSpec(jsonSpec);
-validateSpec(spec);
+// ViewModel は API から取得（Evaluator がコンテキストに基づき評価済み）
+const vm = await fetch("/vm/posts").then(r => r.json());
 
-// Context（認証情報など）
-const context = { role: "editor", userId: "user-1" };
+// 純粋関数でデータにアクセス
+const fields = ListVM.fields(vm);
+const rows = ListVM.rows(vm);
+const actions = ListVM.pageActions(vm);
 
-// データ（API から取得）
-const data = [
-  { id: "1", title: "Hello", status: "published", author: { id: "u1", name: "田中" } },
-];
-
-// ViewModel を評価
-const vm = evaluateListView({
-  view: spec.views.find(v => v.resource === "Post" && v.type === "list"),
-  resource: spec.resources.find(r => r.name === "Post"),
-  context,
-  data,
+// アクションの許可チェック（UI は boolean を見るだけ）
+actions.forEach(a => {
+  if (ActionVM.allowed(a)) {
+    // ボタンを有効化
+  }
 });
+
+// 値のフォーマット
+const formatted = Format.date(value, "ja-JP");
 ```
 
-### 4. EvaluatedViewModel（評価結果）
+## アーキテクチャ
 
-```json
-{
-  "resource": "Post",
-  "fields": [
-    { "name": "title", "kind": "text", "label": "タイトル", "sortable": true },
-    { "name": "status", "kind": "enum", "label": "状態", "options": [...], "ui": { "hint": "badge" } },
-    { "name": "author", "kind": "relation", "label": "著者" }
-  ],
-  "pageActions": [],
-  "rows": [
-    {
-      "id": "1",
-      "values": { "title": "Hello", "status": "published", "author": { "id": "u1", "name": "田中" } },
-      "actions": [
-        { "id": "delete", "label": "削除", "allowed": false, "confirm": "本当に削除しますか？" }
-      ]
-    }
-  ],
-  "filters": [],
-  "searchableFields": ["title"]
-}
+### パッケージ構成
+
+| パッケージ | 説明 |
+|-----------|------|
+| `specloom` | コアライブラリ: spec 型定義、ViewModel、evaluator、validation、format |
+| `@specloom/typespec` | TypeSpec デコレーター + emitter（`.tsp` → JSON spec） |
+
+### コアモジュール
+
+| モジュール | 説明 |
+|-----------|------|
+| `spec/` | JSON spec の TypeScript 型定義 |
+| `vm/` | ViewModel 型と操作関数（ListVM, FormVM, ShowVM, ActionVM） |
+| `evaluator/` | Spec + Context → ViewModel 変換 |
+| `validation/` | フィールドバリデーション |
+| `format/` | 値のフォーマット（日付、通貨、数値） |
+| `serialize/` | 送信用データ変換 |
+| `filter/` | フィルター式の構築・評価 |
+| `i18n/` | 国際化 |
+| `loader/` | JSON spec の読み込み |
+
+### Spec の3要素
+
+| 要素 | 説明 |
+|------|------|
+| **Resource** | データモデル（フィールド、型、バリデーション、リレーション） |
+| **View** | 画面定義（list / form / show） |
+| **Action** | 操作定義（権限、確認ダイアログ、配置） |
+
+### ViewModel API
+
+```
+GET /vm/posts          → ListViewModel
+GET /vm/posts/1        → ShowViewModel
+GET /vm/posts/new      → FormViewModel (create)
+GET /vm/posts/1/edit   → FormViewModel (edit)
 ```
 
-### 5. UI（描画するだけ）
-
-```tsx
-// SolidJS の例
-<For each={vm.rows}>
-  {(row) => (
-    <tr>
-      <td>{row.values.title}</td>
-      <td><Badge>{row.values.status}</Badge></td>
-      <td>{row.values.author.name}</td>
-      <td>
-        <For each={row.actions}>
-          {(action) => (
-            <button 
-              disabled={!action.allowed}
-              onClick={() => action.confirm && confirm(action.confirm) && handleAction(action.id, row.id)}
-            >
-              {action.label}
-            </button>
-          )}
-        </For>
-      </td>
-    </tr>
-  )}
-</For>
-```
-
-**UI に権限ロジックがない。`allowed` を見るだけ。**
-
-## ViewModel Classes (OOP Style)
-
-評価された ViewModel を操作するための OOP スタイルのクラス：
-
-```typescript
-import { ListVM, ShowVM, FormVM } from "specloom";
-
-// ListVM - イミュータブルなリスト操作
-const list = new ListVM(listData);
-
-// Getters
-list.fields;          // フィールド一覧
-list.rows;            // 行一覧
-list.pageActions;     // ページアクション（選択不要）
-list.bulkActions;     // バルクアクション（選択必須）
-list.searchQuery;     // 検索クエリ
-list.isLoading;       // ローディング状態
-list.selectedCount;   // 選択数
-
-// Methods
-list.field("title");           // 特定のフィールドを取得
-list.isSelected("row-1");      // 行が選択されているか
-list.sortIcon("title");        // ソートアイコン (▲/▼/−)
-list.formatCell(field, value); // セル値をフォーマット
-list.rowActions(row);          // 行アクション（row.actionsから取得）
-
-// Immutable Setters (メソッドチェーン対応)
-const updated = list
-  .setSearchQuery("test")
-  .toggleFilter("active")
-  .setPage(2);
-// 元の list は変更されない
-
-// ShowVM - 詳細画面
-const show = new ShowVM(showData);
-show.value("title");              // フィールド値を取得
-show.formatValue(field, value);   // フォーマット済み値
-
-// FormVM - フォーム操作
-const form = new FormVM(formData);
-form.value("title");              // フィールド値
-form.isValid;                     // バリデーション状態
-form.hasError("email");           // エラーがあるか
-
-const updated = form
-  .setValue("title", "New Title")
-  .setFieldErrors("email", ["必須です"])
-  .setSubmitting(true);
-```
-
-## Packages
-
-| Package | Description | Status |
-|---------|-------------|--------|
-| `specloom` | Loader, Validator, Evaluator, ViewModel Classes | ✅ 実装済み |
-| `@specloom/typespec` | TypeSpec デコレーター + JSON Spec エミッター | ✅ 実装済み |
-| `@specloom/solidjs` | SolidJS UI コンポーネント | ✅ 実装済み |
-| `@specloom/svelte` | Svelte UI コンポーネント | ✅ 実装済み |
-| `@specloom/api` | OpenAPI 定義 | ✅ 実装済み |
-
-## Features
-
-### specloom (core)
-
-- **Loader**: JSON Spec を読み込み、型付きオブジェクトに変換
-- **Validator**: JSON Spec の構造・整合性を検証
-- **Evaluator**: Context + Data から ViewModel を評価
-  - `evaluateListView()` - 一覧画面
-  - `evaluateFormView()` - 作成・編集画面
-  - `evaluateShowView()` - 詳細画面
-- **Filter**: クライアントサイドフィルタリング
-
-### @specloom/typespec
-
-- **30+ デコレーター**: `@resource`, `@label`, `@kind`, `@relation`, `@required`, `@ui`, etc.
-- **JSON Spec エミッター**: `tsp compile` で JSON Spec を出力
-- **TypeSpec enum サポート**: enum 型から options を自動生成
-
-## Field Kinds
-
-| Kind | 説明 | UI ヒント例 |
-|------|------|------------|
-| `text` | 短いテキスト | input |
-| `longText` | 長いテキスト | textarea, richtext |
-| `number` | 数値 | input[type=number] |
-| `boolean` | 真偽値 | checkbox, switch |
-| `date` | 日付 | datepicker |
-| `datetime` | 日時 | datetimepicker |
-| `enum` | 列挙値 | select, radio, badge |
-| `relation` | 他リソースへの参照 | autocomplete, select, modal |
-
-## Validation
-
-フィールドに設定可能なバリデーション：
-
-```typespec
-@Specloom.required           // 必須
-@Specloom.minLength(1)       // 最小文字数
-@Specloom.maxLength(100)     // 最大文字数
-@Specloom.min(0)             // 最小値
-@Specloom.max(100)           // 最大値
-@Specloom.pattern("[a-z]+")  // 正規表現
-@Specloom.minItems(1)        // 配列の最小要素数
-@Specloom.maxItems(5)        // 配列の最大要素数
-```
-
-## Actions
-
-```typespec
-@Specloom.action("delete")
-@Specloom.label("削除")
-@Specloom.placement("row")           // header | row | bulk
-@Specloom.allowedWhen("role == 'admin'")
-@Specloom.confirm("本当に削除しますか？")
-@Specloom.ui(#{ icon: "trash", variant: "danger" })
-delete: never;
-```
-
-- **placement**: `header`（ヘッダー）, `row`（行ごと）, `bulk`（一括選択）
-- **allowedWhen**: 式を評価して `allowed: true/false` を返す
-- **confirm**: 確認ダイアログのメッセージ
-
-## Documentation
-
-- [TypeSpec Guide](./docs/typespec/README.md) - TypeSpec での定義方法
-- [Resource](./docs/typespec/resource.md) - リソース定義
-- [Relation](./docs/typespec/relation.md) - リレーション
-- [Validation](./docs/typespec/validation.md) - バリデーション
-- [Action](./docs/typespec/action.md) - アクション
-- [Form](./docs/typespec/form.md) - フォーム画面
-- [Show](./docs/typespec/show.md) - 詳細画面
-
-## Development
+## 開発
 
 ```bash
-# インストール
 pnpm install
-
-# ビルド
-pnpm build
-
-# テスト
-pnpm test
-
-# TypeSpec サンプルのコンパイル
-cd packages/typespec/test
-npx tsp compile sample.tsp
+pnpm build        # 全パッケージをビルド
+pnpm test         # テスト実行
+pnpm typecheck    # 型チェック
+pnpm dev          # ウォッチモード
 ```
 
-## Status
+## ドキュメント
 
-| 機能 | 状態 |
-|------|------|
-| JSON Spec v0.1 | ✅ |
-| Loader / Validator | ✅ |
-| Evaluator (ListView, FormView, ShowView) | ✅ |
-| ViewModel Classes (ListVM, ShowVM, FormVM) | ✅ |
-| Filter (client-side) | ✅ |
-| TypeSpec デコレーター | ✅ |
-| TypeSpec エミッター | ✅ |
-| SolidJS コンポーネント | ✅ |
-| Svelte コンポーネント | ✅ |
-| React コンポーネント | 📋 Planned |
-| CLI ツール | 📋 Planned |
+- [TypeSpec ガイド](./docs/typespec/README.md) — デコレーターリファレンスと使い方
+- [Spec v0.1](./docs/spec/v0.1.md) — JSON spec フォーマット仕様
+- [ViewModel Spec](./docs/spec/view_model.md) — ViewModel 仕様
+- [API Spec](./docs/spec/api.md) — HTTP API 仕様
+- [設計思想](./docs/spec/philosophy.md) — 責務の分離と設計原則
+- [アーキテクチャ](./docs/architecture.md) — モジュール構成と使用例
 
-## License
+## ライセンス
 
 MIT
