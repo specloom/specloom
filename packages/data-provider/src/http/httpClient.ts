@@ -41,7 +41,11 @@ export function createHttpClient(
       await tokenProvider.checkError?.(error).catch(() => {});
       throw error;
     }
-    return res.json() as Promise<T>;
+    if (res.status === 204 || res.headers.get("content-length") === "0") {
+      return undefined as T;
+    }
+    const text = await res.text();
+    return text ? (JSON.parse(text) as T) : (undefined as T);
   }
 
   return {
