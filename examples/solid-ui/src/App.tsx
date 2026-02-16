@@ -1,15 +1,15 @@
 import { createSignal } from "solid-js";
 import { ListView, ShowView, FormView } from "@specloom/solidjs";
 import type { ListViewModel, ShowViewModel, FormViewModel } from "specloom";
-import { usersListVM, userShowVM, userFormVM } from "./data";
+import { usersListVM, usersShowVM, usersFormVM } from "./data";
 
 type View = "list" | "show" | "form";
 
 export function App() {
   const [currentView, setCurrentView] = createSignal<View>("list");
   const [listVM, setListVM] = createSignal<ListViewModel>(usersListVM);
-  const [showVM] = createSignal<ShowViewModel>(userShowVM);
-  const [formVM, setFormVM] = createSignal<FormViewModel>(userFormVM);
+  const [showVM] = createSignal<ShowViewModel>(usersShowVM);
+  const [formVM, setFormVM] = createSignal<FormViewModel>(usersFormVM);
 
   // 選択状態の更新
   const handleSelect = (rowId: string) => {
@@ -67,7 +67,10 @@ export function App() {
 
   // フォーム送信
   const handleFormSubmit = () => {
-    console.log("Form submitted:", formVM().fields.map((f) => ({ [f.name]: f.value })));
+    console.log(
+      "Form submitted:",
+      formVM().fields.map((f) => ({ [f.name]: f.value })),
+    );
     setCurrentView("list");
   };
 
