@@ -58,25 +58,6 @@ interface ResourceApi {
   ): ActionResponse | NotFoundError | ForbiddenError | UnauthorizedError | InternalError;
 }
 
-@route("/{resource}")
-@tag("Form")
-interface FormApi {
-  @summary("Get create form")
-  @get
-  @route("/new")
-  newForm(
-    @path resource: string,
-  ): FormResponse | NotFoundError | ForbiddenError | UnauthorizedError | InternalError;
-
-  @summary("Get edit form")
-  @get
-  @route("/{id}/edit")
-  editForm(
-    @path resource: string,
-    @path id: string,
-  ): FormResponse | NotFoundError | ForbiddenError | UnauthorizedError | InternalError;
-}
-
 @route("/{resource}/{id}/actions")
 @tag("Action")
 interface ActionApi {

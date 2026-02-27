@@ -1,11 +1,30 @@
 # API Spec
 
-HTTP API のリクエスト/レスポンス仕様です。
+HTTP でリソースデータを取得/更新するための仕様です。
 
-> **Note**: 正式な型定義は [`packages/api/`](../../packages/api/) の TypeSpec を参照してください。
-> OpenAPI は `pnpm build` で自動生成されます。
+> **Note**: [`packages/api/`](../../packages/api/) に TypeSpec 定義がありますが、
+> このドキュメントは「ViewModel はローカル生成、API はデータ返却」の運用方針を優先します。
 
 ## 設計方針
+
+### 責務の分離
+
+```
+TypeSpec (ユーザーまたは AI が書く)
+        ↓ コンパイル
+Definition Spec (JSON)
+        ↓ アプリ側でローカル読み込み
+Evaluator
+        ↓
+ViewModel (UI 描画用)
+
+Data API
+  - リソースデータの取得/更新
+  - バルク操作/カスタムアクション
+```
+
+- **ViewModel** は API で直接返さず、`spec.json` とコンテキストから生成します
+- **API** はデータアクセスと副作用処理（CRUD/Action）に専念します
 
 ### URL プレフィックス
 
@@ -18,66 +37,73 @@ HTTP API のリクエスト/レスポンス仕様です。
 | 変数 | デフォルト | 説明 |
 |------|-----------|------|
 | baseUrl | `http://localhost:3000` | サーバーのベース URL |
-| prefix | `vm` | API のプレフィックス |
+| prefix | `api` | データ API のプレフィックス |
 
-例：
-- `/vm/posts` - デフォルト（ViewModel 用）
-- `/api/posts` - REST API 用
-- `/admin/posts` - 管理画面用
-
-OpenAPI の `servers` セクションで定義されています。
+例:
+- `/api/posts` - デフォルト
+- `/admin/posts` - 管理画面用に分離する場合
 
 ### snake_case
 
-API レスポンスはすべて snake_case を使用します。
+API レスポンスは snake_case を推奨します。
 
 ```json
 {
-  "header_actions": [...],
   "per_page": 20,
   "total_pages": 8,
-  "is_valid": true
+  "created_at": "2024-01-15T10:30:00Z"
 }
 ```
 
-### 責務の分離
+## レスポンス構造
 
-```
-TypeSpec (ユーザーまたは AI が書く)
-        ↓ コンパイル
-Definition Spec (JSON)
-        ↓ 評価
-ViewModel (評価結果)
-        ↓ API 層で wrap
-API Response (pagination, meta を追加)
-```
+### 成功時（List）
 
-- **ViewModel**: specloom が出力する評価結果（`allowed` 評価済み）
-- **API Response**: ViewModel + pagination + sort + meta
-
-### レスポンス構造
-
-すべてのレスポンスは統一された構造を持ちます。
-
-**成功時**:
 ```json
 {
-  "data": { ... },
-  "pagination": { ... },  // List API のみ
-  "sort": { ... },        // List API のみ
+  "data": [{ "id": "post-1", "title": "Hello", "status": "published" }],
+  "pagination": {
+    "page": 1,
+    "per_page": 20,
+    "total": 150,
+    "total_pages": 8
+  },
+  "sort": {
+    "field": "created_at",
+    "order": "desc"
+  },
   "meta": {
     "timestamp": "2024-01-15T10:30:00Z"
   }
 }
 ```
 
-**エラー時**:
+### 成功時（Single/Create/Update/Delete/Action）
+
+```json
+{
+  "data": { "id": "post-1", "title": "Hello", "status": "published" },
+  "meta": {
+    "timestamp": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+### エラー時
+
 ```json
 {
   "error": {
-    "code": "error_code",
-    "message": "エラーメッセージ",
-    "details": { ... }
+    "code": "validation_error",
+    "message": "入力内容に誤りがあります",
+    "details": [
+      {
+        "field": "title",
+        "code": "max_length",
+        "message": "100文字以内で入力してください",
+        "params": { "max": 100 }
+      }
+    ]
   },
   "meta": {
     "timestamp": "2024-01-15T10:30:00Z"
@@ -90,13 +116,11 @@ API Response (pagination, meta を追加)
 | メソッド | パス | 説明 |
 |---------|------|------|
 | GET | `/api/{resource}` | 一覧取得 |
-| POST | `/api/{resource}` | 新規作成 |
 | GET | `/api/{resource}/{id}` | 詳細取得 |
+| POST | `/api/{resource}` | 新規作成 |
 | PUT | `/api/{resource}/{id}` | 更新 |
 | DELETE | `/api/{resource}/{id}` | 削除 |
-| GET | `/api/{resource}/new` | 新規作成フォーム取得 |
-| GET | `/api/{resource}/{id}/edit` | 編集フォーム取得 |
-| POST | `/api/{resource}/{id}/actions/{action_id}` | アクション実行 |
+| POST | `/api/{resource}/{id}/actions/{action_id}` | 単体アクション実行 |
 | POST | `/api/{resource}/bulk-actions/{action_id}` | 一括アクション実行 |
 
 ## List API
@@ -104,7 +128,7 @@ API Response (pagination, meta を追加)
 ### リクエスト
 
 ```
-GET /api/posts?page=1&per_page=20&sort=created_at&order=desc&filter=published
+GET /api/posts?page=1&per_page=20&sort=created_at&order=desc&search=hello
 ```
 
 | パラメータ | 型 | デフォルト | 説明 |
@@ -112,34 +136,25 @@ GET /api/posts?page=1&per_page=20&sort=created_at&order=desc&filter=published
 | page | integer | 1 | ページ番号 |
 | per_page | integer | 20 | 1ページあたりの件数 |
 | sort | string | - | ソートフィールド |
-| order | string | "asc" | ソート順 ("asc" \| "desc") |
+| order | string | `asc` | ソート順 (`asc` \| `desc`) |
 | search | string | - | 検索クエリ |
-| filter | string | - | フィルター ID |
+| filter | string | - | フィルター ID または実装固有の条件 |
+
+> 実装によっては `_page` / `_limit` / `_sort` / `_order` を使う場合があります。
 
 ### レスポンス
 
 ```json
 {
-  "data": {
-    "type": "list",
-    "resource": "Post",
-    "label": "投稿",
-    "fields": [...],
-    "header_actions": [...],
-    "rows": [
-      {
-        "id": "post-1",
-        "values": { "title": "Hello", "status": "published" },
-        "actions": [
-          { "id": "edit", "label": "編集", "allowed": true },
-          { "id": "delete", "label": "削除", "allowed": false }
-        ]
-      }
-    ],
-    "filters": { "named": [...] },
-    "selection": { "mode": "multi", "selected": [] },
-    "search": { "fields": ["title"], "query": "" }
-  },
+  "data": [
+    {
+      "id": "post-1",
+      "title": "Hello",
+      "status": "published",
+      "author_id": "user-1",
+      "created_at": "2024-01-15T10:30:00Z"
+    }
+  ],
   "pagination": {
     "page": 1,
     "per_page": 20,
@@ -169,18 +184,13 @@ GET /api/posts/post-1
 ```json
 {
   "data": {
-    "type": "show",
-    "resource": "Post",
-    "label": "投稿",
     "id": "post-1",
-    "fields": [
-      { "name": "title", "label": "タイトル", "kind": "text", "value": "Hello" },
-      { "name": "status", "label": "状態", "kind": "enum", "value": "published" }
-    ],
-    "actions": [
-      { "id": "edit", "label": "編集", "allowed": true },
-      { "id": "delete", "label": "削除", "allowed": false }
-    ]
+    "title": "Hello",
+    "body": "本文",
+    "status": "published",
+    "author_id": "user-1",
+    "tag_ids": ["tag-1", "tag-2"],
+    "created_at": "2024-01-15T10:30:00Z"
   },
   "meta": {
     "timestamp": "2024-01-15T10:30:00Z"
@@ -188,55 +198,13 @@ GET /api/posts/post-1
 }
 ```
 
-## Form API
+## Create / Update API
 
 ### リクエスト
 
 ```
-GET /api/posts/new           # 新規作成フォーム
-GET /api/posts/post-1/edit   # 編集フォーム
-```
-
-### レスポンス
-
-```json
-{
-  "data": {
-    "type": "form",
-    "resource": "Post",
-    "label": "投稿",
-    "mode": "edit",
-    "id": "post-1",
-    "fields": [
-      {
-        "name": "title",
-        "label": "タイトル",
-        "kind": "text",
-        "value": "Hello",
-        "required": true,
-        "readonly": false,
-        "validation": { "max_length": 100 },
-        "errors": []
-      }
-    ],
-    "actions": [
-      { "id": "save", "label": "保存", "allowed": true },
-      { "id": "cancel", "label": "キャンセル", "allowed": true }
-    ],
-    "is_valid": true,
-    "is_dirty": false
-  },
-  "meta": {
-    "timestamp": "2024-01-15T10:30:00Z"
-  }
-}
-```
-
-### 保存リクエスト
-
-```
-POST /api/posts           # 新規作成
-PUT  /api/posts/post-1    # 更新
+POST /api/posts
+PUT  /api/posts/post-1
 ```
 
 ```json
@@ -246,7 +214,7 @@ PUT  /api/posts/post-1    # 更新
 }
 ```
 
-### 保存レスポンス（成功）
+### レスポンス（成功）
 
 ```json
 {
@@ -261,7 +229,7 @@ PUT  /api/posts/post-1    # 更新
 }
 ```
 
-### 保存レスポンス（バリデーションエラー）
+### レスポンス（バリデーションエラー）
 
 ```json
 {
@@ -269,8 +237,17 @@ PUT  /api/posts/post-1    # 更新
     "code": "validation_error",
     "message": "入力内容に誤りがあります",
     "details": [
-      { "field": "title", "code": "max_length", "message": "100文字以内で入力してください", "params": { "max": 100 } },
-      { "field": "status", "code": "invalid_option", "message": "無効な値です" }
+      {
+        "field": "title",
+        "code": "max_length",
+        "message": "100文字以内で入力してください",
+        "params": { "max": 100 }
+      },
+      {
+        "field": "status",
+        "code": "invalid_option",
+        "message": "無効な値です"
+      }
     ]
   },
   "meta": {
@@ -357,25 +334,6 @@ POST /api/posts/bulk-actions/delete
 
 ## エラーレスポンス
 
-### 構造
-
-```json
-{
-  "error": {
-    "code": "validation_error",
-    "message": "入力内容に誤りがあります",
-    "details": [
-      { "field": "title", "code": "max_length", "message": "100文字以内で入力してください", "params": { "max": 100 } },
-      { "field": "tags[0].name", "code": "required", "message": "タグ名は必須です" },
-      { "code": "business_rule", "message": "下書き状態では公開日を設定できません" }
-    ]
-  },
-  "meta": {
-    "timestamp": "2024-01-15T10:30:00Z"
-  }
-}
-```
-
 ### ErrorDetail
 
 | プロパティ | 型 | 必須 | 説明 |
@@ -402,22 +360,6 @@ POST /api/posts/bulk-actions/delete
 | unauthorized | 401 | 認証が必要 | ログインを促す |
 | conflict | 409 | 競合（楽観的ロック失敗など） | リロードして再試行 |
 | internal_error | 500 | サーバーエラー | 管理者に連絡 |
-
-### バリデーションエラーの details.code 例
-
-| code | 説明 | params |
-|------|------|--------|
-| required | 必須 | - |
-| max_length | 最大文字数超過 | `{ "max": 100 }` |
-| min_length | 最小文字数未満 | `{ "min": 1 }` |
-| max_value | 最大値超過 | `{ "max": 100 }` |
-| min_value | 最小値未満 | `{ "min": 0 }` |
-| pattern | パターン不一致 | `{ "pattern": "email" }` |
-| invalid_option | 無効な選択肢 | `{ "options": ["draft", "published"] }` |
-| max_items | 最大件数超過 | `{ "max": 5 }` |
-| min_items | 最小件数未満 | `{ "min": 1 }` |
-| unique | 重複 | - |
-| business_rule | ビジネスルール違反 | - |
 
 ## 関連ドキュメント
 

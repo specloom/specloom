@@ -252,18 +252,23 @@ TypeSpec → Definition Spec → ViewModel → 任意の UI
                                         - Mobile (Flutter, RN)
 ```
 
-### API ファースト
+### ローカル Spec + Data API
 
-ViewModel は REST API で提供される：
+ViewModel は API で直接配信せず、アプリ側で `spec.json` を読み込んで評価する：
 
 ```
-GET /vm/posts      → ListViewModel
-GET /vm/posts/1    → ShowViewModel
-GET /vm/posts/new  → FormViewModel (create mode)
-GET /vm/posts/1/edit → FormViewModel (edit mode)
+TypeSpec → Definition Spec(JSON) → App がローカルで読み込み → ViewModel → UI
 ```
 
-UI は API を叩いて ViewModel を受け取り、描画するだけ。
+API はリソースデータの取得/更新に専念する：
+
+```
+GET    /api/posts
+GET    /api/posts/{id}
+POST   /api/posts
+PUT    /api/posts/{id}
+DELETE /api/posts/{id}
+```
 
 ## BFF としての specloom
 

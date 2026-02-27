@@ -3,24 +3,18 @@
 // ============================================================
 
 import "./common.tsp";
-import "./view_model.tsp";
 
 namespace SpecloomApi;
 
 model ListResponse {
-  data: ListViewModel;
+  data: Record<unknown>[];
   pagination: Pagination;
   sort: Sort;
   meta: Meta;
 }
 
 model ShowResponse {
-  data: ShowViewModel;
-  meta: Meta;
-}
-
-model FormResponse {
-  data: FormViewModel;
+  data: Record<unknown>;
   meta: Meta;
 }
 

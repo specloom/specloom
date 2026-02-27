@@ -181,13 +181,17 @@ const { data, total } = await dataProvider.getList("posts", {
 - `createHttpClient`: Bearer トークン自動付与、401/403 エラーハンドリング
 - REST 実装: リソース毎のエンドポイント・変換・カスタムアクション設定
 
-### ViewModel API
+### Spec 読み込みと Data API
+
+- 管理画面の spec は `spec.json` をアプリ側でローカル読み込みします
+- API は ViewModel を返さず、リソースのデータ取得/更新に専念します
 
 ```
-GET /vm/posts          → ListViewModel
-GET /vm/posts/1        → ShowViewModel
-GET /vm/posts/new      → FormViewModel (create)
-GET /vm/posts/1/edit   → FormViewModel (edit)
+GET    /api/posts
+GET    /api/posts/{id}
+POST   /api/posts
+PUT    /api/posts/{id}
+DELETE /api/posts/{id}
 ```
 
 ### TypeSpec デコレーター
