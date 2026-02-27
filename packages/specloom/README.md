@@ -39,15 +39,172 @@ const updated = ListVM.toggleFilter(listVM, "active");
 
 | モジュール | 説明 |
 |-----------|------|
-| `vm/` | ViewModel型とヘルパー関数 |
 | `spec/` | JSON spec形式の型定義 |
+| `loader/` | JSON spec読み込み・バリデーション |
+| `evaluator/` | spec + context + data → ViewModel評価、式評価 |
+| `facade/` | Spec + リソース名から直接ViewModel生成 |
+| `admin/` | Spec + Context を保持するレジストリ |
+| `vm/` | ViewModel型とヘルパー関数 |
 | `validation/` | フィールドバリデーション |
 | `format/` | 表示用フォーマット |
 | `serialize/` | API送信用データ変換 |
-| `filter/` | フィルター式評価 |
+| `filter/` | フィルター式評価（クライアントサイド） |
 | `i18n/` | 国際化（日本語/英語） |
-| `loader/` | JSON spec読み込み |
-| `evaluator/` | spec + context → ViewModel評価 |
+
+---
+
+## Loader（Spec読み込み）
+
+JSON文字列またはオブジェクトを `Spec` 型として検証・パースします。
+
+```typescript
+import { validateSpec, parseSpec } from "specloom";
+
+// JSON文字列からパース
+const spec = parseSpec(jsonString);
+
+// オブジェクトを検証（import JSONに使用）
+import specJson from "./tenant.json";
+const spec = validateSpec(specJson);
+```
+
+バリデーション内容:
+- `version` が `"0.1"` であること
+- `resources` / `views` が配列であること
+- フィールド参照の整合性（viewのcolumnsがresourceのfieldsに存在するか）
+- 式（`allowedWhen`, `visibleWhen`, `requiredWhen`）の構文チェック
+
+失敗時は `SpecError` をスローします。
+
+---
+
+## Evaluator（ViewModel評価）
+
+Spec定義 + コンテキスト + データから ViewModel を生成します。
+
+```typescript
+import { evaluateListView, evaluateFormView, evaluateShowView } from "specloom";
+import type { Context } from "specloom";
+
+const context: Context = {
+  role: "admin",
+  user: { id: "user-1", name: "管理者" },
+  permissions: ["read", "write", "delete"],
+};
+```
+
+### evaluateListView
+
+```typescript
+const listVM = evaluateListView({
+  view,            // ListView（Specのviews配列から取得）
+  resource,        // Resource（Specのresources配列から取得）
+  context,         // ユーザーコンテキスト
+  data,            // Record<string, unknown>[]（APIから取得した行データ）
+  activeFilter,    // アクティブなnamedFilter ID（省略可）
+  searchQuery,     // 検索クエリ（省略可）
+  selected,        // 選択中の行ID（省略可）
+});
+```
+
+### evaluateFormView
+
+```typescript
+// 新規作成（データ不要）
+const createVM = evaluateFormView({
+  view, resource, context,
+  mode: "create",
+});
+
+// 編集（既存データを渡す）
+const editVM = evaluateFormView({
+  view, resource, context,
+  mode: "edit",
+  data: existingRecord,
+  errors: validationErrors,    // 省略可
+  isDirty: false,              // 省略可
+});
+```
+
+### evaluateShowView
+
+```typescript
+const showVM = evaluateShowView({
+  view, resource, context,
+  data: record,
+});
+```
+
+### 式評価（Expression）
+
+`allowedWhen`, `visibleWhen`, `requiredWhen` で使われる式を直接評価できます。
+
+```typescript
+import { evaluateExpression, isExpressionSyntaxValid } from "specloom";
+
+// 構文チェック
+isExpressionSyntaxValid("role == 'admin'");  // true
+
+// 評価（context + data から環境を構築）
+evaluateExpression("role == 'admin'", context, data);  // true/false
+
+// サポートする式:
+// - 比較: ==, !=, >, >=, <, <=
+// - 論理: &&, ||
+// - グループ: ()
+// - リテラル: 'string', 123, true/false
+// - 識別子: role, user.name, status（data内のフィールドも参照可能）
+```
+
+---
+
+## Facade（ショートカット）
+
+Spec + リソース名から直接 ViewModel を生成します。リソースとビューの検索を自動で行います。
+
+```typescript
+import { createListVM, createFormVM, createShowVM } from "specloom";
+
+const listVM = createListVM(spec, "Tenant", {
+  context,
+  data: rows,
+});
+
+const formVM = createFormVM(spec, "Tenant", {
+  context,
+  mode: "create",
+});
+
+const showVM = createShowVM(spec, "Tenant", {
+  context,
+  data: record,
+});
+```
+
+---
+
+## Admin（レジストリ）
+
+Spec と デフォルト Context を保持し、ViewModel 生成をさらに簡潔にします。
+
+```typescript
+import { createAdmin } from "specloom";
+
+const admin = createAdmin(spec, { role: "admin", user, permissions });
+
+// ViewModel生成（contextは省略するとデフォルトを使用）
+const listVM = admin.list("Tenant", { data: rows });
+const formVM = admin.form("Tenant", { mode: "create" });
+const showVM = admin.show("Tenant", { data: record });
+
+// コンテキスト変更（イミュータブル — 新しいインスタンスを返す）
+const editorAdmin = admin.withContext({ role: "editor", user, permissions });
+
+// リソース情報
+admin.hasResource("Tenant");       // true
+admin.getResource("Tenant");       // Resource | undefined
+admin.getResourceNames();          // ["Tenant", "AdminUser", ...]
+```
 
 ---
 
@@ -665,33 +822,56 @@ specloomは「ヘッドレス」ライブラリです。UIコンポーネント�
 - `@specloom/svelte` - Svelte/SvelteKit用コンポーネント
 - `@specloom/solidjs` - SolidJS用コンポーネント
 
+### SolidJS
+
+```typescript
+import { createResource } from "solid-js";
+import { validateSpec, evaluateListView } from "specloom";
+import specJson from "@specs/tenant.json";
+
+const spec = validateSpec(specJson);
+const resource = spec.resources.find((r) => r.name === "Tenant")!;
+const view = spec.views.find((v) => v.resource === "Tenant" && v.type === "list")!;
+
+const [data] = createResource(async () => {
+  const res = await fetch("/tenants?page=1&per_page=20");
+  const result = await res.json();
+
+  return evaluateListView({
+    view, resource, context,
+    data: result.data,
+  });
+});
+```
+
+### Svelte
+
 ```svelte
-<!-- Svelte例 -->
 <script>
-  import { ListView, FormView, ShowView } from "@specloom/svelte";
+  import { ListView } from "@specloom/svelte";
   import { ListVM, Serialize } from "specloom";
-  
+
   let vm = $state(initialListVM);
-  
+
   async function handleSearch(query) {
     vm = ListVM.setSearchQuery(vm, query);
     vm = ListVM.setLoading(vm, true);
-    
+
     const params = Serialize.queryParams({
       q: query,
       ...Serialize.pagination(ListVM.page(vm), 20),
     });
-    
+
     const res = await fetch(`/api/posts?${params}`);
     const { data, total } = await res.json();
-    
+
     vm = ListVM.setRows(vm, data, total);
     vm = ListVM.setLoading(vm, false);
   }
 </script>
 
-<ListView 
-  {vm} 
+<ListView
+  {vm}
   onSearch={handleSearch}
   onPageChange={(page) => vm = ListVM.setPage(vm, page)}
 />

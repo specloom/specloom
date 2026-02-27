@@ -86,8 +86,10 @@ emit:
   - "@specloom/typespec"
 options:
   "@specloom/typespec":
-    output-dir: "./src/lib"
+    emitter-output-dir: "{project-root}/generated/specloom"
 ```
+
+oyster-base での出力先: `specs/generated/specloom/{resource}.json`
 
 ## Namespace Convention
 
@@ -745,10 +747,12 @@ Before completing a spec:
 ## Compile
 
 ```bash
-npx tsp compile .
+cd specs && pnpm exec tsp compile .
+# 出力: specs/generated/specloom/{resource}.json
+# 出力: specs/generated/openapi/openapi.yaml
 ```
 
-Output: JSON spec in configured output directory.
+フロント側は `@specs/` エイリアスで静的importし、`evaluateListView` / `evaluateFormView` / `evaluateShowView` でViewModel評価を行う。
 
 ---
 
