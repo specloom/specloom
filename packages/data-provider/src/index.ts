@@ -14,6 +14,7 @@ export type {
 
 export { createHttpClient } from "./http/index.js";
 export type {
+  HttpError,
   TokenProvider,
   HttpClient,
   HttpClientConfig,

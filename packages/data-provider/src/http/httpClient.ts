@@ -1,6 +1,11 @@
+export interface HttpError {
+  message: string;
+  status: number;
+}
+
 export interface TokenProvider {
   getToken(): Promise<string | null>;
-  checkError?(error: { message: string; status: number }): Promise<void>;
+  checkError?(error: HttpError): Promise<void>;
 }
 
 export interface HttpClient {
@@ -24,7 +29,7 @@ export function createHttpClient(
     options: RequestInit = {},
   ): Promise<T> {
     const token = await tokenProvider.getToken();
-    if (!token) throw { message: "Not authenticated", status: 401 };
+    if (!token) throw { message: "Not authenticated", status: 401 } satisfies HttpError;
 
     const res = await fetch(`${config.baseUrl}${path}`, {
       ...options,
@@ -37,7 +42,21 @@ export function createHttpClient(
     });
 
     if (!res.ok) {
-      const error = { message: await res.text(), status: res.status };
+      let message = res.statusText;
+      try {
+        const body = await res.json();
+        if (body && typeof body.error === "string") {
+          message = body.error;
+        }
+      } catch {
+        // JSON parse failed — try plain text
+        try {
+          message = await res.text();
+        } catch {
+          // keep statusText
+        }
+      }
+      const error: HttpError = { message, status: res.status };
       await tokenProvider.checkError?.(error).catch(() => {});
       throw error;
     }
