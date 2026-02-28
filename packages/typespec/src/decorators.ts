@@ -8,6 +8,28 @@ import type {
 import { StateKeys } from "./lib.js";
 
 // ============================================================
+// View-level action definition (accumulated on Model)
+// ============================================================
+
+export interface ViewActionDef {
+  id: string;
+  label?: string;
+  allowedWhen?: string;
+  confirm?: string;
+  selection?: string;
+  ui?: { icon?: string; variant?: string };
+  dialog?: { title?: string; description?: string };
+  api?: {
+    path: string;
+    method?: string;
+    body?: string[];
+    params?: unknown;
+    query?: unknown;
+  };
+  dialogModel?: Model;
+}
+
+// ============================================================
 // TypeSpec Standard State Bridge
 // ============================================================
 // These well-known Symbols are used by the TypeSpec compiler internally
@@ -559,82 +581,55 @@ export function $namedFilter(
 // ============================================================
 
 /**
- * @action - Define an action (page-level)
+ * @action - Define a page-level action on a view (Model target)
  */
 export function $action(
   context: DecoratorContext,
-  target: ModelProperty,
+  target: Model,
   id: unknown,
+  options?: unknown,
+  dialogModel?: Model,
 ) {
-  const extracted = extractString(id);
-  if (extracted) {
-    context.program.stateMap(StateKeys.action).set(target, extracted);
+  const extractedId = extractString(id);
+  if (!extractedId) return;
+
+  const opts = (extractValue(options) as Record<string, unknown> | null) ?? {};
+  const existing: ViewActionDef[] =
+    context.program.stateMap(StateKeys.viewActions).get(target) ?? [];
+  const action: ViewActionDef = { id: extractedId, ...opts };
+  if (dialogModel) {
+    action.dialogModel = dialogModel;
   }
+  // TypeSpec processes decorators bottom-to-top, so prepend to maintain source order
+  context.program
+    .stateMap(StateKeys.viewActions)
+    .set(target, [action, ...existing]);
 }
 
 /**
- * @rowAction - Define a row action (list view)
+ * @rowAction - Define a row action on a list view (Model target)
  */
 export function $rowAction(
   context: DecoratorContext,
-  target: ModelProperty,
+  target: Model,
   id: unknown,
+  options?: unknown,
+  dialogModel?: Model,
 ) {
-  const extracted = extractString(id);
-  if (extracted) {
-    context.program.stateMap(StateKeys.rowAction).set(target, extracted);
-  }
-}
+  const extractedId = extractString(id);
+  if (!extractedId) return;
 
-/**
- * @placement - Legacy action placement alias
- * Prefer @rowAction for row actions and @requiresSelection for bulk actions.
- */
-export function $placement(
-  context: DecoratorContext,
-  target: ModelProperty,
-  placement: unknown,
-) {
-  const extracted = extractString(placement);
-  if (extracted) {
-    context.program.stateMap(StateKeys.placement).set(target, extracted);
+  const opts = (extractValue(options) as Record<string, unknown> | null) ?? {};
+  const existing: ViewActionDef[] =
+    context.program.stateMap(StateKeys.viewRowActions).get(target) ?? [];
+  const action: ViewActionDef = { id: extractedId, ...opts };
+  if (dialogModel) {
+    action.dialogModel = dialogModel;
   }
-}
-
-/**
- * @requiresSelection - Set selection requirement for bulk actions
- */
-export function $requiresSelection(
-  context: DecoratorContext,
-  target: ModelProperty,
-  selection: unknown,
-) {
-  const raw = extractValue(selection);
-  const extracted =
-    typeof raw === "string"
-      ? raw
-      : typeof raw === "boolean"
-        ? "selected"
-        : undefined;
-  if (extracted !== undefined) {
-    context.program
-      .stateMap(StateKeys.requiresSelection)
-      .set(target, extracted);
-  }
-}
-
-/**
- * @allowedWhen - Set permission expression
- */
-export function $allowedWhen(
-  context: DecoratorContext,
-  target: ModelProperty,
-  expression: unknown,
-) {
-  const extracted = extractString(expression);
-  if (extracted) {
-    context.program.stateMap(StateKeys.allowedWhen).set(target, extracted);
-  }
+  // TypeSpec processes decorators bottom-to-top, so prepend to maintain source order
+  context.program
+    .stateMap(StateKeys.viewRowActions)
+    .set(target, [action, ...existing]);
 }
 
 /**
@@ -665,62 +660,6 @@ export function $requiredWhen(
   }
 }
 
-/**
- * @confirm - Set confirmation message
- */
-export function $confirm(
-  context: DecoratorContext,
-  target: ModelProperty,
-  message?: unknown,
-) {
-  const extracted = extractString(message);
-  context.program.stateMap(StateKeys.confirm).set(target, extracted ?? true);
-}
-
-/**
- * @dialog - Define a dialog for an action
- */
-export function $dialog(
-  context: DecoratorContext,
-  target: ModelProperty,
-  model: Model,
-  options?: unknown,
-) {
-  const extractedOptions = extractValue(options) as
-    | { title?: string; description?: string }
-    | undefined;
-  context.program.stateMap(StateKeys.dialog).set(target, {
-    model: model,
-    title: extractedOptions?.title,
-    description: extractedOptions?.description,
-  });
-}
-
-/**
- * @api - Define API endpoint for an action
- */
-export function $api(
-  context: DecoratorContext,
-  target: ModelProperty,
-  options: unknown,
-) {
-  const extracted = extractValue(options) as {
-    path: string;
-    method?: string;
-    params?: unknown;
-    body?: string[];
-    query?: unknown;
-  } | null;
-  if (extracted && extracted.path) {
-    context.program.stateMap(StateKeys.api).set(target, {
-      path: extracted.path,
-      method: extracted.method ?? "POST",
-      params: extracted.params,
-      body: extracted.body,
-      query: extracted.query,
-    });
-  }
-}
 
 /**
  * @match - Set field match validation
@@ -1026,40 +965,6 @@ export function getNamedFilters(
   return program.stateMap(StateKeys.namedFilters).get(target);
 }
 
-export function getAction(
-  program: DecoratorContext["program"],
-  target: ModelProperty,
-): string | undefined {
-  return program.stateMap(StateKeys.action).get(target);
-}
-
-export function getRowAction(
-  program: DecoratorContext["program"],
-  target: ModelProperty,
-): string | undefined {
-  return program.stateMap(StateKeys.rowAction).get(target);
-}
-
-export function getPlacement(
-  program: DecoratorContext["program"],
-  target: ModelProperty,
-): string | undefined {
-  return program.stateMap(StateKeys.placement).get(target);
-}
-
-export function getRequiresSelection(
-  program: DecoratorContext["program"],
-  target: ModelProperty,
-): string | undefined {
-  return program.stateMap(StateKeys.requiresSelection).get(target);
-}
-
-export function getAllowedWhen(
-  program: DecoratorContext["program"],
-  target: ModelProperty,
-): string | undefined {
-  return program.stateMap(StateKeys.allowedWhen).get(target);
-}
 
 export function getVisibleWhen(
   program: DecoratorContext["program"],
@@ -1075,12 +980,6 @@ export function getRequiredWhen(
   return program.stateMap(StateKeys.requiredWhen).get(target);
 }
 
-export function getConfirm(
-  program: DecoratorContext["program"],
-  target: ModelProperty,
-): string | true | undefined {
-  return program.stateMap(StateKeys.confirm).get(target);
-}
 
 export function getMinLength(
   program: DecoratorContext["program"],
@@ -1131,31 +1030,28 @@ export function getMax(
   return program.stateMap(StateKeys.max).get(target);
 }
 
-export function getDialog(
-  program: DecoratorContext["program"],
-  target: ModelProperty,
-): { model: Model; title?: string; description?: string } | undefined {
-  return program.stateMap(StateKeys.dialog).get(target);
-}
-
-export function getApi(
-  program: DecoratorContext["program"],
-  target: ModelProperty,
-):
-  | {
-      path: string;
-      method: string;
-      params?: unknown;
-      body?: string[];
-      query?: unknown;
-    }
-  | undefined {
-  return program.stateMap(StateKeys.api).get(target);
-}
 
 export function getMatch(
   program: DecoratorContext["program"],
   target: ModelProperty,
 ): string | undefined {
   return program.stateMap(StateKeys.match).get(target);
+}
+
+// ============================================================
+// View-level action getters
+// ============================================================
+
+export function getViewActions(
+  program: DecoratorContext["program"],
+  target: Model,
+): ViewActionDef[] | undefined {
+  return program.stateMap(StateKeys.viewActions).get(target);
+}
+
+export function getViewRowActions(
+  program: DecoratorContext["program"],
+  target: Model,
+): ViewActionDef[] | undefined {
+  return program.stateMap(StateKeys.viewRowActions).get(target);
 }

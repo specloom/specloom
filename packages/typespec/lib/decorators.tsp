@@ -172,39 +172,39 @@ extern dec namedFilters(target: Model, filters: valueof {id: string, label: stri
 extern dec namedFilter(target: Model, id: valueof string, label: valueof string, filter: valueof unknown);
 
 // ============================================================
-// Action Decorators
+// Action Decorators (View-level)
 // ============================================================
 
 /**
- * Define an action (for page-level actions)
+ * Define a page-level action on a view
  * @param id Action ID
+ * @param options Action options
+ * @param dialogModel Optional dialog model for input
  */
-extern dec action(target: ModelProperty, id: valueof string);
+extern dec action(target: Model, id: valueof string, options: valueof {
+  label?: string,
+  allowedWhen?: string,
+  confirm?: string,
+  selection?: string,
+  ui?: { icon?: string, variant?: string },
+  dialog?: { title?: string, description?: string },
+  api?: { path: string, method?: string, body?: string[], params?: unknown, query?: unknown }
+}, dialogModel?: Model);
 
 /**
- * Define a row action (for list view row actions)
+ * Define a row action on a list view
  * @param id Action ID
+ * @param options Action options
+ * @param dialogModel Optional dialog model for input
  */
-extern dec rowAction(target: ModelProperty, id: valueof string);
-
-/**
- * Set action placement (legacy alias)
- * Prefer @rowAction for row actions and @requiresSelection for bulk actions.
- * @param placement Action placement
- */
-extern dec placement(target: ModelProperty, placement: valueof "header" | "row" | "bulk");
-
-/**
- * Set selection requirement for bulk actions
- * @param target Selection target ("selected" for selected rows, "query" for all filtered rows)
- */
-extern dec requiresSelection(target: ModelProperty, selection: valueof "selected" | "query" | boolean);
-
-/**
- * Set permission expression
- * @param expression Permission expression
- */
-extern dec allowedWhen(target: ModelProperty, expression: valueof string);
+extern dec rowAction(target: Model, id: valueof string, options: valueof {
+  label?: string,
+  allowedWhen?: string,
+  confirm?: string,
+  ui?: { icon?: string, variant?: string },
+  dialog?: { title?: string, description?: string },
+  api?: { path: string, method?: string, body?: string[], params?: unknown, query?: unknown }
+}, dialogModel?: Model);
 
 /**
  * Set conditional visibility expression (field is shown only when expression is true)
@@ -217,35 +217,6 @@ extern dec visibleWhen(target: ModelProperty, expression: valueof string);
  * @param expression Required expression
  */
 extern dec requiredWhen(target: ModelProperty, expression: valueof string);
-
-/**
- * Set confirmation message
- * If omitted, emitted spec uses `confirm: true` (message resolved by i18n at runtime).
- * @param message Confirmation message
- */
-extern dec confirm(target: ModelProperty, message?: valueof string);
-
-/**
- * Define a dialog for an action
- * @param dialogModel Dialog fields model
- * @param options Dialog options (title, description)
- */
-extern dec dialog(target: ModelProperty, dialogModel: Model, options?: valueof {
-  title?: string,
-  description?: string
-});
-
-/**
- * Define API endpoint for an action
- * @param options API options (path, method, params, body, query)
- */
-extern dec api(target: ModelProperty, options: valueof {
-  path: string,
-  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
-  params?: unknown,
-  body?: string[],
-  query?: unknown
-});
 
 /**
  * Set field match validation (for confirm password, etc.)

@@ -38,16 +38,10 @@ import {
   getClickAction,
   getSelection,
   getNamedFilters,
-  getAction,
-  getRowAction,
-  getPlacement,
-  getRequiresSelection,
-  getAllowedWhen,
+  getViewActions,
+  getViewRowActions,
   getVisibleWhen,
   getRequiredWhen,
-  getConfirm,
-  getDialog,
-  getApi,
   getMatch,
   getMin,
   getMax,
@@ -56,6 +50,7 @@ import {
   getPattern,
   getMinItems,
   getMaxItems,
+  type ViewActionDef,
 } from "./decorators.js";
 
 interface Spec {
@@ -422,22 +417,18 @@ function buildView(program: Program, model: Model): View {
   const actions: Action[] = [];
   const rowActions: Action[] = [];
 
-  // Collect actions from model properties
-  for (const [, prop] of model.properties) {
-    const actionId = getAction(program, prop);
-    const rowActionId = getRowAction(program, prop);
-    const placement = getPlacement(program, prop);
-    const resolvedRowActionId =
-      rowActionId ?? (actionId && placement === "row" ? actionId : undefined);
+  // View-level action decorators (Model target)
+  const viewActionDefs = getViewActions(program, model);
+  const viewRowActionDefs = getViewRowActions(program, model);
 
-    if (resolvedRowActionId) {
-      rowActions.push(buildAction(program, prop, resolvedRowActionId));
-    } else if (actionId) {
-      const action = buildAction(program, prop, actionId);
-      if (placement === "bulk" && !action.selection) {
-        action.selection = "selected";
-      }
-      actions.push(action);
+  if (viewActionDefs) {
+    for (const def of viewActionDefs) {
+      actions.push(buildActionFromDef(program, def));
+    }
+  }
+  if (viewRowActionDefs) {
+    for (const def of viewRowActionDefs) {
+      rowActions.push(buildActionFromDef(program, def));
     }
   }
 
@@ -497,55 +488,43 @@ function buildView(program: Program, model: Model): View {
   return view;
 }
 
-function buildAction(
-  program: Program,
-  prop: ModelProperty,
-  actionId: string,
-): Action {
-  const label = getLabel(program, prop);
-  const requiresSelection = getRequiresSelection(program, prop);
-  const allowedWhen = getAllowedWhen(program, prop);
-  const confirm = getConfirm(program, prop);
-  const ui = getUI(program, prop);
-  const dialog = getDialog(program, prop);
-  const api = getApi(program, prop);
-
+function buildActionFromDef(program: Program, def: ViewActionDef): Action {
   const action: Action = {
-    id: actionId,
-    label: label ?? actionId,
+    id: def.id,
+    label: def.label ?? def.id,
   };
 
-  if (requiresSelection !== undefined) {
-    action.selection = requiresSelection as "selected" | "query";
+  if (def.selection) {
+    action.selection = def.selection as "selected" | "query";
   }
 
-  if (allowedWhen) {
-    action.allowedWhen = allowedWhen;
+  if (def.allowedWhen) {
+    action.allowedWhen = def.allowedWhen;
   }
 
-  if (confirm) {
-    action.confirm = confirm;
+  if (def.confirm) {
+    action.confirm = def.confirm;
   }
 
-  if (ui && Object.keys(ui).length > 0) {
-    action.ui = ui;
+  if (def.ui && Object.keys(def.ui).length > 0) {
+    action.ui = def.ui;
   }
 
-  if (dialog) {
+  if (def.dialogModel) {
     action.dialog = {
-      title: dialog.title,
-      description: dialog.description,
-      fields: buildDialogFields(program, dialog.model),
+      title: def.dialog?.title,
+      description: def.dialog?.description,
+      fields: buildDialogFields(program, def.dialogModel),
     };
   }
 
-  if (api) {
+  if (def.api) {
     action.api = {
-      path: api.path,
-      method: api.method,
-      params: api.params,
-      body: api.body,
-      query: api.query,
+      path: def.api.path,
+      method: (def.api.method as string) ?? "POST",
+      params: def.api.params,
+      body: def.api.body,
+      query: def.api.query,
     };
   }
 
