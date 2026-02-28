@@ -146,6 +146,7 @@ function validatePattern(
  * 値が空かどうかを判定
  */
 function isEmpty(value: unknown): boolean {
+  if (typeof value === "boolean") return false;
   if (value == null) return true;
   if (value === "") return true;
   if (Array.isArray(value) && value.length === 0) return true;

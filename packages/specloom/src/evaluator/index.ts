@@ -139,15 +139,23 @@ export function evaluateFormView(options: EvaluateFormOptions): FormViewModel {
 
   const id = data?.id != null ? String(data.id) : undefined;
 
-  const fields = view.fields.map((fieldName) => {
-    const field = resource.fields.find((f) => f.name === fieldName);
-    if (!field) {
-      throw new EvaluateError(`Field not found: ${fieldName}`);
-    }
-    const value = data?.[fieldName];
-    const fieldErrors = errors?.[fieldName] ?? [];
-    return toFormFieldVM(field, value, fieldErrors, mode, context, data ?? {});
-  });
+  const fields = view.fields
+    .filter((fieldName) => {
+      if (mode === "edit") {
+        const field = resource.fields.find((f) => f.name === fieldName);
+        if (field?.createOnly) return false;
+      }
+      return true;
+    })
+    .map((fieldName) => {
+      const field = resource.fields.find((f) => f.name === fieldName);
+      if (!field) {
+        throw new EvaluateError(`Field not found: ${fieldName}`);
+      }
+      const value = data?.[fieldName];
+      const fieldErrors = errors?.[fieldName] ?? [];
+      return toFormFieldVM(field, value, fieldErrors, mode, context, data ?? {});
+    });
 
   const actions = view.actions.map((a) => toActionVM(a, context, data ?? {}));
 

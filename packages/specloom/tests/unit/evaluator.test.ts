@@ -887,8 +887,8 @@ describe("evaluator", () => {
 
       expect(createField?.createOnly).toBe(true);
       expect(createField?.readonly).toBe(false);
-      expect(editField?.createOnly).toBe(true);
-      expect(editField?.readonly).toBe(true);
+      // editモードではcreateOnlyフィールドは除外される
+      expect(editField).toBeUndefined();
     });
 
     it("バリデーションエラーを反映する", () => {
