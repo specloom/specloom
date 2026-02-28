@@ -74,6 +74,7 @@ author: User;
 | autocomplete | 検索して選ぶ（大量データ） |
 | modal | 一覧から選ぶ（複雑な選択） |
 | radio | 少数の選択肢（3〜5件） |
+| inline | 子リソースをフォーム内でインライン編集（複数リレーション向け） |
 
 ```typespec
 // 少数の固定選択肢
@@ -90,6 +91,12 @@ author: User;
 @S.ui(#{ inputHint: "modal" })
 @S.relation(Product, #{ labelField: "name" })
 products: Product[];
+
+// 子リソースをインライン編集
+@S.ui(#{ inputHint: "inline" })
+@S.relation(OrderItem, #{ labelField: "product" })
+@S.minItems(1)
+items: OrderItem[];
 ```
 
 ## 単一リレーション
@@ -139,6 +146,103 @@ relatedPosts: Post[];
 @S.maxItems(5)       // 最大5個
 tags: Tag[];
 ```
+
+## インラインリレーション
+
+`inputHint: "inline"` を指定すると、子リソースを親フォーム内でインライン編集できます。既存レコードの選択ではなく、子レコードの追加・編集・削除をフォーム内で行います。
+
+### 仕組み
+
+1. 子リソースを `@resource` で定義（フィールド、バリデーション、kind）
+2. 子リソースに `form` view を定義（編集するフィールドを指定）
+3. 親リソースのリレーションで `inputHint: "inline"` を指定
+
+UI は子リソースの form view を参照して、インラインフォームを構築します。
+
+```typespec
+// 1. 子リソース定義
+@S.resource
+@S.label("注文明細")
+model OrderItem {
+  @S.readonly id: string;
+
+  @S.label("商品")
+  @S.kind("relation")
+  @S.relation(Product, #{ labelField: "name" })
+  @S.ui(#{ inputHint: "autocomplete", searchable: true })
+  @S.required
+  product: Product;
+
+  @S.label("数量")
+  @S.kind("number")
+  @S.required
+  @S.min(1)
+  quantity: int32;
+
+  @S.label("単価")
+  @S.kind("number")
+  @S.readonly
+  @S.ui(#{ format: "currency" })
+  unitPrice: int32;
+
+  @S.label("金額")
+  @S.kind("number")
+  @S.computed
+  @S.ui(#{ format: "currency" })
+  amount: int32;
+}
+
+// 2. 子リソースのフォーム
+@S.view(OrderItem, "form")
+@S.fields(["product", "quantity"])
+model OrderItemForm {}
+
+// 3. 親リソースで inline 指定
+@S.resource
+@S.label("注文")
+model Order {
+  @S.readonly id: string;
+
+  @S.label("顧客")
+  @S.kind("relation")
+  @S.relation(Customer, #{ labelField: "name" })
+  @S.required
+  customer: Customer;
+
+  @S.label("注文明細")
+  @S.kind("relation")
+  @S.relation(OrderItem, #{ labelField: "product" })
+  @S.ui(#{ inputHint: "inline" })
+  @S.minItems(1)
+  @S.maxItems(50)
+  items: OrderItem[];
+}
+
+@S.view(Order, "form")
+@S.fields(["customer", "items"])
+model OrderForm {}
+```
+
+### 他の inputHint との違い
+
+| inputHint | 操作 | 対象 |
+|-----------|------|------|
+| select / autocomplete / modal | 既存レコードを選択 | 参照 |
+| inline | 子レコードを追加・編集・削除 | 所有 |
+
+### 行数制限
+
+`@minItems` / `@maxItems` で行数を制御します。
+
+```typespec
+@S.minItems(1)    // 最低1行
+@S.maxItems(50)   // 最大50行
+items: OrderItem[];
+```
+
+### readonly / computed
+
+子リソースの `@readonly` や `@computed` フィールドは form view の `@fields` に含めても編集不可として表示されます。金額の自動計算などに使います。
 
 ## DB との関係
 

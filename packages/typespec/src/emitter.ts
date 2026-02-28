@@ -176,15 +176,20 @@ export async function $onEmit(context: EmitContext<SpecloomEmitterOptions>) {
   }
 }
 
-function getSourceFileName(model: Model): string | undefined {
+function getSourceFileName(model: Model, program: Program): string | undefined {
   const location = getSourceLocation(model);
   if (!location?.file) {
     return undefined;
   }
-  // Get just the filename from the full path
-  const path = location.file.path;
-  const lastSlash = path.lastIndexOf("/");
-  return lastSlash >= 0 ? path.slice(lastSlash + 1) : path;
+  // Get relative path from project root to preserve directory structure
+  const filePath = location.file.path;
+  const projectRoot = program.projectRoot + "/";
+  if (filePath.startsWith(projectRoot)) {
+    return filePath.slice(projectRoot.length);
+  }
+  // Fallback: just the filename
+  const lastSlash = filePath.lastIndexOf("/");
+  return lastSlash >= 0 ? filePath.slice(lastSlash + 1) : filePath;
 }
 
 function buildSpecsBySourceFile(program: Program): Map<string, Spec> {
@@ -196,7 +201,7 @@ function buildSpecsBySourceFile(program: Program): Map<string, Spec> {
   // Collect resources and views grouped by source file
   navigateProgram(program, {
     model(model) {
-      const sourceFile = getSourceFileName(model);
+      const sourceFile = getSourceFileName(model, program);
       if (!sourceFile) {
         return;
       }

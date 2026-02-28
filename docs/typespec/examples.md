@@ -230,9 +230,57 @@ model UserList {}
 
 ---
 
-## 注文管理
+## 注文管理（インラインリレーション）
 
-### Resource
+注文明細を親フォーム内でインライン編集する例です。
+
+### 子リソース（注文明細）
+
+```typespec
+@S.resource
+@S.label("注文明細")
+model OrderItem {
+  @S.readonly
+  id: string;
+
+  @S.label("商品")
+  @S.kind("relation")
+  @S.relation(Product, #{ labelField: "name" })
+  @S.ui(#{ inputHint: "autocomplete", searchable: true })
+  @S.required
+  product: Product;
+
+  @S.label("数量")
+  @S.kind("number")
+  @S.required
+  @S.min(1)
+  quantity: int32;
+
+  @S.label("単価")
+  @S.kind("number")
+  @S.readonly
+  @S.ui(#{ format: "currency" })
+  unitPrice: int32;
+
+  @S.label("金額")
+  @S.kind("number")
+  @S.computed
+  @S.ui(#{ format: "currency" })
+  amount: int32;
+}
+```
+
+### 子リソースのフォーム
+
+インライン編集時のカラム構成になります。
+
+```typespec
+@S.view(OrderItem, "form")
+@S.fields(["product", "quantity"])
+model OrderItemForm {}
+```
+
+### 親リソース（注文）
 
 ```typespec
 @S.resource
@@ -253,12 +301,13 @@ model Order {
   @S.required
   customer: Customer;
 
-  @S.label("商品")
+  @S.label("注文明細")
   @S.kind("relation")
-  @S.relation(Product, #{ labelField: "name" })
-  @S.ui(#{ inputHint: "modal" })
+  @S.relation(OrderItem, #{ labelField: "product" })
+  @S.ui(#{ inputHint: "inline" })
   @S.minItems(1)
-  products: Product[];
+  @S.maxItems(50)
+  items: OrderItem[];
 
   @S.label("小計")
   @S.kind("number")
@@ -297,11 +346,21 @@ model Order {
 }
 ```
 
+### Form View
+
+```typespec
+@S.view(Order, "form")
+@S.fields(["customer", "items"])
+@S.action("save", #{ label: "保存", ui: #{ icon: "check", variant: "primary" } })
+@S.action("cancel", #{ label: "キャンセル" })
+model OrderForm {}
+```
+
 ### Show View（状態遷移）
 
 ```typespec
 @S.view(Order, "show")
-@S.fields(["orderNumber", "customer", "products", "subtotal", "tax", "total", "status", "orderedAt"])
+@S.fields(["orderNumber", "customer", "items", "subtotal", "tax", "total", "status", "orderedAt"])
 @S.action("confirm", #{ label: "確定", allowedWhen: "status == 'pending'", ui: #{ icon: "check", variant: "primary" } })
 @S.action("ship", #{ label: "発送", allowedWhen: "status == 'confirmed'", ui: #{ icon: "truck", variant: "primary" } })
 @S.action("deliver", #{ label: "配達完了", allowedWhen: "status == 'shipped'", ui: #{ icon: "check", variant: "primary" } })
