@@ -47,7 +47,7 @@ export function createFirebaseAuthProvider<TTenant extends TenantType>(
     });
   }
 
-  function toIdentity(user: User): AuthIdentity<TTenant> {
+  async function toIdentity(user: User): Promise<AuthIdentity<TTenant>> {
     const tenantId =
       (user as unknown as { tenantId?: string }).tenantId ||
       auth.tenantId ||
@@ -56,6 +56,32 @@ export function createFirebaseAuthProvider<TTenant extends TenantType>(
     if (!tenantType) {
       throw { message: `Unknown tenant: ${tenantId}`, code: "UNKNOWN_TENANT" };
     }
+
+    // カスタムクレームを取得
+    const tokenResult = await user.getIdTokenResult();
+    const customClaims: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(tokenResult.claims)) {
+      // Firebase標準クレームを除外し、カスタムクレームのみ抽出
+      if (
+        ![
+          "iss",
+          "aud",
+          "auth_time",
+          "user_id",
+          "sub",
+          "iat",
+          "exp",
+          "email",
+          "email_verified",
+          "firebase",
+          "name",
+          "picture",
+        ].includes(key)
+      ) {
+        customClaims[key] = value;
+      }
+    }
+
     return {
       uid: user.uid,
       email: user.email,
@@ -64,6 +90,7 @@ export function createFirebaseAuthProvider<TTenant extends TenantType>(
       tenantId,
       tenantType,
       emailVerified: user.emailVerified,
+      ...(Object.keys(customClaims).length > 0 ? { customClaims } : {}),
     };
   }
 
@@ -82,11 +109,11 @@ export function createFirebaseAuthProvider<TTenant extends TenantType>(
             params.email,
             params.password,
           );
-          return toIdentity(cred.user);
+          return await toIdentity(cred.user);
         }
         case SignInMethod.GOOGLE: {
           const cred = await signInWithPopup(auth, new GoogleAuthProvider());
-          return toIdentity(cred.user);
+          return await toIdentity(cred.user);
         }
         default:
           throw { message: `Unsupported method: ${params.method}` };
@@ -136,7 +163,17 @@ export function createFirebaseAuthProvider<TTenant extends TenantType>(
 
     onAuthStateChanged(callback) {
       return firebaseOnAuthStateChanged(auth, (user) => {
-        callback(user ? toIdentity(user) : null);
+        if (user) {
+          toIdentity(user).then(
+            (identity) => callback(identity),
+            (err) => {
+              console.error("[auth] onAuthStateChanged toIdentity failed:", err);
+              callback(null);
+            },
+          );
+        } else {
+          callback(null);
+        }
       });
     },
   };
