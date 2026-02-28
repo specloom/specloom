@@ -83,53 +83,42 @@ model Post {
 @S.searchable(["title"])
 @S.defaultSort("createdAt", "desc")
 @S.clickAction("show")
-model PostList {
-  // Page action
-  @S.action("create")
-  @S.label("新規作成")
-  @S.allowedWhen("role == 'admin' || role == 'editor'")
-  @S.ui(#{ icon: "plus", variant: "primary" })
-  create: never;
-
-  // Row actions
-  @S.rowAction("edit")
-  @S.label("編集")
-  @S.allowedWhen("role == 'admin' || role == 'editor'")
-  @S.ui(#{ icon: "pencil" })
-  edit: never;
-
-  @S.rowAction("delete")
-  @S.label("削除")
-  @S.allowedWhen("role == 'admin'")
-  @S.confirm("本当に削除しますか？")
-  @S.ui(#{ icon: "trash", variant: "danger" })
-  delete: never;
-}
+// Page action
+@S.action("create", #{
+  label: "新規作成",
+  allowedWhen: "role == 'admin' || role == 'editor'",
+  ui: #{ icon: "plus", variant: "primary" }
+})
+// Row actions
+@S.rowAction("edit", #{
+  label: "編集",
+  allowedWhen: "role == 'admin' || role == 'editor'",
+  ui: #{ icon: "pencil" }
+})
+@S.rowAction("delete", #{
+  label: "削除",
+  allowedWhen: "role == 'admin'",
+  confirm: "本当に削除しますか？",
+  ui: #{ icon: "trash", variant: "danger" }
+})
+model PostList {}
 
 // Form View
 @S.view(Post, "form")
 @S.fields(["title", "status", "author"])
-model PostForm {
-  @S.action("save")
-  @S.label("保存")
-  @S.ui(#{ icon: "check", variant: "primary" })
-  save: never;
-
-  @S.action("cancel")
-  @S.label("キャンセル")
-  cancel: never;
-}
+@S.action("save", #{ label: "保存", ui: #{ icon: "check", variant: "primary" } })
+@S.action("cancel", #{ label: "キャンセル" })
+model PostForm {}
 
 // Show View
 @S.view(Post, "show")
 @S.fields(["title", "status", "author", "createdAt"])
-model PostShow {
-  @S.action("edit")
-  @S.label("編集")
-  @S.allowedWhen("role == 'admin' || role == 'editor'")
-  @S.ui(#{ icon: "pencil" })
-  edit: never;
-}
+@S.action("edit", #{
+  label: "編集",
+  allowedWhen: "role == 'admin' || role == 'editor'",
+  ui: #{ icon: "pencil" }
+})
+model PostShow {}
 ```
 
 ### 3. コンパイル
@@ -156,13 +145,12 @@ specloom の spec は 3 つの要素で構成されます。
 
 - Filter 演算子: snake_case（例: `starts_with`）
 - UI 指定: `@ui(#{ ... })`
-- Row/Bulk action: `@rowAction` と `@requiresSelection`
+- Action: view-level `@action(id, opts)` / `@rowAction(id, opts)` （Model デコレータ）
 
 以下は legacy alias（互換用途）です。
 
 - `startsWith` / `endsWith` / `notIn` など camelCase 演算子
 - `@hint` / `@inputHint`
-- `@placement("row" | "bulk")`
 
 ## ドキュメント
 

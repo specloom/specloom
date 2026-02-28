@@ -94,39 +94,31 @@ model Post {
 @S.namedFilter("all", "すべて", #{})
 @S.namedFilter("published", "公開中", #{ status: "published" })
 @S.namedFilter("draft", "下書き", #{ status: "draft" })
-model PostList {
-  @S.action("create")
-  @S.label("新規作成")
-  @S.allowedWhen("role == 'admin' || role == 'editor'")
-  @S.ui(#{ icon: "plus", variant: "primary" })
-  create: never;
-
-  @S.action("bulkDelete")
-  @S.label("一括削除")
-  @S.requiresSelection(true)
-  @S.allowedWhen("role == 'admin'")
-  @S.confirm
-  @S.ui(#{ icon: "trash", variant: "danger" })
-  bulkDelete: never;
-
-  @S.rowAction("show")
-  @S.label("詳細")
-  @S.ui(#{ icon: "eye" })
-  show: never;
-
-  @S.rowAction("edit")
-  @S.label("編集")
-  @S.allowedWhen("role == 'admin' || role == 'editor'")
-  @S.ui(#{ icon: "pencil" })
-  edit: never;
-
-  @S.rowAction("delete")
-  @S.label("削除")
-  @S.allowedWhen("role == 'admin'")
-  @S.confirm("本当に削除しますか？")
-  @S.ui(#{ icon: "trash", variant: "danger" })
-  delete: never;
-}
+@S.action("create", #{
+  label: "新規作成",
+  allowedWhen: "role == 'admin' || role == 'editor'",
+  ui: #{ icon: "plus", variant: "primary" }
+})
+@S.action("bulkDelete", #{
+  label: "一括削除",
+  selection: "selected",
+  allowedWhen: "role == 'admin'",
+  confirm: "選択した項目を削除しますか？",
+  ui: #{ icon: "trash", variant: "danger" }
+})
+@S.rowAction("show", #{ label: "詳細", ui: #{ icon: "eye" } })
+@S.rowAction("edit", #{
+  label: "編集",
+  allowedWhen: "role == 'admin' || role == 'editor'",
+  ui: #{ icon: "pencil" }
+})
+@S.rowAction("delete", #{
+  label: "削除",
+  allowedWhen: "role == 'admin'",
+  confirm: "本当に削除しますか？",
+  ui: #{ icon: "trash", variant: "danger" }
+})
+model PostList {}
 ```
 
 ### Form View
@@ -134,17 +126,9 @@ model PostList {
 ```typespec
 @S.view(Post, "form")
 @S.fields(["title", "slug", "body", "status", "author", "category", "tags"])
-model PostForm {
-  @S.action("save")
-  @S.label("保存")
-  @S.ui(#{ icon: "check", variant: "primary" })
-  save: never;
-
-  @S.action("cancel")
-  @S.label("キャンセル")
-
-  cancel: never;
-}
+@S.action("save", #{ label: "保存", ui: #{ icon: "check", variant: "primary" } })
+@S.action("cancel", #{ label: "キャンセル" })
+model PostForm {}
 ```
 
 ### Show View
@@ -152,37 +136,21 @@ model PostForm {
 ```typespec
 @S.view(Post, "show")
 @S.fields(["title", "slug", "body", "status", "author", "category", "tags", "publishedAt", "createdAt", "updatedAt"])
-model PostShow {
-  @S.action("edit")
-  @S.label("編集")
-  @S.allowedWhen("role == 'admin' || role == 'editor'")
-  @S.ui(#{ icon: "pencil" })
-  edit: never;
-
-  @S.action("delete")
-  @S.label("削除")
-  @S.allowedWhen("role == 'admin'")
-  @S.confirm("本当に削除しますか？")
-  @S.ui(#{ icon: "trash", variant: "danger" })
-  delete: never;
-
-  @S.action("publish")
-  @S.label("公開")
-  @S.allowedWhen("status == 'draft'")
-  @S.ui(#{ icon: "globe", variant: "primary" })
-  publish: never;
-
-  @S.action("unpublish")
-  @S.label("非公開")
-  @S.allowedWhen("status == 'published'")
-  unpublish: never;
-
-  @S.action("archive")
-  @S.label("アーカイブ")
-  @S.allowedWhen("status == 'published'")
-  @S.confirm
-  archive: never;
-}
+@S.action("edit", #{
+  label: "編集",
+  allowedWhen: "role == 'admin' || role == 'editor'",
+  ui: #{ icon: "pencil" }
+})
+@S.action("delete", #{
+  label: "削除",
+  allowedWhen: "role == 'admin'",
+  confirm: "本当に削除しますか？",
+  ui: #{ icon: "trash", variant: "danger" }
+})
+@S.action("publish", #{ label: "公開", allowedWhen: "status == 'draft'", ui: #{ icon: "globe", variant: "primary" } })
+@S.action("unpublish", #{ label: "非公開", allowedWhen: "status == 'published'" })
+@S.action("archive", #{ label: "アーカイブ", allowedWhen: "status == 'published'", confirm: "アーカイブしますか？" })
+model PostShow {}
 ```
 
 ---
@@ -254,23 +222,10 @@ model User {
 @S.namedFilter("all", "すべて", #{})
 @S.namedFilter("admin", "管理者", #{ role: "admin" })
 @S.namedFilter("active", "有効", #{ active: true })
-model UserList {
-  @S.action("create")
-  @S.label("新規作成")
-  @S.allowedWhen("role == 'admin'")
-  @S.ui(#{ icon: "plus", variant: "primary" })
-  create: never;
-
-  @S.rowAction("show")
-  @S.label("詳細")
-  show: never;
-
-  @S.rowAction("edit")
-  @S.label("編集")
-  @S.allowedWhen("role == 'admin'")
-  @S.ui(#{ icon: "pencil" })
-  edit: never;
-}
+@S.action("create", #{ label: "新規作成", allowedWhen: "role == 'admin'", ui: #{ icon: "plus", variant: "primary" } })
+@S.rowAction("show", #{ label: "詳細" })
+@S.rowAction("edit", #{ label: "編集", allowedWhen: "role == 'admin'", ui: #{ icon: "pencil" } })
+model UserList {}
 ```
 
 ---
@@ -347,32 +302,16 @@ model Order {
 ```typespec
 @S.view(Order, "show")
 @S.fields(["orderNumber", "customer", "products", "subtotal", "tax", "total", "status", "orderedAt"])
-model OrderShow {
-  @S.action("confirm")
-  @S.label("確定")
-  @S.allowedWhen("status == 'pending'")
-  @S.ui(#{ icon: "check", variant: "primary" })
-  confirm: never;
-
-  @S.action("ship")
-  @S.label("発送")
-  @S.allowedWhen("status == 'confirmed'")
-  @S.ui(#{ icon: "truck", variant: "primary" })
-  ship: never;
-
-  @S.action("deliver")
-  @S.label("配達完了")
-  @S.allowedWhen("status == 'shipped'")
-  @S.ui(#{ icon: "check", variant: "primary" })
-  deliver: never;
-
-  @S.action("cancel")
-  @S.label("キャンセル")
-  @S.allowedWhen("status == 'pending' || status == 'confirmed'")
-  @S.confirm("注文をキャンセルしますか？")
-  @S.ui(#{ icon: "x", variant: "danger" })
-  cancel: never;
-}
+@S.action("confirm", #{ label: "確定", allowedWhen: "status == 'pending'", ui: #{ icon: "check", variant: "primary" } })
+@S.action("ship", #{ label: "発送", allowedWhen: "status == 'confirmed'", ui: #{ icon: "truck", variant: "primary" } })
+@S.action("deliver", #{ label: "配達完了", allowedWhen: "status == 'shipped'", ui: #{ icon: "check", variant: "primary" } })
+@S.action("cancel", #{
+  label: "キャンセル",
+  allowedWhen: "status == 'pending' || status == 'confirmed'",
+  confirm: "注文をキャンセルしますか？",
+  ui: #{ icon: "x", variant: "danger" }
+})
+model OrderShow {}
 ```
 
 ---

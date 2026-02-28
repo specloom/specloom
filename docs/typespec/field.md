@@ -96,8 +96,8 @@ author: User;
 | inputHint | string | Field | 入力ヒント（select, autocomplete, richtext） |
 | format | string | Field | 表示フォーマット（currency, relative） |
 | link | boolean | Field | クリック可能にする |
-| icon | string | Field/Action | アイコン（plus, trash, pencil） |
-| variant | string | Field/Action | 種類（primary, danger, warning） |
+| icon | string | Action | アイコン（plus, trash, pencil） |
+| variant | string | Action | 種類（primary, danger, warning） |
 
 ```typespec
 // Field
@@ -113,16 +113,10 @@ status: string;
 @S.relation(User, #{ labelField: "name", searchable: true })
 @S.ui(#{ hint: "avatar", link: true })
 author: User;
-
-// Action
-@S.action("delete")
-@S.ui(#{ icon: "trash", variant: "danger" })
-delete: never;
 ```
 
-### Legacy aliases
-
-`@hint("...")` と `@inputHint("...")` も使えますが、**新規定義では `@ui(#{ ... })` を推奨**します。
+Action の `ui`（icon, variant）は `@action` / `@rowAction` の options 内で指定します。
+詳しくは [Action](./action.md) を参照。
 
 ### format 一覧
 

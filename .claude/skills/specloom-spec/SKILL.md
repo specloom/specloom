@@ -195,37 +195,32 @@ model Post {
 @S.defaultSort("createdAt", "desc")
 @S.selection("multi")
 @S.clickAction("show")
-model PostList {
-  // Page action
-  @S.action("create")
-  @S.label("新規作成")
-  @S.allowedWhen("role == 'admin' || role == 'editor'")
-  @S.ui(#{ icon: "plus", variant: "primary" })
-  create: never;
-
-  // Bulk action (requires selection)
-  @S.action("bulkDelete")
-  @S.label("一括削除")
-  @S.requiresSelection("selected")
-  @S.allowedWhen("role == 'admin'")
-  @S.confirm("選択した項目を削除しますか？")
-  bulkDelete: never;
-
-  // Row action
-  @S.rowAction("edit")
-  @S.label("編集")
-  @S.allowedWhen("role == 'admin' || role == 'editor'")
-  @S.ui(#{ icon: "pencil" })
-  edit: never;
-
-  // Row action with confirm
-  @S.rowAction("delete")
-  @S.label("削除")
-  @S.allowedWhen("role == 'admin'")
-  @S.confirm("本当に削除しますか？")
-  @S.ui(#{ icon: "trash", variant: "danger" })
-  delete: never;
-}
+// Page action
+@S.action("create", #{
+  label: "新規作成",
+  allowedWhen: "role == 'admin' || role == 'editor'",
+  ui: #{ icon: "plus", variant: "primary" }
+})
+// Bulk action (requires selection)
+@S.action("bulkDelete", #{
+  label: "一括削除",
+  selection: "selected",
+  allowedWhen: "role == 'admin'",
+  confirm: "選択した項目を削除しますか？"
+})
+// Row actions
+@S.rowAction("edit", #{
+  label: "編集",
+  allowedWhen: "role == 'admin' || role == 'editor'",
+  ui: #{ icon: "pencil" }
+})
+@S.rowAction("delete", #{
+  label: "削除",
+  allowedWhen: "role == 'admin'",
+  confirm: "本当に削除しますか？",
+  ui: #{ icon: "trash", variant: "danger" }
+})
+model PostList {}
 ```
 
 ### 5. Form View
@@ -233,16 +228,12 @@ model PostList {
 ```typespec
 @S.view(Post, "form")
 @S.fields(#["title", "body", "status", "author", "tags"])
-model PostForm {
-  @S.action("save")
-  @S.label("保存")
-  @S.ui(#{ icon: "check", variant: "primary" })
-  save: never;
-
-  @S.action("cancel")
-  @S.label("キャンセル")
-  cancel: never;
-}
+@S.action("save", #{
+  label: "保存",
+  ui: #{ icon: "check", variant: "primary" }
+})
+@S.action("cancel", #{ label: "キャンセル" })
+model PostForm {}
 ```
 
 ### 6. Show View
@@ -250,20 +241,18 @@ model PostForm {
 ```typespec
 @S.view(Post, "show")
 @S.fields(#["title", "body", "status", "author", "tags", "createdAt"])
-model PostShow {
-  @S.action("edit")
-  @S.label("編集")
-  @S.allowedWhen("role == 'admin' || role == 'editor'")
-  @S.ui(#{ icon: "pencil" })
-  edit: never;
-
-  @S.action("delete")
-  @S.label("削除")
-  @S.allowedWhen("role == 'admin'")
-  @S.confirm("本当に削除しますか？")
-  @S.ui(#{ icon: "trash", variant: "danger" })
-  delete: never;
-}
+@S.action("edit", #{
+  label: "編集",
+  allowedWhen: "role == 'admin' || role == 'editor'",
+  ui: #{ icon: "pencil" }
+})
+@S.action("delete", #{
+  label: "削除",
+  allowedWhen: "role == 'admin'",
+  confirm: "本当に削除しますか？",
+  ui: #{ icon: "trash", variant: "danger" }
+})
+model PostShow {}
 ```
 
 ### 7. Action with Dialog (Form Input)
@@ -289,26 +278,15 @@ model ChangePasswordDialog {
 
 @S.view(User, "show")
 @S.fields(#["name", "email"])
-model UserShow {
-  @S.action("edit")
-  @S.label("編集")
-  edit: never;
-
-  // ダイアログ付きアクション
-  @S.action("changePassword")
-  @S.label("パスワード変更")
-  @S.ui(#{ icon: "key" })
-  @S.dialog(ChangePasswordDialog, #{
-    title: "パスワード変更",
-    description: "新しいパスワードを入力してください（8文字以上）"
-  })
-  @S.api(#{
-    path: "/{id}/password",
-    method: "PUT",
-    body: #["password"]  // ダイアログのどのフィールドをbodyに含めるか
-  })
-  changePassword: never;
-}
+@S.action("edit", #{ label: "編集" })
+// ダイアログ付きアクション — dialog設定はoptionsに、Model参照は第4引数に渡す
+@S.action("changePassword", #{
+  label: "パスワード変更",
+  ui: #{ icon: "key" },
+  dialog: #{ title: "パスワード変更", description: "新しいパスワードを入力してください（8文字以上）" },
+  api: #{ path: "/{id}/password", method: "PUT", body: #["password"] }
+}, ChangePasswordDialog)
+model UserShow {}
 ```
 
 **出力されるJSON:**
@@ -397,25 +375,33 @@ model UserShow {
 | `@namedFilters([...])` | List | Predefined filters (array) |
 | `@namedFilter(id, label, filter)` | List | Add a named filter (singular) |
 
-### Action Decorators
+### Action Decorators (View-level)
+
+アクションはViewモデルのデコレータとして定義します（プロパティ不要）。
+
+| Decorator | Target | Description |
+|-----------|--------|-------------|
+| `@action(id, options)` | Model | Page-level action |
+| `@action(id, options, DialogModel)` | Model | Page-level action with dialog |
+| `@rowAction(id, options)` | Model | Row-level action (for list views) |
+| `@rowAction(id, options, DialogModel)` | Model | Row-level action with dialog |
+
+#### Action Options
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `label` | string | Display label |
+| `allowedWhen` | string | Permission expression |
+| `confirm` | string | Confirmation dialog message |
+| `selection` | string | Bulk action: `"selected"` or `"query"` |
+| `ui` | `{ icon?, variant? }` | Icon and style |
+| `dialog` | `{ title?, description? }` | Dialog title/description |
+| `api` | `{ path, method?, body?, params?, query? }` | API endpoint config |
+
+### Validation Decorator (Dialog)
 
 | Decorator | Description |
 |-----------|-------------|
-| `@action(id)` | Page-level action ID |
-| `@rowAction(id)` | Row-level action ID (for list views) |
-| `@requiresSelection(target)` | Bulk action: `"selected"` or `"query"` (JSON: `selection`) |
-| `@allowedWhen(expr)` | Permission expression |
-| `@confirm(msg)` | Confirmation dialog |
-| `@ui({icon, variant})` | Icon and style |
-| `@dialog(Model, opts)` | Dialog with form fields (opts: title, description) |
-| `@api({...})` | API endpoint config (path, method, params, body, query) |
-
-### Dialog/API Decorators
-
-| Decorator | Description |
-|-----------|-------------|
-| `@dialog(Model, {title?, description?})` | Define dialog with form fields from Model |
-| `@api({path, method?, params?, body?, query?})` | Define API endpoint for action |
 | `@match(field)` | Field validation: must match another field's value |
 
 ## UI Options Reference
@@ -617,66 +603,53 @@ model Post {
   #{ id: "published", label: "公開中", filter: #{ field: "status", operator: "eq", value: "published" } },
   #{ id: "draft", label: "下書き", filter: #{ field: "status", operator: "eq", value: "draft" } }
 ])
-model PostList {
-  // Page action
-  @S.action("create")
-  @S.label("新規作成")
-  @S.allowedWhen("role == 'admin' || role == 'editor'")
-  @S.ui(#{ icon: "plus", variant: "primary" })
-  create: never;
-
-  // Bulk action
-  @S.action("bulkDelete")
-  @S.label("一括削除")
-  @S.requiresSelection("selected")
-  @S.allowedWhen("role == 'admin'")
-  @S.confirm("選択した項目を削除しますか？")
-  bulkDelete: never;
-
-  // Row actions
-  @S.rowAction("edit")
-  @S.label("編集")
-  @S.allowedWhen("role == 'admin' || role == 'editor'")
-  @S.ui(#{ icon: "pencil" })
-  edit: never;
-
-  @S.rowAction("delete")
-  @S.label("削除")
-  @S.allowedWhen("role == 'admin'")
-  @S.confirm("本当に削除しますか？")
-  @S.ui(#{ icon: "trash", variant: "danger" })
-  delete: never;
-}
+@S.action("create", #{
+  label: "新規作成",
+  allowedWhen: "role == 'admin' || role == 'editor'",
+  ui: #{ icon: "plus", variant: "primary" }
+})
+@S.action("bulkDelete", #{
+  label: "一括削除",
+  selection: "selected",
+  allowedWhen: "role == 'admin'",
+  confirm: "選択した項目を削除しますか？"
+})
+@S.rowAction("edit", #{
+  label: "編集",
+  allowedWhen: "role == 'admin' || role == 'editor'",
+  ui: #{ icon: "pencil" }
+})
+@S.rowAction("delete", #{
+  label: "削除",
+  allowedWhen: "role == 'admin'",
+  confirm: "本当に削除しますか？",
+  ui: #{ icon: "trash", variant: "danger" }
+})
+model PostList {}
 
 @S.view(Post, "form")
 @S.fields(#["title", "body", "status", "author"])
-model PostForm {
-  @S.action("save")
-  @S.label("保存")
-  @S.ui(#{ icon: "check", variant: "primary" })
-  save: never;
-
-  @S.action("cancel")
-  @S.label("キャンセル")
-  cancel: never;
-}
+@S.action("save", #{
+  label: "保存",
+  ui: #{ icon: "check", variant: "primary" }
+})
+@S.action("cancel", #{ label: "キャンセル" })
+model PostForm {}
 
 @S.view(Post, "show")
 @S.fields(#["title", "body", "status", "author", "createdAt"])
-model PostShow {
-  @S.action("edit")
-  @S.label("編集")
-  @S.allowedWhen("role == 'admin' || role == 'editor'")
-  @S.ui(#{ icon: "pencil" })
-  edit: never;
-
-  @S.action("delete")
-  @S.label("削除")
-  @S.allowedWhen("role == 'admin'")
-  @S.confirm("本当に削除しますか？")
-  @S.ui(#{ icon: "trash", variant: "danger" })
-  delete: never;
-}
+@S.action("edit", #{
+  label: "編集",
+  allowedWhen: "role == 'admin' || role == 'editor'",
+  ui: #{ icon: "pencil" }
+})
+@S.action("delete", #{
+  label: "削除",
+  allowedWhen: "role == 'admin'",
+  confirm: "本当に削除しますか？",
+  ui: #{ icon: "trash", variant: "danger" }
+})
+model PostShow {}
 ```
 
 ## FormVM Usage
@@ -734,14 +707,14 @@ Before completing a spec:
 - [ ] Required fields have `@required`
 - [ ] Enum fields have `@kind("enum")` and `@options`
 - [ ] Relation fields have `@kind("relation")` and `@relation`
-- [ ] List views have `@columns`, `@action` for page actions, `@rowAction` for row actions
-- [ ] Bulk actions have `@requiresSelection("selected")` or `@requiresSelection("query")`
+- [ ] List views have `@columns`, `@action(id, opts)` for page actions, `@rowAction(id, opts)` for row actions
+- [ ] Bulk actions have `selection: "selected"` or `selection: "query"` in options
 - [ ] Form views have `@fields` and save/cancel actions
-- [ ] Actions have appropriate `@allowedWhen`
-- [ ] Destructive actions have `@confirm`
+- [ ] Actions have appropriate `allowedWhen` in options
+- [ ] Destructive actions have `confirm` in options
 - [ ] Filterable fields have `@filter`
-- [ ] Actions with user input have `@dialog` with form model
-- [ ] Actions with API calls have `@api` with endpoint config
+- [ ] Actions with user input have `dialog` in options + DialogModel as 4th argument
+- [ ] Actions with API calls have `api` in options
 - [ ] Password confirm fields use `@match("password")`
 
 ## Compile

@@ -55,20 +55,18 @@ model Post {
 ```typespec
 @S.view(Post, "show")
 @S.fields(["title", "body", "status", "author", "tags", "createdAt", "updatedAt"])
-model PostShow {
-  @S.action("edit")
-  @S.label("編集")
-  @S.allowedWhen("role == 'admin' || role == 'editor'")
-  @S.ui(#{ icon: "pencil" })
-  edit: never;
-
-  @S.action("delete")
-  @S.label("削除")
-  @S.allowedWhen("role == 'admin'")
-  @S.confirm("本当に削除しますか？")
-  @S.ui(#{ icon: "trash", variant: "danger" })
-  delete: never;
-}
+@S.action("edit", #{
+  label: "編集",
+  allowedWhen: "role == 'admin' || role == 'editor'",
+  ui: #{ icon: "pencil" }
+})
+@S.action("delete", #{
+  label: "削除",
+  allowedWhen: "role == 'admin'",
+  confirm: "本当に削除しますか？",
+  ui: #{ icon: "trash", variant: "danger" }
+})
+model PostShow {}
 ```
 
 ## 状態遷移アクション
@@ -77,24 +75,10 @@ model PostShow {
 
 ```typespec
 @S.view(Post, "show")
-model PostShow {
-  @S.action("publish")
-  @S.label("公開")
-  @S.allowedWhen("status == 'draft'")
-  @S.ui(#{ icon: "globe", variant: "primary" })
-  publish: never;
-
-  @S.action("unpublish")
-  @S.label("非公開")
-  @S.allowedWhen("status == 'published'")
-  unpublish: never;
-
-  @S.action("archive")
-  @S.label("アーカイブ")
-  @S.allowedWhen("status == 'published'")
-  @S.confirm("アーカイブしますか？")
-  archive: never;
-}
+@S.action("publish", #{ label: "公開", allowedWhen: "status == 'draft'", ui: #{ icon: "globe", variant: "primary" } })
+@S.action("unpublish", #{ label: "非公開", allowedWhen: "status == 'published'" })
+@S.action("archive", #{ label: "アーカイブ", allowedWhen: "status == 'published'", confirm: "アーカイブしますか？" })
+model PostShow {}
 ```
 
 ## 完全な例
@@ -102,34 +86,22 @@ model PostShow {
 ```typespec
 @S.view(Post, "show")
 @S.fields(["title", "body", "status", "author", "tags", "createdAt", "updatedAt"])
-model PostShow {
-  // 基本アクション
-  @S.action("edit")
-  @S.label("編集")
-  @S.allowedWhen("role == 'admin' || role == 'editor'")
-  @S.ui(#{ icon: "pencil" })
-  edit: never;
-
-  @S.action("delete")
-  @S.label("削除")
-  @S.allowedWhen("role == 'admin'")
-  @S.confirm("本当に削除しますか？")
-  @S.ui(#{ icon: "trash", variant: "danger" })
-  delete: never;
-
-  // 状態遷移
-  @S.action("publish")
-  @S.label("公開")
-  @S.allowedWhen("status == 'draft'")
-  @S.ui(#{ icon: "globe", variant: "primary" })
-  publish: never;
-
-  @S.action("archive")
-  @S.label("アーカイブ")
-  @S.allowedWhen("status == 'published'")
-  @S.confirm
-  archive: never;
-}
+// 基本アクション
+@S.action("edit", #{
+  label: "編集",
+  allowedWhen: "role == 'admin' || role == 'editor'",
+  ui: #{ icon: "pencil" }
+})
+@S.action("delete", #{
+  label: "削除",
+  allowedWhen: "role == 'admin'",
+  confirm: "本当に削除しますか？",
+  ui: #{ icon: "trash", variant: "danger" }
+})
+// 状態遷移
+@S.action("publish", #{ label: "公開", allowedWhen: "status == 'draft'", ui: #{ icon: "globe", variant: "primary" } })
+@S.action("archive", #{ label: "アーカイブ", allowedWhen: "status == 'published'", confirm: "アーカイブしますか？" })
+model PostShow {}
 ```
 
 ## 次のステップ

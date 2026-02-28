@@ -81,16 +81,9 @@ model Post {
 ```typespec
 @S.view(Post, "form")
 @S.fields(["title", "body", "status", "author", "tags"])
-model PostForm {
-  @S.action("save")
-  @S.label("保存")
-  @S.ui(#{ icon: "check", variant: "primary" })
-  save: never;
-
-  @S.action("cancel")
-  @S.label("キャンセル")
-  cancel: never;
-}
+@S.action("save", #{ label: "保存", ui: #{ icon: "check", variant: "primary" } })
+@S.action("cancel", #{ label: "キャンセル" })
+model PostForm {}
 ```
 
 ## 作成 / 編集の区別
@@ -123,21 +116,10 @@ UI は `mode` を見て：
 ```typespec
 @S.view(Post, "form")
 @S.fields(["title", "body", "status", "author", "tags"])
-model PostForm {
-  @S.action("save")
-  @S.label("保存")
-  @S.ui(#{ icon: "check", variant: "primary" })
-  save: never;
-
-  @S.action("cancel")
-  @S.label("キャンセル")
-  cancel: never;
-
-  @S.action("saveDraft")
-  @S.label("下書き保存")
-  @S.allowedWhen("status == 'draft'")
-  saveDraft: never;
-}
+@S.action("save", #{ label: "保存", ui: #{ icon: "check", variant: "primary" } })
+@S.action("cancel", #{ label: "キャンセル" })
+@S.action("saveDraft", #{ label: "下書き保存", allowedWhen: "status == 'draft'" })
+model PostForm {}
 ```
 
 ## 次のステップ

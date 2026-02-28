@@ -202,24 +202,20 @@ model PostList {}
 
 | 種類 | デコレーター | 説明 |
 |------|-------------|------|
-| Page action | `@action` | 画面上部に表示 |
-| Bulk action | `@action` + `@requiresSelection` | 複数選択時に有効 |
-| Row action | `@rowAction` | 各行に表示 |
-
-> 推奨: `@rowAction` / `@requiresSelection` を canonical とし、`@placement` は legacy alias として扱います。  
-> `@placement("bulk")` を使う場合は `selection: "selected"` が暗黙付与されます。
+| Page action | `@action(id, opts)` | 画面上部に表示 |
+| Bulk action | `@action(id, #{ selection: "selected" })` | 複数選択時に有効 |
+| Row action | `@rowAction(id, opts)` | 各行に表示 |
 
 ### Page Actions（画面上部）
 
 ```typespec
 @S.view(Post, "list")
-model PostList {
-  @S.action("create")
-  @S.label("新規作成")
-  @S.allowedWhen("role == 'admin' || role == 'editor'")
-  @S.ui(#{ icon: "plus", variant: "primary" })
-  create: never;
-}
+@S.action("create", #{
+  label: "新規作成",
+  allowedWhen: "role == 'admin' || role == 'editor'",
+  ui: #{ icon: "plus", variant: "primary" }
+})
+model PostList {}
 ```
 
 ### Bulk Actions（複数選択時）
@@ -229,45 +225,38 @@ model PostList {
 ```typespec
 @S.view(Post, "list")
 @S.selection("multi")
-model PostList {
-  @S.action("bulkDelete")
-  @S.label("一括削除")
-  @S.requiresSelection("selected")
-  @S.allowedWhen("role == 'admin'")
-  @S.confirm("選択した項目を削除しますか？")
-  @S.ui(#{ icon: "trash", variant: "danger" })
-  bulkDelete: never;
-
-  @S.action("bulkPublish")
-  @S.label("一括公開")
-  @S.requiresSelection("selected")
-  @S.allowedWhen("role == 'admin' || role == 'editor'")
-  bulkPublish: never;
-}
+@S.action("bulkDelete", #{
+  label: "一括削除",
+  selection: "selected",
+  allowedWhen: "role == 'admin'",
+  confirm: "選択した項目を削除しますか？",
+  ui: #{ icon: "trash", variant: "danger" }
+})
+@S.action("bulkPublish", #{
+  label: "一括公開",
+  selection: "selected",
+  allowedWhen: "role == 'admin' || role == 'editor'"
+})
+model PostList {}
 ```
 
 ### Row Actions（各行）
 
 ```typespec
 @S.view(Post, "list")
-model PostList {
-  @S.rowAction("show")
-  @S.label("詳細")
-  show: never;
-
-  @S.rowAction("edit")
-  @S.label("編集")
-  @S.allowedWhen("role == 'admin' || role == 'editor'")
-  @S.ui(#{ icon: "pencil" })
-  edit: never;
-
-  @S.rowAction("delete")
-  @S.label("削除")
-  @S.allowedWhen("role == 'admin'")
-  @S.confirm("本当に削除しますか？")
-  @S.ui(#{ icon: "trash", variant: "danger" })
-  delete: never;
-}
+@S.rowAction("show", #{ label: "詳細" })
+@S.rowAction("edit", #{
+  label: "編集",
+  allowedWhen: "role == 'admin' || role == 'editor'",
+  ui: #{ icon: "pencil" }
+})
+@S.rowAction("delete", #{
+  label: "削除",
+  allowedWhen: "role == 'admin'",
+  confirm: "本当に削除しますか？",
+  ui: #{ icon: "trash", variant: "danger" }
+})
+model PostList {}
 ```
 
 ## 完全な例
@@ -283,41 +272,34 @@ model PostList {
 @S.namedFilter("all", "すべて", #{})
 @S.namedFilter("published", "公開中", #{ status: "published" })
 @S.namedFilter("draft", "下書き", #{ status: "draft" })
-model PostList {
-  // Page Actions
-  @S.action("create")
-  @S.label("新規作成")
-  @S.allowedWhen("role == 'admin' || role == 'editor'")
-  @S.ui(#{ icon: "plus", variant: "primary" })
-  create: never;
-
-  // Bulk Actions
-  @S.action("bulkDelete")
-  @S.label("一括削除")
-  @S.requiresSelection("selected")
-  @S.allowedWhen("role == 'admin'")
-  @S.confirm
-  @S.ui(#{ icon: "trash", variant: "danger" })
-  bulkDelete: never;
-
-  // Row Actions
-  @S.rowAction("show")
-  @S.label("詳細")
-  show: never;
-
-  @S.rowAction("edit")
-  @S.label("編集")
-  @S.allowedWhen("role == 'admin' || role == 'editor'")
-  @S.ui(#{ icon: "pencil" })
-  edit: never;
-
-  @S.rowAction("delete")
-  @S.label("削除")
-  @S.allowedWhen("role == 'admin'")
-  @S.confirm("本当に削除しますか？")
-  @S.ui(#{ icon: "trash", variant: "danger" })
-  delete: never;
-}
+// Page Actions
+@S.action("create", #{
+  label: "新規作成",
+  allowedWhen: "role == 'admin' || role == 'editor'",
+  ui: #{ icon: "plus", variant: "primary" }
+})
+// Bulk Actions
+@S.action("bulkDelete", #{
+  label: "一括削除",
+  selection: "selected",
+  allowedWhen: "role == 'admin'",
+  confirm: "選択した項目を削除しますか？",
+  ui: #{ icon: "trash", variant: "danger" }
+})
+// Row Actions
+@S.rowAction("show", #{ label: "詳細" })
+@S.rowAction("edit", #{
+  label: "編集",
+  allowedWhen: "role == 'admin' || role == 'editor'",
+  ui: #{ icon: "pencil" }
+})
+@S.rowAction("delete", #{
+  label: "削除",
+  allowedWhen: "role == 'admin'",
+  confirm: "本当に削除しますか？",
+  ui: #{ icon: "trash", variant: "danger" }
+})
+model PostList {}
 ```
 
 ## 次のステップ

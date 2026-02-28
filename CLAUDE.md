@@ -80,16 +80,16 @@ Three main elements define an admin UI:
 ### Data Provider (`@specloom/data-provider`)
 
 - **core/** - `DataProvider` interface, `ListParams`, `ResourceConfig`, `CustomAction` types
-- **http/** - `createHttpClient()` - Bearer token auto-injection, 401/403 error handling via `TokenProvider` interface
+- **http/** - `createHttpClient()` - Bearer token auto-injection, 401/403 error handling via `TokenProvider` interface, `HttpError` type for structured errors
 - **providers/rest/** - `createRestDataProvider()` - REST impl with per-resource endpoint/transform/action config
-- No dependency on `@specloom/auth-provider` — uses `TokenProvider` (getToken + optional checkError)
+- No dependency on `@specloom/auth-provider` — uses `TokenProvider` (getToken + optional checkError(`HttpError`))
 
 ### TypeSpec Decorators
 
 The `@specloom/typespec` package provides decorators:
 - `@resource`, `@label`, `@kind`, `@ui`, `@options`
 - `@view`, `@columns`, `@fields`, `@searchable`, `@defaultSort`
-- `@action`, `@placement`, `@allowedWhen`, `@confirm`
+- `@action(id, options?, dialogModel?)`, `@rowAction(id, options?, dialogModel?)` - view-level (Model target)
 - `@relation`, `@required`, `@readonly`, validation decorators
 
 ## Documentation

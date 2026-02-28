@@ -117,6 +117,7 @@ const createVM = evaluateFormView({
 });
 
 // 編集（既存データを渡す）
+// ※ editモードでは createOnly フィールドは自動的に除外されます
 const editVM = evaluateFormView({
   view, resource, context,
   mode: "edit",
@@ -698,8 +699,8 @@ Format.percent(0.156);                      // "16%"
 Format.percent(0.156, { maximumFractionDigits: 1 });  // "15.6%"
 
 // ブール値
-Format.boolean(true);                       // "はい"
-Format.boolean(false);                      // "いいえ"
+Format.boolean(true);                       // "✓"
+Format.boolean(false);                      // "-"
 Format.boolean(true, { true: "有効", false: "無効" });  // "有効"
 
 // 配列
@@ -721,7 +722,7 @@ Format.relative(new Date(Date.now() - 3600000)); // "1時間前"
 // FieldKindに基づく自動フォーマット
 Format.auto(new Date(), "date");            // "2024/01/15"
 Format.auto(1234, "currency");              // "¥1,234"
-Format.auto(true, "boolean");               // "はい"
+Format.auto(true, "boolean");               // "✓"
 
 // フィールド定義に基づくフォーマット（UIモジュール向け）
 Format.field(value, {
@@ -774,8 +775,8 @@ i18n.setLocale("en");  // 英語
 
 const t = i18n.t();
 t.validation.required("タイトル");  // "タイトルは必須です"
-t.format.booleanTrue;               // "はい"
-t.format.booleanFalse;              // "いいえ"
+t.format.booleanTrue;               // "✓"
+t.format.booleanFalse;              // "-"
 t.format.empty;                     // "-"
 
 // SSR/マルチテナント用：独立したインスタンス作成
@@ -786,6 +787,13 @@ const userT = userI18n.t();
 // ブラウザロケールから解決
 const locale = i18n.resolveLocale(navigator.language);
 // "ja-JP" → "ja", "en-US" → "en"
+
+// メッセージの部分上書き（アプリ固有のラベルに変更）
+i18n.configure("ja", {
+  format: { booleanTrue: "有効", booleanFalse: "無効" },
+});
+i18n.t().format.booleanTrue;  // "有効"（上書きされた値）
+i18n.t().format.empty;        // "-"（上書きしていない値はそのまま）
 ```
 
 ### メッセージ構造
@@ -811,6 +819,13 @@ interface Messages {
     empty: string;
   };
 }
+
+// configure() で使用する部分上書き型
+type PartialMessages = {
+  [K in keyof Messages]?: Messages[K] extends object
+    ? { [P in keyof Messages[K]]?: Messages[K][P] }
+    : Messages[K];
+};
 ```
 
 ---
