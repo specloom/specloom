@@ -20,7 +20,7 @@ describe("i18n", () => {
   describe("t (messages)", () => {
     it("現在のロケールのメッセージを取得", () => {
       const t = i18n.t();
-      expect(t.format.booleanTrue).toBe("はい");
+      expect(t.format.booleanTrue).toBe("✓");
     });
 
     it("指定ロケールのメッセージを取得", () => {
@@ -59,8 +59,8 @@ describe("i18n", () => {
 
   describe("日本語メッセージ (ja)", () => {
     it("format メッセージ", () => {
-      expect(ja.format.booleanTrue).toBe("はい");
-      expect(ja.format.booleanFalse).toBe("いいえ");
+      expect(ja.format.booleanTrue).toBe("✓");
+      expect(ja.format.booleanFalse).toBe("-");
       expect(ja.format.empty).toBe("-");
     });
 

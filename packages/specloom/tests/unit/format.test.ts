@@ -132,8 +132,8 @@ describe("Format", () => {
 
   describe("boolean", () => {
     it("true/false をラベルに変換できる", () => {
-      expect(Format.boolean(true)).toBe("はい");
-      expect(Format.boolean(false)).toBe("いいえ");
+      expect(Format.boolean(true)).toBe("✓");
+      expect(Format.boolean(false)).toBe("-");
     });
 
     it("カスタムラベルを指定できる", () => {
@@ -233,8 +233,8 @@ describe("Format", () => {
     });
 
     it("boolean 型を自動フォーマットできる", () => {
-      expect(Format.auto(true, "boolean")).toBe("はい");
-      expect(Format.auto(false, "boolean")).toBe("いいえ");
+      expect(Format.auto(true, "boolean")).toBe("✓");
+      expect(Format.auto(false, "boolean")).toBe("-");
     });
 
     it("null/undefined は空文字を返す", () => {
@@ -290,8 +290,8 @@ describe("Format", () => {
     it("boolean フィールドを locale に応じて変換できる", () => {
       const field = { kind: "boolean" as const };
       // デフォルト（日本語）
-      expect(Format.field(true, field)).toBe("はい");
-      expect(Format.field(false, field)).toBe("いいえ");
+      expect(Format.field(true, field)).toBe("✓");
+      expect(Format.field(false, field)).toBe("-");
       // 英語に切り替え
       i18n.setLocale("en");
       expect(Format.field(true, field)).toBe("Yes");

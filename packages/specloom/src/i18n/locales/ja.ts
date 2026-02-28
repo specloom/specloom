@@ -6,8 +6,8 @@ import type { Messages } from "../types.js";
 
 export const ja: Messages = {
   format: {
-    booleanTrue: "はい",
-    booleanFalse: "いいえ",
+    booleanTrue: "✓",
+    booleanFalse: "-",
     empty: "-",
   },
   validation: {

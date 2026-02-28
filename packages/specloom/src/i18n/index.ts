@@ -2,8 +2,8 @@
 // i18n - 国際化モジュール
 // ============================================================
 
-export type { SupportedLocale, Messages } from "./types.js";
-import type { SupportedLocale, Messages } from "./types.js";
+export type { SupportedLocale, Messages, PartialMessages } from "./types.js";
+import type { SupportedLocale, Messages, PartialMessages } from "./types.js";
 import { ja } from "./locales/ja.js";
 import { en } from "./locales/en.js";
 
@@ -23,6 +23,8 @@ export interface I18nInstance {
   setLocale: (locale: SupportedLocale) => void;
   t: (locale?: SupportedLocale) => Readonly<Messages>;
   resolveLocale: (locale: string) => SupportedLocale;
+  /** ロケール別にメッセージを部分上書きする */
+  configure: (locale: SupportedLocale, overrides: PartialMessages) => void;
 }
 
 /**
@@ -33,14 +35,39 @@ export function createI18n(
   initialLocale: SupportedLocale = "ja",
 ): I18nInstance {
   let currentLocale: SupportedLocale = initialLocale;
+  const overrideMap: Partial<Record<SupportedLocale, Messages>> = {};
+
+  function mergeMessages(
+    base: Readonly<Messages>,
+    overrides: PartialMessages,
+  ): Messages {
+    const result: Record<string, unknown> = {};
+    for (const key of Object.keys(base) as (keyof Messages)[]) {
+      const ov = overrides[key];
+      if (ov && typeof ov === "object" && !Array.isArray(ov)) {
+        result[key] = { ...(base[key] as object), ...ov };
+      } else if (ov !== undefined) {
+        result[key] = ov;
+      } else {
+        result[key] = base[key];
+      }
+    }
+    return result as unknown as Messages;
+  }
 
   return {
     getLocale: () => currentLocale,
     setLocale: (locale: SupportedLocale) => {
       currentLocale = locale;
     },
-    t: (locale?: SupportedLocale) => messages[locale ?? currentLocale],
+    t: (locale?: SupportedLocale) => {
+      const loc = locale ?? currentLocale;
+      return overrideMap[loc] ?? messages[loc];
+    },
     resolveLocale: (locale: string) => (locale.startsWith("ja") ? "ja" : "en"),
+    configure: (locale: SupportedLocale, overrides: PartialMessages) => {
+      overrideMap[locale] = mergeMessages(messages[locale], overrides);
+    },
   };
 }
 

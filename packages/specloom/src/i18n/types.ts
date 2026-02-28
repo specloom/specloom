@@ -10,6 +10,15 @@ export type SupportedLocale = "ja" | "en";
 /**
  * メッセージ定義
  */
+/**
+ * Messages の部分上書き用型
+ */
+export type PartialMessages = {
+  [K in keyof Messages]?: Messages[K] extends object
+    ? { [P in keyof Messages[K]]?: Messages[K][P] }
+    : Messages[K];
+};
+
 export interface Messages {
   // Format
   readonly format: {

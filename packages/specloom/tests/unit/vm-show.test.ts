@@ -137,8 +137,8 @@ describe("ShowVM (OOP Style)", () => {
       const vm = createShowVM();
       const isPublicField = vm.field("isPublic")!;
       // デフォルト日本語
-      expect(vm.formatValue(isPublicField, true)).toBe("はい");
-      expect(vm.formatValue(isPublicField, false)).toBe("いいえ");
+      expect(vm.formatValue(isPublicField, true)).toBe("✓");
+      expect(vm.formatValue(isPublicField, false)).toBe("-");
     });
 
     it("formatValue で null/undefined は - を返す", () => {
