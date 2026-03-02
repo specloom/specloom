@@ -303,6 +303,88 @@ describe("送信仕様 (Submit Specification)", () => {
     });
   });
 
+  describe("submitField（キー名変換 + .id 抽出）", () => {
+    it("submitField 指定時、キー名が変更され .id が抽出される", () => {
+      const vm = createFormVM([
+        field({
+          name: "prefecture",
+          type: "Prefecture",
+          kind: "relation",
+          value: { id: 13, name: "東京", code: "13" },
+          relation: { resource: "Prefecture", labelField: "name", submitField: "prefecture_id" },
+        }),
+      ]);
+      expect(vm.submittableValues).toEqual({ prefecture_id: 13 });
+    });
+
+    it("submitField 指定時、値が null ならそのまま送信される", () => {
+      const vm = createFormVM([
+        field({
+          name: "prefecture",
+          type: "Prefecture",
+          kind: "relation",
+          value: null,
+          relation: { resource: "Prefecture", labelField: "name", submitField: "prefecture_id" },
+        }),
+      ]);
+      expect(vm.submittableValues).toEqual({ prefecture_id: null });
+    });
+
+    it("submitField 指定時、値が既にスカラーならそのまま送信される", () => {
+      const vm = createFormVM([
+        field({
+          name: "prefecture",
+          type: "Prefecture",
+          kind: "relation",
+          value: 13,
+          relation: { resource: "Prefecture", labelField: "name", submitField: "prefecture_id" },
+        }),
+      ]);
+      expect(vm.submittableValues).toEqual({ prefecture_id: 13 });
+    });
+
+    it("submitField 未指定の Model 型はオブジェクトそのまま送信される", () => {
+      const vm = createFormVM([
+        field({
+          name: "owner",
+          type: "User",
+          kind: "relation",
+          value: { id: "u1", name: "田中太郎" },
+          relation: { resource: "User", labelField: "name" },
+        }),
+      ]);
+      expect(vm.submittableValues).toEqual({
+        owner: { id: "u1", name: "田中太郎" },
+      });
+    });
+
+    it("submitField + 他フィールドが混在する完全な例", () => {
+      const vm = createFormVM([
+        field({ name: "id", type: "string", kind: "text", value: "s1", readonly: true }),
+        field({ name: "name", type: "string", kind: "text", value: "渋谷店", required: true }),
+        field({
+          name: "prefecture",
+          type: "Prefecture",
+          kind: "relation",
+          value: { id: 13, name: "東京", code: "13" },
+          relation: { resource: "Prefecture", labelField: "name", submitField: "prefecture_id" },
+        }),
+        field({
+          name: "owner",
+          type: "User",
+          kind: "relation",
+          value: { id: "u1", name: "田中太郎" },
+          relation: { resource: "User", labelField: "name" },
+        }),
+      ]);
+      expect(vm.submittableValues).toEqual({
+        name: "渋谷店",
+        prefecture_id: 13,
+        owner: { id: "u1", name: "田中太郎" },
+      });
+    });
+  });
+
   describe("readonly・非表示の除外", () => {
     it("readonly フィールドは送信から除外される", () => {
       const vm = createFormVM([

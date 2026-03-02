@@ -272,7 +272,7 @@ export function $relation(
   options?: unknown,
 ) {
   const extracted = extractValue(options) as
-    | { labelField?: string; valueField?: string; searchable?: boolean }
+    | { labelField?: string; valueField?: string; submitField?: string; searchable?: boolean }
     | undefined;
   const cardinality = extractString(
     context.program.stateMap(StateKeys.cardinality).get(target),
@@ -281,6 +281,7 @@ export function $relation(
     resource: resource.name,
     labelField: extracted?.labelField,
     valueField: extracted?.valueField,
+    submitField: extracted?.submitField,
     searchable: extracted?.searchable,
     cardinality,
   });
@@ -867,6 +868,7 @@ export function getRelation(
       resource: string;
       labelField?: string;
       valueField?: string;
+      submitField?: string;
       searchable?: boolean;
       cardinality?: string;
     }

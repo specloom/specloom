@@ -86,6 +86,7 @@ interface Field {
     resource: string;
     labelField?: string;
     valueField?: string;
+    submitField?: string;
     searchable?: boolean;
     cardinality?: string;
   };

@@ -104,6 +104,7 @@ export interface Relation {
   resource: string;
   labelField: string;
   valueField?: string;
+  submitField?: string;
   searchable?: boolean;
   cardinality?: "one" | "many";
 }

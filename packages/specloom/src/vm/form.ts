@@ -187,6 +187,17 @@ export class FormVM {
       .filter((f) => !f.readonly && f.visible !== false)
       .reduce(
         (acc, f) => {
+          // submitField 指定時: キー名を変更し、オブジェクトから .id を抽出
+          if (f.relation?.submitField) {
+            const key = f.relation.submitField;
+            const val = f.value;
+            if (val != null && typeof val === "object" && !Array.isArray(val)) {
+              acc[key] = (val as Record<string, unknown>).id;
+            } else {
+              acc[key] = val;
+            }
+            return acc;
+          }
           acc[f.name] = convertSubmitValue(f);
           return acc;
         },

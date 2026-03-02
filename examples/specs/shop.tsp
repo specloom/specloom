@@ -64,13 +64,13 @@ model Shop {
   @S.filter(#["eq", "in", "ne"])
   status: ShopStatus;
 
-  // relation: スカラー型 + デフォルト valueField("id") → ID 抽出
+  // relation: Model型 → 都道府県オブジェクト
   @S.label("都道府県")
   @S.kind("relation")
-  @S.relation(Prefecture, #{ labelField: "name" })
+  @S.relation(Prefecture, #{ labelField: "name", submitField: "prefecture_id" })
   @S.required
   @S.filter(#["eq", "in"])
-  prefecture_id: int32;
+  prefecture: Prefecture;
 
   // relation: スカラー型 + カスタム valueField → "code" を抽出
   @S.label("都道府県コード")
@@ -177,7 +177,7 @@ model Shop {
 // ============================================================
 
 @S.view(Shop, "list")
-@S.columns(#["name", "shopType", "status", "prefecture_id", "owner", "monthlySales", "targetRate"])
+@S.columns(#["name", "shopType", "status", "prefecture", "owner", "monthlySales", "targetRate"])
 @S.searchable(#["name", "address"])
 @S.sortable(#["name", "openDate", "monthlySales", "targetRate", "createdAt"])
 @S.defaultSort("name", "asc")
@@ -208,7 +208,7 @@ model Shop {
 model ShopList {}
 
 @S.view(Shop, "form")
-@S.fields(#["name", "shopType", "status", "prefecture_id", "prefectureCode", "owner", "address", "phone", "email", "website", "openDate", "openTime", "closeTime", "seats", "notes"])
+@S.fields(#["name", "shopType", "status", "prefecture", "prefectureCode", "owner", "address", "phone", "email", "website", "openDate", "openTime", "closeTime", "seats", "notes"])
 @S.action("save", #{
   label: "保存",
   ui: #{ icon: "check", variant: "primary" }
@@ -217,7 +217,7 @@ model ShopList {}
 model ShopForm {}
 
 @S.view(Shop, "show")
-@S.fields(#["name", "shopType", "status", "prefecture_id", "prefectureCode", "owner", "address", "phone", "email", "website", "openDate", "openTime", "closeTime", "seats", "monthlySales", "targetRate", "notes", "createdAt", "updatedAt"])
+@S.fields(#["name", "shopType", "status", "prefecture", "prefectureCode", "owner", "address", "phone", "email", "website", "openDate", "openTime", "closeTime", "seats", "monthlySales", "targetRate", "notes", "createdAt", "updatedAt"])
 @S.action("edit", #{
   label: "編集",
   allowedWhen: "role == 'admin' || role == 'editor'",
