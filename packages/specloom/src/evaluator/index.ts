@@ -202,6 +202,7 @@ function toShowFieldVM(
 
   return {
     name: field.name,
+    type: field.type,
     label: field.label ?? field.name,
     kind: field.kind ?? "text",
     value,
@@ -236,6 +237,7 @@ function toFormFieldVM(
 
   return {
     name: field.name,
+    type: field.type,
     label: field.label ?? field.name,
     kind: field.kind ?? "text",
     value,

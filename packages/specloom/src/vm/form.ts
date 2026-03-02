@@ -6,6 +6,96 @@ import type { FormViewModel, FormFieldVM, ActionVM } from "./types.js";
 import { validateField } from "../validation/index.js";
 import type { Field, FieldType } from "../spec/index.js";
 
+// ============================================================
+// Submit Value Conversion Helpers
+// ============================================================
+
+/** プリミティブ型（スカラー型）の集合 */
+const PRIMITIVE_TYPES = new Set([
+  "string",
+  "int32",
+  "float64",
+  "boolean",
+  "date",
+  "datetime",
+]);
+
+/** 型がスカラー（プリミティブ）かどうかを判定 */
+function isScalarType(type: string): boolean {
+  // "int32[]" のような配列型もスカラー配列
+  const baseType = type.replace("[]", "");
+  return PRIMITIVE_TYPES.has(baseType);
+}
+
+/** 型が配列かどうかを判定 */
+function isArrayType(type: string): boolean {
+  return type.endsWith("[]");
+}
+
+/**
+ * フィールドの送信値を変換する
+ *
+ * 送信仕様:
+ * - プリミティブ → そのまま
+ * - date → ISO date string
+ * - datetime → ISO datetime string
+ * - enum → そのまま
+ * - relation (スカラー型) → valueField で値を抽出
+ * - relation (Model型) → オブジェクトそのまま
+ * - nested → 子フィールドに再帰適用（FormVM では子 VM を持たないため as-is）
+ */
+function convertSubmitValue(field: FormFieldVM): unknown {
+  const { value, kind, type } = field;
+
+  if (value == null) return value;
+
+  // relation フィールド: 型でスカラー/オブジェクトを判定
+  if (kind === "relation" && field.relation) {
+    const vf = field.relation.valueField ?? "id";
+
+    if (isArrayType(type)) {
+      // 配列 relation
+      if (!Array.isArray(value)) return value;
+      if (isScalarType(type)) {
+        // スカラー配列: 各要素から valueField を抽出
+        return value.map((item) =>
+          typeof item === "object" && item !== null
+            ? (item as Record<string, unknown>)[vf]
+            : item,
+        );
+      }
+      // Model 配列: そのまま
+      return value;
+    }
+
+    // 単一 relation
+    if (isScalarType(type)) {
+      // スカラー: valueField で値を抽出
+      if (typeof value === "object" && value !== null) {
+        return (value as Record<string, unknown>)[vf];
+      }
+      return value;
+    }
+    // Model 型: そのまま
+    return value;
+  }
+
+  // date / datetime: ISO 文字列化
+  if (kind === "date" || kind === "datetime") {
+    if (value instanceof Date) {
+      return kind === "date"
+        ? value.toISOString().split("T")[0]
+        : value.toISOString();
+    }
+    // 既に文字列の場合はそのまま
+    return value;
+  }
+
+  // nested: そのまま（子の変換は UI 側の責務）
+  // プリミティブ / enum / その他: そのまま
+  return value;
+}
+
 /**
  * FormVM - Immutable ViewModel class for form views
  *
@@ -91,13 +181,13 @@ export class FormVM {
     );
   }
 
-  /** 送信可能なフィールドの値のみ取得（readonly・非表示を除外） */
+  /** 送信可能なフィールドの値のみ取得（readonly・非表示を除外、送信仕様に従い変換） */
   get submittableValues(): Record<string, unknown> {
     return this.data.fields
       .filter((f) => !f.readonly && f.visible !== false)
       .reduce(
         (acc, f) => {
-          acc[f.name] = f.value;
+          acc[f.name] = convertSubmitValue(f);
           return acc;
         },
         {} as Record<string, unknown>,
@@ -318,7 +408,7 @@ export class FormVM {
     const newFields = this.data.fields.map((f) => {
       const field: Field = {
         name: f.name,
-        type: f.kind as FieldType,
+        type: f.type,
         label: f.label,
         kind: f.kind,
         required: f.required,
@@ -340,7 +430,7 @@ export class FormVM {
       if (f.name !== name) return f;
       const field: Field = {
         name: f.name,
-        type: f.kind as FieldType,
+        type: f.type,
         label: f.label,
         kind: f.kind,
         required: f.required,

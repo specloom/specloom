@@ -11,6 +11,7 @@ const createFormVM = (overrides?: Partial<FormViewModel>): FormViewModel => ({
   fields: [
     {
       name: "title",
+      type: "string",
       label: "タイトル",
       kind: "text",
       value: "テスト記事",
@@ -20,6 +21,7 @@ const createFormVM = (overrides?: Partial<FormViewModel>): FormViewModel => ({
     },
     {
       name: "content",
+      type: "string",
       label: "本文",
       kind: "textarea",
       value: "本文です",
@@ -29,6 +31,7 @@ const createFormVM = (overrides?: Partial<FormViewModel>): FormViewModel => ({
     },
     {
       name: "status",
+      type: "string",
       label: "ステータス",
       kind: "enum",
       value: "draft",
@@ -38,6 +41,7 @@ const createFormVM = (overrides?: Partial<FormViewModel>): FormViewModel => ({
     },
     {
       name: "publishedAt",
+      type: "datetime",
       label: "公開日",
       kind: "datetime",
       value: new Date("2024-01-15T10:00:00Z"),
@@ -47,6 +51,7 @@ const createFormVM = (overrides?: Partial<FormViewModel>): FormViewModel => ({
     },
     {
       name: "empty",
+      type: "string",
       label: "空",
       kind: "text",
       value: null,
@@ -56,6 +61,7 @@ const createFormVM = (overrides?: Partial<FormViewModel>): FormViewModel => ({
     },
     {
       name: "blank",
+      type: "string",
       label: "空文字",
       kind: "text",
       value: "",
@@ -139,6 +145,7 @@ describe("Serialize", () => {
         fields: [
           {
             name: "tags",
+            type: "string[]",
             label: "タグ",
             kind: "tags",
             value: ["a", "b", "c"],
@@ -160,6 +167,7 @@ describe("Serialize", () => {
         fields: [
           {
             name: "author",
+            type: "User",
             label: "著者",
             kind: "relation",
             value: { id: "2", name: "鈴木" },

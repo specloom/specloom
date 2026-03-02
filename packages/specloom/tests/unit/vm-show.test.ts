@@ -15,10 +15,11 @@ const createShowVMData = (
   label: "投稿",
   id: "1",
   fields: [
-    { name: "id", label: "ID", kind: "text", value: "1" },
-    { name: "title", label: "タイトル", kind: "text", value: "テスト記事" },
+    { name: "id", type: "string", label: "ID", kind: "text", value: "1" },
+    { name: "title", type: "string", label: "タイトル", kind: "text", value: "テスト記事" },
     {
       name: "status",
+      type: "string",
       label: "ステータス",
       kind: "enum",
       value: "published",
@@ -29,6 +30,7 @@ const createShowVMData = (
     },
     {
       name: "author",
+      type: "User",
       label: "著者",
       kind: "relation",
       value: { id: "u1", name: "田中" },
@@ -36,12 +38,14 @@ const createShowVMData = (
     },
     {
       name: "viewCount",
+      type: "int32",
       label: "閲覧数",
       kind: "number",
       value: 1234,
     },
     {
       name: "isPublic",
+      type: "boolean",
       label: "公開",
       kind: "boolean",
       value: true,

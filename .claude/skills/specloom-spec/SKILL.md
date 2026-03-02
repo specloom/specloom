@@ -154,6 +154,11 @@ model Post {
 
 ### 3. Relation Field
 
+**TypeSpec の型が送信形式を決定します。**
+
+- **型が Model（`User`）** → オブジェクトそのまま送信
+- **型がスカラー（`int32`, `string`）** → `valueField`（デフォルト `"id"`）で値を抽出して送信
+
 ```typespec
 @S.resource
 @S.label("ユーザー")
@@ -168,7 +173,8 @@ model User {
 
 @S.resource
 model Post {
-  // Single relation
+  // オブジェクト埋め込み（型が Model → オブジェクトそのまま送信）
+  // 送信: { author: { id: "u1", name: "田中" } }
   @S.label("著者")
   @S.kind("relation")
   @S.relation(User, #{ labelField: "name" })
@@ -176,13 +182,35 @@ model Post {
   @S.required
   author: User;
 
-  // Multiple relations
+  // ID参照（型がスカラー → id を抽出して送信）
+  // 送信: { prefecture_id: 13 }
+  @S.label("都道府県")
+  @S.kind("relation")
+  @S.relation(Prefecture, #{ labelField: "name" })
+  prefecture_id: int32;
+
+  // valueField でID以外を抽出
+  // 送信: { prefecture_code: "13" }
+  @S.label("都道府県コード")
+  @S.kind("relation")
+  @S.relation(Prefecture, #{ labelField: "name", valueField: "code" })
+  prefecture_code: string;
+
+  // 複数 relation（Model配列 → オブジェクト配列）
+  // 送信: { tags: [{ id: 1, name: "tech" }, ...] }
   @S.label("タグ")
   @S.kind("relation")
   @S.relation(Tag, #{ labelField: "name" })
   @S.minItems(1)
   @S.maxItems(5)
   tags: Tag[];
+
+  // 複数 relation（スカラー配列 → ID配列）
+  // 送信: { tag_ids: [1, 2, 3] }
+  @S.label("タグID")
+  @S.kind("relation")
+  @S.relation(Tag, #{ labelField: "name" })
+  tag_ids: int32[];
 }
 ```
 
@@ -395,7 +423,7 @@ model UserShow {}
 | `@visibleWhen(expr)` | Conditional visibility (expression) |
 | `@requiredWhen(expr)` | Conditional required (expression) |
 | `@options([...])` | Enum options with labels |
-| `@relation(Model, opts)` | Relation config with labelField |
+| `@relation(Model, opts)` | Relation config: `labelField` (表示用), `valueField` (スカラー型の抽出キー, デフォルト "id") |
 | `@nested(Model, opts)` | Nested child resource for inline editing (auto-sets kind to "nested") |
 | `@ui({...})` | UI hints |
 | `@filter` | Make filterable |
@@ -711,7 +739,13 @@ model PostShow {}
 
 ### Submitting Form Data
 
-`FormVM.submittableValues` returns only editable, visible field values (excludes `readonly` and `visible: false` fields):
+`FormVM.submittableValues` returns API-ready values with automatic conversion:
+
+1. `readonly` / `visible: false` フィールドを除外
+2. **relation (スカラー型)** → `valueField` で値を抽出（デフォルト `"id"`）
+3. **relation (Model型)** → オブジェクトそのまま
+4. **date** → ISO date string (`YYYY-MM-DD`)
+5. **datetime** → ISO datetime string (`YYYY-MM-DDTHH:mm:ssZ`)
 
 ```typescript
 import { createAdmin, parseSpec } from 'specloom'
@@ -726,26 +760,48 @@ const form = admin.form('Post', { mode: 'create', data: initialValues })
 const updated = form
   .setValue('title', 'Hello')
   .setValue('status', 'draft')
+  .setValue('author', { id: 'u1', name: '田中' })        // Model型 relation
+  .setValue('prefecture_id', { id: 13, name: '東京' })    // スカラー型 relation
   .validate()
 
 if (updated.canSubmit) {
-  // submittableValues excludes readonly fields (id, createdAt, etc.)
+  // submittableValues は送信仕様に従い自動変換
+  const body = updated.submittableValues
+  // => {
+  //   title: "Hello",
+  //   status: "draft",
+  //   author: { id: "u1", name: "田中" },   // Model型 → そのまま
+  //   prefecture_id: 13,                      // スカラー型 → id 抽出
+  // }
   await fetch('/api/posts', {
     method: 'POST',
-    body: JSON.stringify(updated.submittableValues),
+    body: JSON.stringify(body),
   })
 }
 
-// All values (including readonly) - use `values` instead
+// All values (including readonly, no conversion) - use `values` instead
 const allValues = form.values
 ```
+
+### Submit Value Conversion Rules
+
+| フィールドの型 | 送信値 |
+|---------------|--------|
+| プリミティブ（string, int32, float64, boolean） | そのまま |
+| date / datetime | ISO 文字列 |
+| enum | 文字列そのまま |
+| Model 型（relation） | オブジェクトそのまま |
+| スカラー型（relation） | `valueField` で抽出したスカラー値 |
+| Model[] 型（relation） | オブジェクト配列 |
+| スカラー[] 型（relation） | `valueField` で抽出した配列 |
+| nested | 子フィールドに同じルールを再帰適用 |
 
 ### Key FormVM Properties
 
 | Property / Method | Description |
 |-------------------|-------------|
-| `values` | All field values as `{ name: value }` |
-| `submittableValues` | Editable + visible field values only |
+| `values` | All field values as `{ name: value }` (no conversion) |
+| `submittableValues` | API-ready values with type-based conversion |
 | `visibleFields` | Fields where `visible !== false` |
 | `requiredFields` | Fields where `required === true` |
 | `readonlyFields` | Fields where `readonly === true` |
@@ -762,6 +818,8 @@ Before completing a spec:
 - [ ] Required fields have `@required`
 - [ ] Enum fields have `@kind("enum")` and `@options`
 - [ ] Relation fields have `@kind("relation")` and `@relation`
+- [ ] Relation の TypeSpec 型がスカラー（`int32` 等）か Model かで送信形式が決まることを確認
+- [ ] スカラー型 relation で `id` 以外を抽出する場合は `valueField` を指定
 - [ ] Nested fields have `@nested(ChildModel)` with optional `min`/`max` constraints
 - [ ] List views have `@columns`, `@action(id, opts)` for page actions, `@rowAction(id, opts)` for row actions
 - [ ] Bulk actions have `selection: "selected"` or `selection: "query"` in options

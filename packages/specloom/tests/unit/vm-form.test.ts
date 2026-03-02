@@ -13,6 +13,7 @@ const createFormVMData = (
   fields: [
     {
       name: "title",
+      type: "string",
       label: "タイトル",
       kind: "text",
       value: "テスト記事",
@@ -25,6 +26,7 @@ const createFormVMData = (
     },
     {
       name: "content",
+      type: "string",
       label: "本文",
       kind: "textarea",
       value: "本文です",
@@ -35,6 +37,7 @@ const createFormVMData = (
     },
     {
       name: "status",
+      type: "string",
       label: "ステータス",
       kind: "enum",
       value: "draft",
@@ -49,6 +52,7 @@ const createFormVMData = (
     },
     {
       name: "createdAt",
+      type: "datetime",
       label: "作成日",
       kind: "datetime",
       value: "2024-01-01",
@@ -152,6 +156,7 @@ describe("FormVM (OOP Style)", () => {
         fields: [
           {
             name: "name",
+            type: "string",
             label: "名前",
             kind: "text",
             value: "Alice",
@@ -162,6 +167,7 @@ describe("FormVM (OOP Style)", () => {
           },
           {
             name: "secret",
+            type: "string",
             label: "秘密",
             kind: "text",
             value: "hidden",
@@ -223,6 +229,7 @@ describe("FormVM (OOP Style)", () => {
         fields: [
           {
             name: "title",
+            type: "string",
             label: "タイトル",
             kind: "text",
             value: "test",
@@ -452,6 +459,7 @@ describe("FormVM (OOP Style)", () => {
           fields: [
             {
               name: "email",
+              type: "string",
               label: "メール",
               kind: "email",
               value: "",
@@ -473,6 +481,7 @@ describe("FormVM (OOP Style)", () => {
           fields: [
             {
               name: "title",
+              type: "string",
               label: "タイトル",
               kind: "text",
               value: "",
@@ -482,6 +491,7 @@ describe("FormVM (OOP Style)", () => {
             },
             {
               name: "content",
+              type: "string",
               label: "本文",
               kind: "text",
               value: "",

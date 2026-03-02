@@ -3,6 +3,7 @@
 // ============================================================
 
 import type {
+  FieldType,
   FieldKind,
   FieldUI,
   ActionUI,
@@ -149,6 +150,7 @@ export interface ShowViewModel {
 
 export interface ShowFieldVM {
   name: string;
+  type: FieldType;
   label: string;
   kind: FieldKind;
   value: unknown;
@@ -182,6 +184,7 @@ export interface FormViewModel {
 
 export interface FormFieldVM {
   name: string;
+  type: FieldType;
   label: string;
   kind: FieldKind;
   value: unknown;
