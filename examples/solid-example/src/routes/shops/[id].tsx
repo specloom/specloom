@@ -1,20 +1,28 @@
+import { createResource, Suspense } from "solid-js";
 import { useParams } from "@solidjs/router";
-import { SidebarTrigger } from "~/components/ui/sidebar";
-import { Separator } from "~/components/ui/separator";
+import { MainLayout } from "~/components/MainLayout";
+import { ResourceShow } from "~/components/vm/ResourceShow";
+import { admin, dataProvider } from "~/lib/admin";
 
 export default function ShopDetail() {
   const params = useParams<{ id: string }>();
 
+  const [data] = createResource(
+    () => params.id,
+    (id) => dataProvider.getOne<Record<string, unknown>>("Shop", { id }),
+  );
+
+  const vm = () => {
+    const d = data();
+    if (!d) return undefined;
+    return admin.show("Shop", { data: d });
+  };
+
   return (
-    <>
-      <header class="flex h-14 shrink-0 items-center gap-2 border-b px-4">
-        <SidebarTrigger class="-ml-1" />
-        <Separator orientation="vertical" class="mr-2 h-4" />
-        <h1 class="text-lg font-semibold">Shop Detail: {params.id}</h1>
-      </header>
-      <div class="flex-1 p-4">
-        <p class="text-muted-foreground">Shop detail will go here.</p>
-      </div>
-    </>
+    <MainLayout title="店舗詳細">
+      <Suspense>
+        {vm() && <ResourceShow vm={vm()!} basePath="/shops" />}
+      </Suspense>
+    </MainLayout>
   );
 }

@@ -12,6 +12,7 @@ import {
   Switch,
   useContext
 } from "solid-js"
+import { isServer } from "solid-js/web"
 
 import type { PolymorphicProps } from "@kobalte/core"
 import { Polymorphic } from "@kobalte/core"
@@ -60,6 +61,7 @@ export function useIsMobile(fallback = false) {
   const [isMobile, setIsMobile] = createSignal(fallback)
 
   createEffect(() => {
+    if (isServer) return
     const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
     const onChange = (e: MediaQueryListEvent | MediaQueryList) => {
       setIsMobile(e.matches)
@@ -104,7 +106,9 @@ const SidebarProvider: Component<SidebarProviderProps> = (rawProps) => {
     _setOpen(value)
 
     // This sets the cookie to keep the sidebar state.
-    document.cookie = `${SIDEBAR_COOKIE_NAME}=${open()}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+    if (!isServer) {
+      document.cookie = `${SIDEBAR_COOKIE_NAME}=${open()}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+    }
   }
 
   // Helper to toggle the sidebar.
@@ -114,6 +118,7 @@ const SidebarProvider: Component<SidebarProviderProps> = (rawProps) => {
 
   // Adds a keyboard shortcut to toggle the sidebar.
   createEffect(() => {
+    if (isServer) return
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === SIDEBAR_KEYBOARD_SHORTCUT && (event.metaKey || event.ctrlKey)) {
         event.preventDefault()
@@ -179,8 +184,9 @@ const Sidebar: Component<SidebarProps> = (rawProps) => {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
 
   return (
-    <Switch>
-      <Match when={local.collapsible === "none"}>
+    <Show
+      when={local.collapsible !== "none"}
+      fallback={
         <div
           class={cn(
             "test w-(--sidebar-width) flex h-full flex-col bg-sidebar text-sidebar-foreground",
@@ -190,8 +196,10 @@ const Sidebar: Component<SidebarProps> = (rawProps) => {
         >
           {local.children}
         </div>
-      </Match>
-      <Match when={isMobile()}>
+      }
+    >
+      {/* Mobile sidebar (Sheet) - only rendered on client */}
+      <Show when={!isServer && isMobile()}>
         <Sheet open={openMobile()} onOpenChange={setOpenMobile} {...others}>
           <SheetContent
             data-sidebar="sidebar"
@@ -205,8 +213,9 @@ const Sidebar: Component<SidebarProps> = (rawProps) => {
             <div class="flex size-full flex-col">{local.children}</div>
           </SheetContent>
         </Sheet>
-      </Match>
-      <Match when={!isMobile()}>
+      </Show>
+      {/* Desktop sidebar - always rendered (hidden via CSS on mobile) */}
+      <Show when={isServer || !isMobile()}>
         <div
           class="group peer hidden md:block"
           data-state={state()}
@@ -247,8 +256,8 @@ const Sidebar: Component<SidebarProps> = (rawProps) => {
             </div>
           </div>
         </div>
-      </Match>
-    </Switch>
+      </Show>
+    </Show>
   )
 }
 

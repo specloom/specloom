@@ -1,20 +1,38 @@
-import { useParams } from "@solidjs/router";
-import { SidebarTrigger } from "~/components/ui/sidebar";
-import { Separator } from "~/components/ui/separator";
+import { createResource, Suspense } from "solid-js";
+import { useNavigate, useParams } from "@solidjs/router";
+import { MainLayout } from "~/components/MainLayout";
+import { ResourceForm } from "~/components/vm/ResourceForm";
+import { admin, dataProvider } from "~/lib/admin";
 
 export default function ShopEdit() {
   const params = useParams<{ id: string }>();
+  const navigate = useNavigate();
+
+  const [data] = createResource(
+    () => params.id,
+    (id) => dataProvider.getOne<Record<string, unknown>>("Shop", { id }),
+  );
+
+  const vm = () => {
+    const d = data();
+    if (!d) return undefined;
+    return admin.form("Shop", { mode: "edit", data: d });
+  };
 
   return (
-    <>
-      <header class="flex h-14 shrink-0 items-center gap-2 border-b px-4">
-        <SidebarTrigger class="-ml-1" />
-        <Separator orientation="vertical" class="mr-2 h-4" />
-        <h1 class="text-lg font-semibold">Edit Shop: {params.id}</h1>
-      </header>
-      <div class="flex-1 p-4">
-        <p class="text-muted-foreground">Edit shop form will go here.</p>
-      </div>
-    </>
+    <MainLayout title="店舗編集">
+      <Suspense>
+        {vm() && (
+          <ResourceForm
+            vm={vm()!}
+            basePath="/shops"
+            onSubmit={async (values) => {
+              await dataProvider.update("Shop", { id: params.id, data: values });
+              navigate(`/shops/${params.id}`);
+            }}
+          />
+        )}
+      </Suspense>
+    </MainLayout>
   );
 }

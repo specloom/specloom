@@ -35,6 +35,7 @@ No test or lint scripts are configured in this package.
 ## Conventions
 
 - UI components follow the solid-ui pattern: Kobalte primitive + CVA variants + `cn()` from `~/lib/utils` (wraps `clsx` + `tailwind-merge`)
+- **UI コンポーネントは手書きしない** — 必ず `npx solidui-cli@latest add <component> -o` (CLI + `-o` で上書き) を使って追加する
 - Route pages include a consistent header pattern: `SidebarTrigger` + `Separator` + page title inside a `header` element
 - The `specloom` workspace package is a dependency — import types and evaluator from it
 

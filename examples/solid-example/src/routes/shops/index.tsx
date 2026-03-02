@@ -1,17 +1,39 @@
-import { SidebarTrigger } from "~/components/ui/sidebar";
-import { Separator } from "~/components/ui/separator";
+import { createResource, Suspense } from "solid-js";
+import { MainLayout } from "~/components/MainLayout";
+import { ResourceList } from "~/components/vm/ResourceList";
+import { admin, dataProvider } from "~/lib/admin";
+import { createListParams } from "~/lib/createListParams";
 
 export default function ShopList() {
+  const { params, setPage, setSort } = createListParams({
+    sort: { field: "name", order: "asc" },
+  });
+
+  const [result] = createResource(params, (p) =>
+    dataProvider.getList<Record<string, unknown>>("Shop", p),
+  );
+
+  const vm = () => {
+    const r = result();
+    if (!r) return undefined;
+    return admin.list("Shop", { data: r.data });
+  };
+
   return (
-    <>
-      <header class="flex h-14 shrink-0 items-center gap-2 border-b px-4">
-        <SidebarTrigger class="-ml-1" />
-        <Separator orientation="vertical" class="mr-2 h-4" />
-        <h1 class="text-lg font-semibold">Shops</h1>
-      </header>
-      <div class="flex-1 p-4">
-        <p class="text-muted-foreground">Shop list will go here.</p>
-      </div>
-    </>
+    <MainLayout title="店舗">
+      <Suspense>
+        {vm() && (
+          <ResourceList
+            vm={vm()!}
+            basePath="/shops"
+            total={result()?.total}
+            page={params().pagination.page}
+            perPage={params().pagination.perPage}
+            onPageChange={setPage}
+            onSortChange={setSort}
+          />
+        )}
+      </Suspense>
+    </MainLayout>
   );
 }

@@ -18,6 +18,7 @@
     "nitro": "3.0.1-alpha.2",
     "solid-js": "^1.9.5",
     "solid-sonner": "^0.2.8",
+    "@specloom/data-provider": "workspace:^",
     "specloom": "workspace:^",
     "tailwind-merge": "^3.5.0",
     "tailwindcss-animate": "^1.0.7",
