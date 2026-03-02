@@ -134,63 +134,53 @@ model Post {
 @S.defaultSort("createdAt", "desc")
 @S.selection("multi")
 @S.clickAction("show")
-model PostList {
-  @S.action("create")
-  @S.label("新規作成")
-  @S.allowedWhen("role == 'admin' || role == 'editor'")
-  @S.ui(#{ icon: "plus", variant: "primary" })
-  create: never;
-
-  @S.rowAction("edit")
-  @S.label("編集")
-  @S.allowedWhen("role == 'admin' || role == 'editor'")
-  @S.ui(#{ icon: "pencil" })
-  edit: never;
-
-  @S.rowAction("delete")
-  @S.label("削除")
-  @S.allowedWhen("role == 'admin'")
-  @S.confirm("本当に削除しますか？")
-  @S.ui(#{ icon: "trash", variant: "danger" })
-  delete: never;
-
-  @S.action("bulkDelete")
-  @S.label("一括削除")
-  @S.requiresSelection("selected")
-  @S.allowedWhen("role == 'admin'")
-  @S.confirm("選択した項目を削除しますか？")
-  bulkDelete: never;
-}
+@S.action("create", #{
+  label: "新規作成",
+  allowedWhen: "role == 'admin' || role == 'editor'",
+  ui: #{ icon: "plus", variant: "primary" }
+})
+@S.action("bulkDelete", #{
+  label: "一括削除",
+  selection: "selected",
+  allowedWhen: "role == 'admin'",
+  confirm: "選択した項目を削除しますか？"
+})
+@S.rowAction("edit", #{
+  label: "編集",
+  allowedWhen: "role == 'admin' || role == 'editor'",
+  ui: #{ icon: "pencil" }
+})
+@S.rowAction("delete", #{
+  label: "削除",
+  allowedWhen: "role == 'admin'",
+  confirm: "本当に削除しますか？",
+  ui: #{ icon: "trash", variant: "danger" }
+})
+model PostList {}
 
 @S.view(Post, "form")
 @S.fields(#["title", "body", "status", "priority", "category", "author", "tags"])
-model PostForm {
-  @S.action("save")
-  @S.label("保存")
-  @S.ui(#{ icon: "check", variant: "primary" })
-  save: never;
-
-  @S.action("cancel")
-  @S.label("キャンセル")
-  cancel: never;
-}
+@S.action("save", #{
+  label: "保存",
+  ui: #{ icon: "check", variant: "primary" }
+})
+@S.action("cancel", #{ label: "キャンセル" })
+model PostForm {}
 
 @S.view(Post, "show")
 @S.fields(#["title", "body", "status", "priority", "category", "author", "tags", "createdAt"])
-model PostShow {
-  @S.action("edit")
-  @S.label("編集")
-  @S.allowedWhen("role == 'admin' || role == 'editor'")
-  @S.ui(#{ icon: "pencil" })
-  edit: never;
-
-  @S.action("delete")
-  @S.label("削除")
-  @S.allowedWhen("role == 'admin'")
-  @S.confirm("本当に削除しますか？")
-  @S.ui(#{ icon: "trash", variant: "danger" })
-  delete: never;
-}
+@S.action("edit", #{
+  label: "編集",
+  allowedWhen: "role == 'admin' || role == 'editor'",
+  ui: #{ icon: "pencil" }
+})
+@S.action("delete", #{
+  label: "削除",
+  allowedWhen: "role == 'admin'",
+  confirm: "本当に削除しますか？",
+  ui: #{ icon: "trash", variant: "danger" }
+})
+model PostShow {}
 
 // ============================================================
 // Dialog Model for Password Change
@@ -217,22 +207,11 @@ model ChangePasswordDialog {
 
 @S.view(User, "show")
 @S.fields(#["name"])
-model UserShow {
-  @S.action("edit")
-  @S.label("編集")
-  edit: never;
-
-  @S.action("changePassword")
-  @S.label("パスワード変更")
-  @S.ui(#{ icon: "key" })
-  @S.dialog(ChangePasswordDialog, #{
-    title: "パスワード変更",
-    description: "新しいパスワードを入力してください（8文字以上）"
-  })
-  @S.api(#{
-    path: "/{id}/password",
-    method: "PUT",
-    body: #["password"]
-  })
-  changePassword: never;
-}
+@S.action("edit", #{ label: "編集" })
+@S.action("changePassword", #{
+  label: "パスワード変更",
+  ui: #{ icon: "key" },
+  dialog: #{ title: "パスワード変更", description: "新しいパスワードを入力してください（8文字以上）" },
+  api: #{ path: "/{id}/password", method: "PUT", body: #["password"] }
+}, ChangePasswordDialog)
+model UserShow {}

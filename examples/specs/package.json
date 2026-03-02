@@ -1,0 +1,13 @@
+{
+  "name": "@specloom/example-specs",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Example TypeSpec specs for specloom features",
+  "devDependencies": {
+    "@typespec/compiler": "^0.64.0",
+    "@specloom/typespec": "workspace:*"
+  },
+  "scripts": {
+    "build": "tsp compile ."
+  }
+}
