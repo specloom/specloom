@@ -12,10 +12,11 @@ import type {
   FieldValidation,
   FilterExpression,
   Relation,
+  Nested,
 } from "../spec/index.js";
 
 // Re-export shared types
-export type { FieldUI, ActionUI, Option, FieldValidation, FilterExpression };
+export type { FieldUI, ActionUI, Option, FieldValidation, FilterExpression, Nested };
 
 /**
  * 評価コンテキスト
@@ -155,6 +156,7 @@ export interface ShowFieldVM {
   ui?: FieldUI;
   options?: Option[];
   relation?: Relation;
+  nested?: Nested;
 }
 
 // ============================================================
@@ -191,6 +193,7 @@ export interface FormFieldVM {
   ui?: FieldUI;
   options?: Option[];
   relation?: Relation;
+  nested?: Nested;
   // 追加
   visible?: boolean;
   hint?: string;

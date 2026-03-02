@@ -287,6 +287,27 @@ export function $relation(
 }
 
 /**
+ * @nested - Define nested (owned) child resource for inline editing
+ */
+export function $nested(
+  context: DecoratorContext,
+  target: ModelProperty,
+  resource: Model,
+  options?: unknown,
+) {
+  const extracted = extractValue(options) as
+    | { min?: number; max?: number }
+    | undefined;
+  context.program.stateMap(StateKeys.nested).set(target, {
+    resource: resource.name,
+    min: extracted?.min,
+    max: extracted?.max,
+  });
+  // Auto-set kind to "nested"
+  context.program.stateMap(StateKeys.kind).set(target, "nested");
+}
+
+/**
  * @cardinality - Legacy alias of @relation(..., #{ cardinality: ... }) intent
  */
 export function $cardinality(
@@ -1036,6 +1057,15 @@ export function getMatch(
   target: ModelProperty,
 ): string | undefined {
   return program.stateMap(StateKeys.match).get(target);
+}
+
+export function getNested(
+  program: DecoratorContext["program"],
+  target: ModelProperty,
+):
+  | { resource: string; min?: number; max?: number }
+  | undefined {
+  return program.stateMap(StateKeys.nested).get(target);
 }
 
 // ============================================================

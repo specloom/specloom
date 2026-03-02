@@ -70,74 +70,41 @@ model Post {
 | radio | 少数の選択肢（3〜5件） | false |
 | autocomplete | 検索して選ぶ | true |
 | modal | 一覧から選ぶ | true |
-| inline | 子リソースをインライン編集 | - |
+
+> 子リソースをインライン編集する場合は [@nested](./nested.md) を使用してください。
 
 ### 選択肢の取得
 
 - `searchable: true` → UI が検索 API を叩く
 - `searchable: false` → VM に選択肢が含まれる
 
-## インラインリレーション
+## Nested フィールド
 
-`inputHint: "inline"` を使うと、子リソースのレコードを親フォーム内で追加・編集・削除できます。
-
-子リソースに定義された form view の `@fields` がインラインフォームのカラム構成になります。新しいデコレータは不要で、既存の仕組みの組み合わせで実現します。
+`@nested` を使うと、子リソースのレコードを親フォーム内で追加・編集・削除できます。
 
 ```typespec
-// 子リソース
-@S.resource
-@S.label("注文明細")
 model OrderItem {
-  @S.readonly id: string;
   @S.label("商品") @S.kind("relation") @S.relation(Product, #{ labelField: "name" }) @S.required
   product: Product;
   @S.label("数量") @S.kind("number") @S.required @S.min(1)
   quantity: int32;
-  @S.label("単価") @S.kind("number") @S.readonly @S.ui(#{ format: "currency" })
-  unitPrice: int32;
 }
 
-// 子リソースのフォーム → インライン編集のカラム構成になる
-@S.view(OrderItem, "form")
-@S.fields(["product", "quantity"])
-model OrderItemForm {}
-
-// 親リソース
 @S.resource
 @S.label("注文")
 model Order {
   // ...
   @S.label("注文明細")
-  @S.kind("relation")
-  @S.relation(OrderItem, #{ labelField: "product" })
-  @S.ui(#{ inputHint: "inline" })
-  @S.minItems(1)
+  @S.nested(OrderItem, #{ min: 1, max: 50 })
   items: OrderItem[];
 }
 
-// 親フォームに items を含めるだけ
 @S.view(Order, "form")
 @S.fields(["customer", "items"])
 model OrderForm {}
 ```
 
-UI はこのように描画します：
-
-```
-注文フォーム
-├── 顧客: [検索して選択]
-├── 注文明細:
-│   ┌──────────┬──────┐
-│   │ 商品     │ 数量 │
-│   ├──────────┼──────┤
-│   │ [選択]   │ [2]  │  [削除]
-│   │ [選択]   │ [1]  │  [削除]
-│   └──────────┴──────┘
-│   [+ 明細を追加]
-└── [保存] [キャンセル]
-```
-
-詳細は [Relation](./relation.md#インラインリレーション) を参照。
+詳細は [Nested](./nested.md) を参照。
 
 ## Actions
 

@@ -209,6 +209,7 @@ function toShowFieldVM(
     ui: field.ui,
     options: field.options,
     relation: field.relation,
+    nested: field.nested,
   };
 }
 
@@ -247,6 +248,7 @@ function toFormFieldVM(
     ui: field.ui,
     options: field.options,
     relation: field.relation,
+    nested: field.nested,
   };
 }
 

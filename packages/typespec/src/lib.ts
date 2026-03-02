@@ -28,6 +28,7 @@ export const $lib = createTypeSpecLibrary({
     kind: { description: "State for @kind decorator" },
     options: { description: "State for @options decorator" },
     relation: { description: "State for @relation decorator" },
+    nested: { description: "State for @nested decorator" },
     cardinality: { description: "State for @cardinality decorator" },
     ui: { description: "State for @ui decorator" },
     readonly: { description: "State for @readonly decorator" },

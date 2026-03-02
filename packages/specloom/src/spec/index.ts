@@ -56,6 +56,7 @@ export type FieldKind =
   | "enum"
   | "status"
   | "relation"
+  | "nested"
   | "file"
   | "image"
   | "json"
@@ -74,6 +75,7 @@ export interface Field {
   /** フィルター可能設定。true=全演算子許可、配列=許可演算子 */
   filter?: true | FilterOperator[];
   relation?: Relation;
+  nested?: Nested;
   ui?: FieldUI;
   /** 条件付き表示（式が true の場合のみ表示） */
   visibleWhen?: string;
@@ -104,6 +106,12 @@ export interface Relation {
   valueField?: string;
   searchable?: boolean;
   cardinality?: "one" | "many";
+}
+
+export interface Nested {
+  resource: string;
+  min?: number;
+  max?: number;
 }
 
 export interface FieldUI {

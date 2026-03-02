@@ -14,6 +14,7 @@ This skill helps you write admin UI specifications using TypeSpec for the speclo
 - Adding actions with permissions
 - Setting up field validations
 - Configuring relations between resources
+- Defining nested (inline-editable) child resources
 - Creating named filters
 
 ## Project Setup
@@ -185,7 +186,60 @@ model Post {
 }
 ```
 
-### 4. List View
+### 4. Nested Field (Inline Editing)
+
+子リソースを親フォーム内でインライン編集する場合は `@nested` を使います。`@relation` が「既存レコードの参照」であるのに対し、`@nested` は「子レコードの所有・編集」を意味します。
+
+```typespec
+// 子モデル（@resource なしでも可）
+model OrderItem {
+  @S.label("商品")
+  @S.kind("relation")
+  @S.relation(Product, #{ labelField: "name" })
+  @S.required
+  product: Product;
+
+  @S.label("数量")
+  @S.kind("number")
+  @S.required
+  @S.min(1)
+  quantity: int32;
+
+  @S.label("単価")
+  @S.kind("number")
+  @S.readonly
+  @S.ui(#{ format: "currency" })
+  unitPrice: int32;
+}
+
+@S.resource
+@S.label("注文")
+model Order {
+  @S.readonly id: string;
+
+  // relation = 既存レコードを選ぶ
+  @S.label("顧客")
+  @S.kind("relation")
+  @S.relation(Customer, #{ labelField: "name" })
+  @S.ui(#{ inputHint: "autocomplete" })
+  @S.required
+  customer: Customer;
+
+  // nested = 子レコードをインライン編集
+  @S.label("注文明細")
+  @S.nested(OrderItem, #{ min: 1, max: 50 })
+  items: OrderItem[];
+}
+
+@S.view(Order, "form")
+@S.fields(#["customer", "items"])
+@S.action("save", #{ label: "保存" })
+model OrderForm {}
+```
+
+`@nested` を付けると `@kind("nested")` は自動設定されます。編集フィールドは子の form view があればそれを使い、なければ `@readonly`/`@computed` を除外して自動判定します。
+
+### 5. List View
 
 ```typespec
 @S.view(Post, "list")
@@ -223,7 +277,7 @@ model Post {
 model PostList {}
 ```
 
-### 5. Form View
+### 6. Form View
 
 ```typespec
 @S.view(Post, "form")
@@ -236,7 +290,7 @@ model PostList {}
 model PostForm {}
 ```
 
-### 6. Show View
+### 7. Show View
 
 ```typespec
 @S.view(Post, "show")
@@ -255,7 +309,7 @@ model PostForm {}
 model PostShow {}
 ```
 
-### 7. Action with Dialog (Form Input)
+### 8. Action with Dialog (Form Input)
 
 ダイアログでユーザー入力を受け取るアクション（例: パスワード変更）を定義できます。
 
@@ -342,6 +396,7 @@ model UserShow {}
 | `@requiredWhen(expr)` | Conditional required (expression) |
 | `@options([...])` | Enum options with labels |
 | `@relation(Model, opts)` | Relation config with labelField |
+| `@nested(Model, opts)` | Nested child resource for inline editing (auto-sets kind to "nested") |
 | `@ui({...})` | UI hints |
 | `@filter` | Make filterable |
 | `@filter([ops])` | Filterable with specific operators |
@@ -707,6 +762,7 @@ Before completing a spec:
 - [ ] Required fields have `@required`
 - [ ] Enum fields have `@kind("enum")` and `@options`
 - [ ] Relation fields have `@kind("relation")` and `@relation`
+- [ ] Nested fields have `@nested(ChildModel)` with optional `min`/`max` constraints
 - [ ] List views have `@columns`, `@action(id, opts)` for page actions, `@rowAction(id, opts)` for row actions
 - [ ] Bulk actions have `selection: "selected"` or `selection: "query"` in options
 - [ ] Form views have `@fields` and save/cancel actions
