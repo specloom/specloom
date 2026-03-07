@@ -16,7 +16,9 @@
   },
   "references": [
     { "path": "./packages/specloom" },
+    { "path": "./packages/specloom2" },
     { "path": "./packages/typespec" },
+    { "path": "./packages/typespec2" },
     { "path": "./packages/auth-provider" },
     { "path": "./packages/data-provider" },
   ],
