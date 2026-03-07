@@ -1,4 +1,21 @@
 import {
+  parseExpression,
+  type CompiledAction,
+  type CompiledColumn,
+  type CompiledField,
+  type CompiledFieldType,
+  type CompiledInput,
+  type CompiledListView,
+  type CompiledNamedFilter,
+  type CompiledRecordView,
+  type CompiledResource,
+  type CompiledRule,
+  type CompiledSection,
+  type CompiledSpecV2,
+  type ExpressionAst,
+  type FilterExpression,
+} from "@specloom/spec";
+import {
   emitFile,
   getMaxItems as getMaxItemsStd,
   getMaxLength as getMaxLengthStd,
@@ -46,264 +63,6 @@ import {
   type RuleDef,
   type SectionDef,
 } from "./decorators.js";
-import { parseExpression, type ExpressionAst } from "./expression.js";
-
-interface CompiledSpecV2 {
-  version: "2";
-  resources: Record<string, CompiledResource>;
-  inputs?: Record<string, CompiledInput>;
-}
-
-interface CompiledResource {
-  name: string;
-  meta: {
-    label: string;
-    pluralLabel?: string;
-    titleField?: string;
-    pageSize?: number;
-    client?: Record<string, unknown>;
-  };
-  fields: Record<string, CompiledField>;
-  views: {
-    list: CompiledListView;
-    form: CompiledRecordView;
-    show: CompiledRecordView;
-  };
-  rules: CompiledRule[];
-}
-
-interface CompiledInput {
-  name: string;
-  label?: string;
-  fields: Record<string, CompiledField>;
-  form: {
-    sections: CompiledSection[];
-  };
-  rules: CompiledRule[];
-}
-
-interface CompiledField {
-  name: string;
-  type: CompiledFieldType;
-  key?: boolean;
-  hidden?: boolean;
-  computed?: boolean;
-  createOnly?: boolean;
-  ui: {
-    label?: string;
-    widget?: string;
-    appearance?: string;
-    section?: string;
-    order?: number;
-    visibleIn: {
-      list: boolean;
-      show: boolean;
-      form: boolean;
-    };
-    readonly?: boolean;
-    placeholder?: string;
-    help?: string;
-    defaultValue?: unknown;
-    format?: string;
-    emptyText?: string;
-    display?: {
-      list?: {
-        field?: string;
-        template?: string;
-      };
-      show?: {
-        field?: string;
-        template?: string;
-      };
-    };
-    placement?: {
-      list?: string;
-      show?: string;
-      form?: string;
-    };
-    client?: Record<string, unknown>;
-  };
-  validation?: {
-    minLength?: number;
-    maxLength?: number;
-    pattern?: string;
-    minItems?: number;
-    maxItems?: number;
-    match?: string;
-  };
-  rules?: {
-    visibleWhen?: ExpressionAst;
-    requiredWhen?: ExpressionAst;
-    readonlyWhen?: ExpressionAst;
-    disabledWhen?: ExpressionAst;
-  };
-  options?: { value: string | number | boolean; label: string }[];
-  optionsSource?: {
-    resource?: string;
-    op?: string;
-    labelField: string;
-    valueField: string;
-    searchFields?: string[];
-  };
-  filter?: {
-    operators: string[];
-    widget?: string;
-    order?: number;
-    placement?: "toolbar" | "advanced";
-    defaultValue?: unknown;
-  };
-  relation?: {
-    resource: string;
-    kind: "belongsTo" | "hasOne" | "hasMany" | "manyToMany";
-    cardinality: "one" | "many";
-    labelField: string;
-    valueField: string;
-    submitField?: string;
-    searchFields?: string[];
-    lookupResource?: string;
-    lookupOp?: string;
-    linkTo?: "show" | "edit" | "none";
-    creatable?: boolean;
-    client?: Record<string, unknown>;
-  };
-  nested?: {
-    resource: string;
-    cardinality: "one" | "many";
-    minItems?: number;
-    maxItems?: number;
-    widget?: "inline-form" | "table" | "cards";
-    maxDepth: 3;
-  };
-  submit: {
-    field: string;
-    shape: "self" | "scalar" | "scalar[]" | "object" | "object[]";
-    valueField?: string;
-  };
-}
-
-type CompiledFieldType =
-  | { kind: "scalar"; name: string; nullable?: boolean; array?: boolean }
-  | { kind: "enum"; name: string; nullable?: boolean; array?: boolean }
-  | {
-      kind: "relation";
-      resource: string;
-      cardinality: "one" | "many";
-      storage: "scalar" | "object";
-    }
-  | { kind: "nested"; resource: string; cardinality: "one" | "many" };
-
-interface CompiledListView {
-  enabled: boolean;
-  columns: CompiledColumn[];
-  search?: {
-    fields: string[];
-  };
-  sortable: string[];
-  defaultSort?: {
-    field: string;
-    direction: "asc" | "desc";
-  };
-  selection: "none" | "single" | "multi";
-  clickAction: "none" | "show" | "edit";
-  namedFilters: CompiledNamedFilter[];
-  pageActions: CompiledAction[];
-  rowActions: CompiledAction[];
-}
-
-interface CompiledColumn {
-  field: string;
-  label: string;
-  template?: string;
-  sortable: boolean;
-  order?: number;
-  placement?: string;
-}
-
-interface CompiledNamedFilter {
-  id: string;
-  label: string;
-  order?: number;
-  where: FilterExpression;
-}
-
-interface CompiledRecordView {
-  enabled: boolean;
-  sections: CompiledSection[];
-  pageActions: CompiledAction[];
-}
-
-interface CompiledSection {
-  id: string;
-  label: string;
-  view: "form" | "show";
-  order?: number;
-  placement?: string;
-  collapsible?: boolean;
-  defaultCollapsed?: boolean;
-  fields: string[];
-}
-
-interface CompiledAction {
-  id: string;
-  kind: "page" | "row";
-  view: "list" | "show" | "form";
-  resource: string;
-  label: string;
-  placement?: string;
-  order?: number;
-  icon?: string;
-  prominence?: "primary" | "secondary" | "subtle" | "danger";
-  confirmMessage?: string;
-  selection?: "none" | "selected" | "query";
-  args?: Record<string, unknown>;
-  input?: string;
-  when?: ExpressionAst;
-  disabledWhen?: ExpressionAst;
-  operation: {
-    id: string;
-    method: string;
-    path: string;
-    inputModel?: string;
-    outputModel?: string;
-  };
-  client?: Record<string, unknown>;
-}
-
-interface CompiledRule {
-  kind:
-    | "requireOneOf"
-    | "comparison"
-    | "requiredIf"
-    | "mutuallyExclusive"
-    | "requiredTogether";
-  fields?: string[];
-  field?: string;
-  left?: string;
-  right?: string;
-  operator?: string;
-  when?: ExpressionAst;
-  message?: string;
-}
-
-type FilterExpression =
-  | Record<string, never>
-  | {
-      field: string;
-      operator: string;
-      value:
-        | string
-        | number
-        | boolean
-        | null
-        | string[]
-        | number[]
-        | boolean[]
-        | { context: string }
-        | { relative: string };
-    }
-  | { and: FilterExpression[] }
-  | { or: FilterExpression[] }
-  | { not: FilterExpression };
 
 export async function $onEmit(context: EmitContext<SpecloomV2EmitterOptions>) {
   if (context.program.compilerOptions.noEmit) {

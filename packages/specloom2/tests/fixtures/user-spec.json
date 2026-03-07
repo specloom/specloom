@@ -1,0 +1,251 @@
+{
+  "version": "2",
+  "resources": {
+    "User": {
+      "name": "User",
+      "meta": {
+        "label": "User",
+        "pluralLabel": "Users",
+        "titleField": "name"
+      },
+      "fields": {
+        "id": {
+          "name": "id",
+          "type": {
+            "kind": "scalar",
+            "name": "string",
+            "nullable": false,
+            "array": false
+          },
+          "ui": {
+            "label": "ID",
+            "visibleIn": {
+              "list": true,
+              "show": true,
+              "form": false
+            },
+            "readonly": true
+          },
+          "submit": {
+            "field": "id",
+            "shape": "self"
+          }
+        },
+        "name": {
+          "name": "name",
+          "type": {
+            "kind": "scalar",
+            "name": "string",
+            "nullable": false,
+            "array": false
+          },
+          "ui": {
+            "label": "Name",
+            "section": "basic",
+            "order": 20,
+            "visibleIn": {
+              "list": true,
+              "show": true,
+              "form": true
+            }
+          },
+          "submit": {
+            "field": "name",
+            "shape": "self"
+          }
+        },
+        "email": {
+          "name": "email",
+          "type": {
+            "kind": "scalar",
+            "name": "string",
+            "nullable": false,
+            "array": false
+          },
+          "ui": {
+            "label": "Email",
+            "section": "basic",
+            "order": 30,
+            "visibleIn": {
+              "list": true,
+              "show": true,
+              "form": true
+            }
+          },
+          "submit": {
+            "field": "email",
+            "shape": "self"
+          }
+        },
+        "departmentId": {
+          "name": "departmentId",
+          "type": {
+            "kind": "relation",
+            "resource": "Department",
+            "cardinality": "one",
+            "storage": "scalar"
+          },
+          "ui": {
+            "label": "Department",
+            "section": "main",
+            "order": 40,
+            "visibleIn": {
+              "list": true,
+              "show": true,
+              "form": true
+            }
+          },
+          "relation": {
+            "resource": "Department",
+            "kind": "belongsTo",
+            "cardinality": "one",
+            "labelField": "name",
+            "valueField": "id",
+            "submitField": "departmentId",
+            "linkTo": "show"
+          },
+          "submit": {
+            "field": "departmentId",
+            "shape": "scalar",
+            "valueField": "id"
+          }
+        },
+        "addresses": {
+          "name": "addresses",
+          "type": {
+            "kind": "nested",
+            "resource": "Address",
+            "cardinality": "many"
+          },
+          "ui": {
+            "label": "Addresses",
+            "section": "main",
+            "order": 50,
+            "visibleIn": {
+              "list": false,
+              "show": true,
+              "form": true
+            }
+          },
+          "nested": {
+            "resource": "Address",
+            "cardinality": "many",
+            "widget": "table",
+            "maxDepth": 3
+          },
+          "submit": {
+            "field": "addresses",
+            "shape": "object[]"
+          }
+        }
+      },
+      "views": {
+        "list": {
+          "enabled": true,
+          "columns": [
+            {
+              "field": "id",
+              "label": "ID",
+              "sortable": false
+            },
+            {
+              "field": "name",
+              "label": "Name",
+              "sortable": true,
+              "order": 1
+            }
+          ],
+          "search": {
+            "fields": ["name", "email"]
+          },
+          "sortable": ["name", "email"],
+          "defaultSort": {
+            "field": "name",
+            "direction": "asc"
+          },
+          "selection": "multi",
+          "clickAction": "show",
+          "namedFilters": [],
+          "pageActions": [
+            {
+              "id": "exportCsv",
+              "kind": "page",
+              "view": "list",
+              "resource": "User",
+              "label": "Export CSV",
+              "selection": "query",
+              "operation": {
+                "id": "exportCsv",
+                "method": "POST",
+                "path": "/user/export-csv"
+              }
+            }
+          ],
+          "rowActions": [
+            {
+              "id": "suspend",
+              "kind": "row",
+              "view": "list",
+              "resource": "User",
+              "label": "Suspend",
+              "when": {
+                "type": "comparison",
+                "operator": "==",
+                "left": {
+                  "type": "identifier",
+                  "path": "status"
+                },
+                "right": {
+                  "type": "literal",
+                  "value": "active"
+                }
+              },
+              "operation": {
+                "id": "suspend",
+                "method": "POST",
+                "path": "/user/suspend"
+              }
+            }
+          ]
+        },
+        "form": {
+          "enabled": true,
+          "sections": [
+            {
+              "id": "basic",
+              "label": "Basic",
+              "view": "form",
+              "fields": ["name", "email"]
+            },
+            {
+              "id": "main",
+              "label": "Main",
+              "view": "form",
+              "fields": ["departmentId", "addresses"]
+            }
+          ],
+          "pageActions": []
+        },
+        "show": {
+          "enabled": true,
+          "sections": [
+            {
+              "id": "main",
+              "label": "Main",
+              "view": "show",
+              "fields": ["id", "departmentId", "addresses"]
+            },
+            {
+              "id": "basic",
+              "label": "Basic",
+              "view": "show",
+              "fields": ["name", "email"]
+            }
+          ],
+          "pageActions": []
+        }
+      },
+      "rules": []
+    }
+  }
+}

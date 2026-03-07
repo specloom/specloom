@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
@@ -13,8 +14,12 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
+    "paths": {
+      "@specloom/spec": ["./packages/spec/dist/index.d.ts"],
+    },
   },
   "references": [
+    { "path": "./packages/spec" },
     { "path": "./packages/specloom" },
     { "path": "./packages/specloom2" },
     { "path": "./packages/typespec" },
