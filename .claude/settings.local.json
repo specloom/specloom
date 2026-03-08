@@ -23,7 +23,8 @@
       "WebFetch(domain:park-ui.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "WebFetch(domain:panda-css.com)",
-      "WebFetch(domain:www.solid-ui.com)"
+      "WebFetch(domain:www.solid-ui.com)",
+      "Bash(npx tsc:*)"
     ]
   }
 }
