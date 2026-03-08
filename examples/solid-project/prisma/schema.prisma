@@ -1,0 +1,237 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ─── Shared Resources ───────────────────────────────────────
+
+model Department {
+  id   String @id @default(cuid())
+  name String
+
+  belongsToExamples  BelongsToRelationExample[]
+  optionSourceDept   OptionSourceExample[]      @relation("OptionSourceDepartment")
+}
+
+model Tag {
+  id    String @id @default(cuid())
+  name  String
+  color String
+
+  manyToManyLinks ManyToManyLink[]
+}
+
+model Member {
+  id    String @id @default(cuid())
+  name  String
+  email String
+
+  hasManyLinks     HasManyLink[]
+  optionSourceReviewer OptionSourceExample[] @relation("OptionSourceReviewer")
+}
+
+// ─── 10-basic ───────────────────────────────────────────────
+
+model BasicScalarExample {
+  id        String   @id @default(cuid())
+  title     String
+  count     Int
+  enabled   Boolean
+  createdAt DateTime @default(now())
+}
+
+model UiMetadataExample {
+  id       String  @id @default(cuid())
+  headline String
+  slug     String
+  summary  String?
+  status   String
+}
+
+model LifecycleFlagsExample {
+  id           String  @id @default(cuid())
+  email        String
+  password     String
+  displayName  String  @default("")
+  internalMemo String?
+}
+
+// ─── 20-validation ──────────────────────────────────────────
+
+model FieldValidationExample {
+  id    String @id @default(cuid())
+  name  String
+  email String?
+  age   Int?
+  tags  String @default("[]") // JSON array (SQLite has no array type)
+}
+
+model ConditionalValidationExample {
+  id              String  @id @default(cuid())
+  status          String
+  reason          String?
+  password        String?
+  passwordConfirm String?
+  adminNote       String?
+  archiveNote     String?
+}
+
+model ModelRulesExample {
+  id        String    @id @default(cuid())
+  name      String
+  status    String?
+  email     String?
+  phone     String?
+  slackId   String?
+  reason    String?
+  startDate DateTime?
+  endDate   DateTime?
+}
+
+// ─── 30-filters-options ─────────────────────────────────────
+
+model FilterOperatorsExample {
+  id        String   @id @default(cuid())
+  title     String
+  status    String
+  createdAt DateTime @default(now())
+}
+
+model NamedFiltersExample {
+  id        String   @id @default(cuid())
+  title     String
+  ownerId   String?
+  status    String?
+  category  String?
+  createdAt DateTime @default(now())
+}
+
+model StaticOptionsExample {
+  id        String  @id @default(cuid())
+  title     String
+  priority  Int
+  published Boolean
+}
+
+model OptionSourceExample {
+  id           String      @id @default(cuid())
+  title        String
+  departmentId String?
+  reviewerId   String?
+
+  department Department? @relation("OptionSourceDepartment", fields: [departmentId], references: [id])
+  reviewer   Member?     @relation("OptionSourceReviewer", fields: [reviewerId], references: [id])
+}
+
+// ─── 40-relations ───────────────────────────────────────────
+
+model BelongsToRelationExample {
+  id           String     @id @default(cuid())
+  name         String
+  departmentId String
+
+  department Department @relation(fields: [departmentId], references: [id])
+}
+
+model HasManyRelationExample {
+  id   String @id @default(cuid())
+  name String
+
+  members HasManyLink[]
+}
+
+model HasManyLink {
+  id         String @id @default(cuid())
+  exampleId  String
+  memberId   String
+
+  example HasManyRelationExample @relation(fields: [exampleId], references: [id], onDelete: Cascade)
+  member  Member                 @relation(fields: [memberId], references: [id])
+
+  @@unique([exampleId, memberId])
+}
+
+model ManyToManyRelationExample {
+  id    String @id @default(cuid())
+  title String
+
+  tags ManyToManyLink[]
+}
+
+model ManyToManyLink {
+  id        String @id @default(cuid())
+  exampleId String
+  tagId     String
+
+  example ManyToManyRelationExample @relation(fields: [exampleId], references: [id], onDelete: Cascade)
+  tag     Tag                       @relation(fields: [tagId], references: [id])
+
+  @@unique([exampleId, tagId])
+}
+
+// ─── 50-nested ──────────────────────────────────────────────
+
+model NestedOneInlineExample {
+  id              String   @id @default(cuid())
+  name            String
+
+  shippingAddress Address?
+}
+
+model Address {
+  id         String @id @default(cuid())
+  line1      String
+  city       String
+  postalCode String
+
+  exampleId String @unique
+  example   NestedOneInlineExample @relation(fields: [exampleId], references: [id], onDelete: Cascade)
+}
+
+model NestedManyTableExample {
+  id          String @id @default(cuid())
+  orderNumber String
+
+  lineItems OrderLine[]
+}
+
+model OrderLine {
+  id       String @id @default(cuid())
+  sku      String
+  name     String
+  quantity Int
+
+  exampleId String
+  example   NestedManyTableExample @relation(fields: [exampleId], references: [id], onDelete: Cascade)
+}
+
+model NestedManyCardsExample {
+  id    String @id @default(cuid())
+  title String
+
+  attachments AttachmentCard[]
+}
+
+model AttachmentCard {
+  id    String @id @default(cuid())
+  title String
+  url   String
+
+  exampleId String
+  example   NestedManyCardsExample @relation(fields: [exampleId], references: [id], onDelete: Cascade)
+}
+
+// ─── 60-actions ─────────────────────────────────────────────
+
+model PageActionCatalog {
+  id     String @id @default(cuid())
+  name   String
+  status String
+}

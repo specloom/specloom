@@ -3,6 +3,7 @@
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "baseUrl": ".",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "jsx": "preserve",
@@ -16,5 +17,5 @@
       "~/*": ["./src/*"],
     },
   },
-  "exclude": ["vite.config.ts"],
+  "exclude": ["prisma", "prisma.config.ts", "src/lib/db.ts", "vite.config.ts"],
 }
