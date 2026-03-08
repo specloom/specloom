@@ -1,0 +1,20 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      '@specloom/spec':
+        specifier: link:../../packages/spec
+        version: link:../../packages/spec
+      '@specloom/typespec':
+        specifier: link:../../packages/typespec
+        version: link:../../packages/typespec
+    devDependencies:
+      '@typespec/compiler':
+        specifier: link:../../node_modules/@typespec/compiler
+        version: link:../../node_modules/@typespec/compiler

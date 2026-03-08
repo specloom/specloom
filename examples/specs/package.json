@@ -1,0 +1,21 @@
+{
+  "name": "@specloom/spec-catalog",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "compile:basic": "tsp compile ./entries/10-basic.tsp --emit @specloom/typespec --option @specloom/typespec.output-file=./generated/10-basic/spec.json",
+    "compile:validation": "tsp compile ./entries/20-validation.tsp --emit @specloom/typespec --option @specloom/typespec.output-file=./generated/20-validation/spec.json",
+    "compile:filters-options": "tsp compile ./entries/30-filters-options.tsp --emit @specloom/typespec --option @specloom/typespec.output-file=./generated/30-filters-options/spec.json",
+    "compile:relations": "tsp compile ./entries/40-relations.tsp --emit @specloom/typespec --option @specloom/typespec.output-file=./generated/40-relations/spec.json",
+    "compile:nested": "tsp compile ./entries/50-nested.tsp --emit @specloom/typespec --option @specloom/typespec.output-file=./generated/50-nested/spec.json",
+    "compile:actions": "tsp compile ./entries/60-actions.tsp --emit @specloom/typespec --option @specloom/typespec.output-file=./generated/60-actions/spec.json"
+  },
+  "dependencies": {
+    "@specloom/spec": "link:../../packages/spec",
+    "@specloom/typespec": "link:../../packages/typespec"
+  },
+  "devDependencies": {
+    "@typespec/compiler": "link:../../node_modules/@typespec/compiler"
+  }
+}
