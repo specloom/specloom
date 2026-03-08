@@ -3,6 +3,7 @@
 // ============================================================
 
 import type {
+  FieldType,
   FieldKind,
   FieldUI,
   ActionUI,
@@ -12,10 +13,11 @@ import type {
   FieldValidation,
   FilterExpression,
   Relation,
+  Nested,
 } from "../spec/index.js";
 
 // Re-export shared types
-export type { FieldUI, ActionUI, Option, FieldValidation, FilterExpression };
+export type { FieldUI, ActionUI, Option, FieldValidation, FilterExpression, Nested };
 
 /**
  * 評価コンテキスト
@@ -148,6 +150,7 @@ export interface ShowViewModel {
 
 export interface ShowFieldVM {
   name: string;
+  type: FieldType;
   label: string;
   kind: FieldKind;
   value: unknown;
@@ -155,6 +158,7 @@ export interface ShowFieldVM {
   ui?: FieldUI;
   options?: Option[];
   relation?: Relation;
+  nested?: Nested;
 }
 
 // ============================================================
@@ -180,6 +184,7 @@ export interface FormViewModel {
 
 export interface FormFieldVM {
   name: string;
+  type: FieldType;
   label: string;
   kind: FieldKind;
   value: unknown;
@@ -191,6 +196,7 @@ export interface FormFieldVM {
   ui?: FieldUI;
   options?: Option[];
   relation?: Relation;
+  nested?: Nested;
   // 追加
   visible?: boolean;
   hint?: string;

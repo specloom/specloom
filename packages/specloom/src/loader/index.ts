@@ -156,6 +156,9 @@ function validateField(field: unknown, path: string): void {
   if (field.relation !== undefined) {
     validateRelation(field.relation, `${path}.relation`);
   }
+  if (field.nested !== undefined) {
+    validateNested(field.nested, `${path}.nested`);
+  }
   if (field.visibleWhen !== undefined) {
     if (typeof field.visibleWhen !== "string") {
       throw new SpecError(`${path}.visibleWhen must be a string`);
@@ -209,6 +212,21 @@ function validateFieldValidation(value: unknown, path: string): void {
   }
   if (value.maxItems !== undefined && typeof value.maxItems !== "number") {
     throw new SpecError(`${path}.maxItems must be a number`);
+  }
+}
+
+function validateNested(value: unknown, path: string): void {
+  if (!isObject(value)) {
+    throw new SpecError(`${path} must be an object`);
+  }
+  if (typeof value.resource !== "string" || value.resource.length === 0) {
+    throw new SpecError(`${path}.resource must be a non-empty string`);
+  }
+  if (value.min !== undefined && typeof value.min !== "number") {
+    throw new SpecError(`${path}.min must be a number`);
+  }
+  if (value.max !== undefined && typeof value.max !== "number") {
+    throw new SpecError(`${path}.max must be a number`);
   }
 }
 

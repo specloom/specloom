@@ -1,0 +1,76 @@
+{
+  "version": "2",
+  "resources": {
+    "Address": {
+      "name": "Address",
+      "meta": {
+        "label": "Address"
+      },
+      "fields": {
+        "line1": {
+          "name": "line1",
+          "type": {
+            "kind": "scalar",
+            "name": "string",
+            "nullable": false,
+            "array": false
+          },
+          "ui": {
+            "label": "Line 1",
+            "widget": "text",
+            "visibleIn": {
+              "list": false,
+              "show": true,
+              "form": true
+            }
+          },
+          "submit": {
+            "field": "line1",
+            "shape": "self"
+          }
+        }
+      },
+      "views": {
+        "list": {
+          "enabled": true,
+          "columns": [],
+          "sortable": [],
+          "selection": "none",
+          "clickAction": "none",
+          "namedFilters": [],
+          "pageActions": [],
+          "rowActions": []
+        },
+        "form": {
+          "enabled": true,
+          "sections": [
+            {
+              "id": "main",
+              "label": "Main",
+              "view": "form",
+              "fields": [
+                "line1"
+              ]
+            }
+          ],
+          "pageActions": []
+        },
+        "show": {
+          "enabled": true,
+          "sections": [
+            {
+              "id": "main",
+              "label": "Main",
+              "view": "show",
+              "fields": [
+                "line1"
+              ]
+            }
+          ],
+          "pageActions": []
+        }
+      },
+      "rules": []
+    }
+  }
+}

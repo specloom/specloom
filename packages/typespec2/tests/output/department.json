@@ -1,0 +1,82 @@
+{
+  "version": "2",
+  "resources": {
+    "Department": {
+      "name": "Department",
+      "meta": {
+        "label": "Department"
+      },
+      "fields": {
+        "name": {
+          "name": "name",
+          "type": {
+            "kind": "scalar",
+            "name": "string",
+            "nullable": false,
+            "array": false
+          },
+          "ui": {
+            "label": "Name",
+            "widget": "text",
+            "visibleIn": {
+              "list": true,
+              "show": true,
+              "form": true
+            }
+          },
+          "submit": {
+            "field": "name",
+            "shape": "self"
+          }
+        }
+      },
+      "views": {
+        "list": {
+          "enabled": true,
+          "columns": [
+            {
+              "field": "name",
+              "label": "Name",
+              "sortable": false
+            }
+          ],
+          "sortable": [],
+          "selection": "none",
+          "clickAction": "none",
+          "namedFilters": [],
+          "pageActions": [],
+          "rowActions": []
+        },
+        "form": {
+          "enabled": true,
+          "sections": [
+            {
+              "id": "main",
+              "label": "Main",
+              "view": "form",
+              "fields": [
+                "name"
+              ]
+            }
+          ],
+          "pageActions": []
+        },
+        "show": {
+          "enabled": true,
+          "sections": [
+            {
+              "id": "main",
+              "label": "Main",
+              "view": "show",
+              "fields": [
+                "name"
+              ]
+            }
+          ],
+          "pageActions": []
+        }
+      },
+      "rules": []
+    }
+  }
+}

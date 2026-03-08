@@ -1,0 +1,357 @@
+{
+  "version": "2",
+  "resources": {
+    "User": {
+      "name": "User",
+      "meta": {
+        "label": "User",
+        "pluralLabel": "Users",
+        "titleField": "name"
+      },
+      "fields": {
+        "id": {
+          "name": "id",
+          "type": {
+            "kind": "scalar",
+            "name": "string",
+            "nullable": false,
+            "array": false
+          },
+          "ui": {
+            "label": "ID",
+            "widget": "text",
+            "order": 10,
+            "visibleIn": {
+              "list": true,
+              "show": true,
+              "form": false
+            },
+            "readonly": true
+          },
+          "submit": {
+            "field": "id",
+            "shape": "self"
+          }
+        },
+        "name": {
+          "name": "name",
+          "type": {
+            "kind": "scalar",
+            "name": "string",
+            "nullable": false,
+            "array": false
+          },
+          "ui": {
+            "label": "Name",
+            "widget": "text",
+            "section": "basic",
+            "order": 20,
+            "visibleIn": {
+              "list": true,
+              "show": true,
+              "form": true
+            }
+          },
+          "validation": {
+            "minLength": 1
+          },
+          "filter": {
+            "operators": [
+              "eq",
+              "contains"
+            ]
+          },
+          "submit": {
+            "field": "name",
+            "shape": "self"
+          }
+        },
+        "email": {
+          "name": "email",
+          "type": {
+            "kind": "scalar",
+            "name": "string",
+            "nullable": false,
+            "array": false
+          },
+          "ui": {
+            "label": "Email",
+            "widget": "text",
+            "appearance": "link",
+            "section": "basic",
+            "order": 30,
+            "visibleIn": {
+              "list": true,
+              "show": true,
+              "form": true
+            }
+          },
+          "submit": {
+            "field": "email",
+            "shape": "self"
+          }
+        },
+        "departmentId": {
+          "name": "departmentId",
+          "type": {
+            "kind": "relation",
+            "resource": "Department",
+            "cardinality": "one",
+            "storage": "scalar"
+          },
+          "ui": {
+            "label": "Department",
+            "widget": "autocomplete",
+            "order": 40,
+            "visibleIn": {
+              "list": true,
+              "show": true,
+              "form": true
+            }
+          },
+          "relation": {
+            "resource": "Department",
+            "kind": "belongsTo",
+            "cardinality": "one",
+            "labelField": "name",
+            "valueField": "id",
+            "submitField": "departmentId",
+            "linkTo": "show"
+          },
+          "submit": {
+            "field": "departmentId",
+            "shape": "scalar",
+            "valueField": "id"
+          }
+        },
+        "addresses": {
+          "name": "addresses",
+          "type": {
+            "kind": "nested",
+            "resource": "Address",
+            "cardinality": "many"
+          },
+          "ui": {
+            "label": "Addresses",
+            "widget": "inline-form",
+            "order": 50,
+            "visibleIn": {
+              "list": false,
+              "show": true,
+              "form": true
+            }
+          },
+          "nested": {
+            "resource": "Address",
+            "cardinality": "many",
+            "minItems": 1,
+            "maxItems": 3,
+            "widget": "table",
+            "maxDepth": 3
+          },
+          "submit": {
+            "field": "addresses",
+            "shape": "object[]"
+          }
+        },
+        "displayName": {
+          "name": "displayName",
+          "type": {
+            "kind": "scalar",
+            "name": "string",
+            "nullable": false,
+            "array": false
+          },
+          "computed": true,
+          "ui": {
+            "label": "Display Name",
+            "widget": "text",
+            "order": 60,
+            "visibleIn": {
+              "list": true,
+              "show": true,
+              "form": false
+            },
+            "readonly": true
+          },
+          "submit": {
+            "field": "displayName",
+            "shape": "self"
+          }
+        }
+      },
+      "views": {
+        "list": {
+          "enabled": true,
+          "columns": [
+            {
+              "field": "id",
+              "label": "ID",
+              "sortable": false
+            },
+            {
+              "field": "name",
+              "label": "Account",
+              "template": "{name} <{email}>",
+              "sortable": true,
+              "order": 1
+            }
+          ],
+          "search": {
+            "fields": [
+              "name",
+              "email"
+            ]
+          },
+          "sortable": [
+            "name",
+            "email"
+          ],
+          "defaultSort": {
+            "field": "name",
+            "direction": "asc"
+          },
+          "selection": "multi",
+          "clickAction": "show",
+          "namedFilters": [],
+          "pageActions": [
+            {
+              "id": "exportCsv",
+              "kind": "page",
+              "view": "list",
+              "resource": "User",
+              "label": "Export CSV",
+              "selection": "query",
+              "input": "ExportUsersInput",
+              "operation": {
+                "id": "exportCsv",
+                "method": "POST",
+                "path": "/user/export-csv",
+                "inputModel": "ExportUsersInput"
+              }
+            }
+          ],
+          "rowActions": [
+            {
+              "id": "suspend",
+              "kind": "row",
+              "view": "list",
+              "resource": "User",
+              "label": "Suspend",
+              "when": {
+                "type": "comparison",
+                "operator": "==",
+                "left": {
+                  "type": "identifier",
+                  "path": "status"
+                },
+                "right": {
+                  "type": "literal",
+                  "value": "active"
+                }
+              },
+              "operation": {
+                "id": "suspend",
+                "method": "POST",
+                "path": "/user/suspend"
+              }
+            }
+          ]
+        },
+        "form": {
+          "enabled": true,
+          "sections": [
+            {
+              "id": "basic",
+              "label": "Basic",
+              "view": "form",
+              "fields": [
+                "name",
+                "email"
+              ]
+            },
+            {
+              "id": "main",
+              "label": "Main",
+              "view": "form",
+              "fields": [
+                "departmentId",
+                "addresses"
+              ]
+            }
+          ],
+          "pageActions": []
+        },
+        "show": {
+          "enabled": true,
+          "sections": [
+            {
+              "id": "main",
+              "label": "Main",
+              "view": "show",
+              "fields": [
+                "id",
+                "departmentId",
+                "addresses",
+                "displayName"
+              ]
+            },
+            {
+              "id": "basic",
+              "label": "Basic",
+              "view": "show",
+              "fields": [
+                "name",
+                "email"
+              ]
+            }
+          ],
+          "pageActions": []
+        }
+      },
+      "rules": []
+    }
+  },
+  "inputs": {
+    "ExportUsersInput": {
+      "name": "ExportUsersInput",
+      "fields": {
+        "status": {
+          "name": "status",
+          "type": {
+            "kind": "scalar",
+            "name": "string",
+            "nullable": false,
+            "array": false
+          },
+          "ui": {
+            "label": "Status",
+            "widget": "text",
+            "visibleIn": {
+              "list": false,
+              "show": true,
+              "form": true
+            }
+          },
+          "submit": {
+            "field": "status",
+            "shape": "self"
+          }
+        }
+      },
+      "form": {
+        "sections": [
+          {
+            "id": "main",
+            "label": "Main",
+            "view": "form",
+            "fields": [
+              "status"
+            ]
+          }
+        ]
+      },
+      "rules": []
+    }
+  }
+}

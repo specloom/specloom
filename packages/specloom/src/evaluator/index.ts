@@ -202,6 +202,7 @@ function toShowFieldVM(
 
   return {
     name: field.name,
+    type: field.type,
     label: field.label ?? field.name,
     kind: field.kind ?? "text",
     value,
@@ -209,6 +210,7 @@ function toShowFieldVM(
     ui: field.ui,
     options: field.options,
     relation: field.relation,
+    nested: field.nested,
   };
 }
 
@@ -235,6 +237,7 @@ function toFormFieldVM(
 
   return {
     name: field.name,
+    type: field.type,
     label: field.label ?? field.name,
     kind: field.kind ?? "text",
     value,
@@ -247,6 +250,7 @@ function toFormFieldVM(
     ui: field.ui,
     options: field.options,
     relation: field.relation,
+    nested: field.nested,
   };
 }
 

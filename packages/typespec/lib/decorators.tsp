@@ -48,6 +48,16 @@ extern dec relation(target: ModelProperty, resource: Model, options?: valueof {
 });
 
 /**
+ * Define nested (owned) child resource for inline editing
+ * @param resource Child resource model
+ * @param options Nested options
+ */
+extern dec nested(target: ModelProperty, resource: Model, options?: valueof {
+  min?: int32,
+  max?: int32
+});
+
+/**
  * Set relation cardinality (legacy alias, usually inferred from type)
  * Prefer @relation(..., #{ ... }) as canonical syntax.
  * @param cardinality "one" or "many"

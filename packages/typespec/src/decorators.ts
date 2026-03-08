@@ -272,7 +272,7 @@ export function $relation(
   options?: unknown,
 ) {
   const extracted = extractValue(options) as
-    | { labelField?: string; valueField?: string; searchable?: boolean }
+    | { labelField?: string; valueField?: string; submitField?: string; searchable?: boolean }
     | undefined;
   const cardinality = extractString(
     context.program.stateMap(StateKeys.cardinality).get(target),
@@ -281,9 +281,31 @@ export function $relation(
     resource: resource.name,
     labelField: extracted?.labelField,
     valueField: extracted?.valueField,
+    submitField: extracted?.submitField,
     searchable: extracted?.searchable,
     cardinality,
   });
+}
+
+/**
+ * @nested - Define nested (owned) child resource for inline editing
+ */
+export function $nested(
+  context: DecoratorContext,
+  target: ModelProperty,
+  resource: Model,
+  options?: unknown,
+) {
+  const extracted = extractValue(options) as
+    | { min?: number; max?: number }
+    | undefined;
+  context.program.stateMap(StateKeys.nested).set(target, {
+    resource: resource.name,
+    min: extracted?.min,
+    max: extracted?.max,
+  });
+  // Auto-set kind to "nested"
+  context.program.stateMap(StateKeys.kind).set(target, "nested");
 }
 
 /**
@@ -846,6 +868,7 @@ export function getRelation(
       resource: string;
       labelField?: string;
       valueField?: string;
+      submitField?: string;
       searchable?: boolean;
       cardinality?: string;
     }
@@ -1036,6 +1059,15 @@ export function getMatch(
   target: ModelProperty,
 ): string | undefined {
   return program.stateMap(StateKeys.match).get(target);
+}
+
+export function getNested(
+  program: DecoratorContext["program"],
+  target: ModelProperty,
+):
+  | { resource: string; min?: number; max?: number }
+  | undefined {
+  return program.stateMap(StateKeys.nested).get(target);
 }
 
 // ============================================================

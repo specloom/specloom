@@ -3,6 +3,7 @@
 // ============================================================
 
 import type { FormViewModel } from "../vm/types.js";
+import { FormVM } from "../vm/form.js";
 
 /**
  * シリアライズオプション
@@ -22,15 +23,22 @@ export interface SerializeOptions {
 export const Serialize = {
   /**
    * フォームデータを送信用オブジェクトに変換
+   * 送信仕様に従い、relation の valueField 抽出・date/datetime ISO 変換を行う
    */
   formData: (
     vm: FormViewModel,
     options?: SerializeOptions,
   ): Record<string, unknown> => {
+    const formVM = new FormVM(vm);
     const result: Record<string, unknown> = {};
 
+    // submittableValues で送信仕様に従った変換を適用しつつ、
+    // dateFormat オプションがある場合は date/datetime フィールドに再適用
+    const submittable = formVM.submittableValues;
+
     for (const field of vm.fields) {
-      const value = field.value;
+      if (!(field.name in submittable)) continue;
+      let value = submittable[field.name];
 
       // null除外
       if (options?.excludeNull && value == null) continue;
@@ -38,12 +46,21 @@ export const Serialize = {
       // 空文字除外
       if (options?.excludeEmpty && value === "") continue;
 
-      // 日付変換
-      if (value instanceof Date) {
-        result[field.name] = serializeDate(value, options?.dateFormat);
-      } else {
-        result[field.name] = value;
+      // dateFormat オプション: Date オブジェクトまたは date/datetime フィールドの ISO 文字列を再変換
+      if (options?.dateFormat && (field.kind === "date" || field.kind === "datetime")) {
+        if (value instanceof Date) {
+          value = serializeDate(value, options.dateFormat);
+        } else if (typeof value === "string") {
+          const parsed = new Date(value);
+          if (!isNaN(parsed.getTime())) {
+            value = serializeDate(parsed, options.dateFormat);
+          }
+        }
+      } else if (value instanceof Date) {
+        value = serializeDate(value, options?.dateFormat);
       }
+
+      result[field.name] = value;
     }
 
     return result;

@@ -50,6 +50,7 @@ import {
   getPattern,
   getMinItems,
   getMaxItems,
+  getNested,
   type ViewActionDef,
 } from "./decorators.js";
 
@@ -85,8 +86,14 @@ interface Field {
     resource: string;
     labelField?: string;
     valueField?: string;
+    submitField?: string;
     searchable?: boolean;
     cardinality?: string;
+  };
+  nested?: {
+    resource: string;
+    min?: number;
+    max?: number;
   };
   validation?: {
     required?: boolean;
@@ -334,6 +341,15 @@ function buildField(program: Program, prop: ModelProperty): Field {
     field.relation = {
       ...relation,
       ...(cardinality ? { cardinality } : {}),
+    };
+  }
+
+  const nested = getNested(program, prop);
+  if (nested) {
+    field.nested = {
+      resource: nested.resource,
+      ...(nested.min !== undefined ? { min: nested.min } : {}),
+      ...(nested.max !== undefined ? { max: nested.max } : {}),
     };
   }
 

@@ -1,0 +1,3398 @@
+{
+  "Prefecture": [
+    {
+      "id": 1,
+      "name": "北海道",
+      "code": "01"
+    },
+    {
+      "id": 2,
+      "name": "青森県",
+      "code": "02"
+    },
+    {
+      "id": 3,
+      "name": "岩手県",
+      "code": "03"
+    },
+    {
+      "id": 4,
+      "name": "宮城県",
+      "code": "04"
+    },
+    {
+      "id": 5,
+      "name": "秋田県",
+      "code": "05"
+    },
+    {
+      "id": 6,
+      "name": "山形県",
+      "code": "06"
+    },
+    {
+      "id": 7,
+      "name": "福島県",
+      "code": "07"
+    },
+    {
+      "id": 8,
+      "name": "茨城県",
+      "code": "08"
+    },
+    {
+      "id": 9,
+      "name": "栃木県",
+      "code": "09"
+    },
+    {
+      "id": 10,
+      "name": "群馬県",
+      "code": "10"
+    },
+    {
+      "id": 11,
+      "name": "埼玉県",
+      "code": "11"
+    },
+    {
+      "id": 12,
+      "name": "千葉県",
+      "code": "12"
+    },
+    {
+      "id": 13,
+      "name": "東京都",
+      "code": "13"
+    },
+    {
+      "id": 14,
+      "name": "神奈川県",
+      "code": "14"
+    },
+    {
+      "id": 15,
+      "name": "新潟県",
+      "code": "15"
+    },
+    {
+      "id": 16,
+      "name": "富山県",
+      "code": "16"
+    },
+    {
+      "id": 17,
+      "name": "石川県",
+      "code": "17"
+    },
+    {
+      "id": 18,
+      "name": "福井県",
+      "code": "18"
+    },
+    {
+      "id": 19,
+      "name": "山梨県",
+      "code": "19"
+    },
+    {
+      "id": 20,
+      "name": "長野県",
+      "code": "20"
+    },
+    {
+      "id": 21,
+      "name": "岐阜県",
+      "code": "21"
+    },
+    {
+      "id": 22,
+      "name": "静岡県",
+      "code": "22"
+    },
+    {
+      "id": 23,
+      "name": "愛知県",
+      "code": "23"
+    },
+    {
+      "id": 24,
+      "name": "三重県",
+      "code": "24"
+    },
+    {
+      "id": 25,
+      "name": "滋賀県",
+      "code": "25"
+    },
+    {
+      "id": 26,
+      "name": "京都府",
+      "code": "26"
+    },
+    {
+      "id": 27,
+      "name": "大阪府",
+      "code": "27"
+    },
+    {
+      "id": 28,
+      "name": "兵庫県",
+      "code": "28"
+    },
+    {
+      "id": 29,
+      "name": "奈良県",
+      "code": "29"
+    },
+    {
+      "id": 30,
+      "name": "和歌山県",
+      "code": "30"
+    },
+    {
+      "id": 31,
+      "name": "鳥取県",
+      "code": "31"
+    },
+    {
+      "id": 32,
+      "name": "島根県",
+      "code": "32"
+    },
+    {
+      "id": 33,
+      "name": "岡山県",
+      "code": "33"
+    },
+    {
+      "id": 34,
+      "name": "広島県",
+      "code": "34"
+    },
+    {
+      "id": 35,
+      "name": "山口県",
+      "code": "35"
+    },
+    {
+      "id": 36,
+      "name": "徳島県",
+      "code": "36"
+    },
+    {
+      "id": 37,
+      "name": "香川県",
+      "code": "37"
+    },
+    {
+      "id": 38,
+      "name": "愛媛県",
+      "code": "38"
+    },
+    {
+      "id": 39,
+      "name": "高知県",
+      "code": "39"
+    },
+    {
+      "id": 40,
+      "name": "福岡県",
+      "code": "40"
+    },
+    {
+      "id": 41,
+      "name": "佐賀県",
+      "code": "41"
+    },
+    {
+      "id": 42,
+      "name": "長崎県",
+      "code": "42"
+    },
+    {
+      "id": 43,
+      "name": "熊本県",
+      "code": "43"
+    },
+    {
+      "id": 44,
+      "name": "大分県",
+      "code": "44"
+    },
+    {
+      "id": 45,
+      "name": "宮崎県",
+      "code": "45"
+    },
+    {
+      "id": 46,
+      "name": "鹿児島県",
+      "code": "46"
+    },
+    {
+      "id": 47,
+      "name": "沖縄県",
+      "code": "47"
+    }
+  ],
+  "User": [
+    {
+      "id": "u1",
+      "name": "田中太郎",
+      "email": "tanaka@example.com",
+      "role": "admin",
+      "active": true
+    },
+    {
+      "id": "u2",
+      "name": "鈴木花子",
+      "email": "suzuki@example.com",
+      "role": "editor",
+      "active": true
+    },
+    {
+      "id": "u3",
+      "name": "佐藤一郎",
+      "email": "sato@example.com",
+      "role": "viewer",
+      "active": true
+    },
+    {
+      "id": "u4",
+      "name": "高橋美咲",
+      "email": "takahashi@example.com",
+      "role": "editor",
+      "active": true
+    },
+    {
+      "id": "u5",
+      "name": "山田健二",
+      "email": "yamada@example.com",
+      "role": "admin",
+      "active": false
+    }
+  ],
+  "Shop": [
+    {
+      "id": "1",
+      "name": "渋谷本店",
+      "shopType": "directStore",
+      "status": "preparing",
+      "prefectureCode": "01",
+      "owner": {
+        "id": "u1",
+        "name": "田中太郎"
+      },
+      "address": "渋谷区道玄坂1-2-3",
+      "phone": "03-1000-5000",
+      "email": "shop1@example.com",
+      "website": "https://shop1.example.com",
+      "openDate": "2018-01-01",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 10,
+      "notes": "駐車場あり。大型店舗。",
+      "createdAt": "2022-12-31T15:00:00.000Z",
+      "updatedAt": "2023-12-31T15:00:00.000Z",
+      "prefecture": {
+        "id": 1,
+        "name": "北海道"
+      }
+    },
+    {
+      "id": "2",
+      "name": "新宿西口店",
+      "shopType": "franchise",
+      "status": "open",
+      "prefectureCode": "02",
+      "owner": {
+        "id": "u2",
+        "name": "鈴木花子"
+      },
+      "address": "新宿区西新宿1-4-5",
+      "phone": "03-1001-5007",
+      "email": "shop2@example.com",
+      "website": null,
+      "openDate": "2019-02-02",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 13,
+      "notes": null,
+      "createdAt": "2023-02-01T15:00:00.000Z",
+      "updatedAt": "2024-02-01T15:00:00.000Z",
+      "prefecture": {
+        "id": 2,
+        "name": "青森県"
+      }
+    },
+    {
+      "id": "3",
+      "name": "池袋東口店",
+      "shopType": "online",
+      "status": "open",
+      "prefectureCode": "03",
+      "owner": {
+        "id": "u3",
+        "name": "佐藤一郎"
+      },
+      "address": "豊島区東池袋1-6-7",
+      "phone": "03-1002-5014",
+      "email": "shop3@example.com",
+      "website": null,
+      "openDate": "2020-03-03",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 16,
+      "notes": null,
+      "createdAt": "2023-03-02T15:00:00.000Z",
+      "updatedAt": "2024-03-02T15:00:00.000Z",
+      "prefecture": {
+        "id": 3,
+        "name": "岩手県"
+      }
+    },
+    {
+      "id": "4",
+      "name": "銀座中央店",
+      "shopType": "directStore",
+      "status": "open",
+      "prefectureCode": "04",
+      "owner": {
+        "id": "u4",
+        "name": "高橋美咲"
+      },
+      "address": "中央区銀座4-8-9",
+      "phone": "03-1003-5021",
+      "email": "shop4@example.com",
+      "website": "https://shop4.example.com",
+      "openDate": "2021-04-04",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 19,
+      "notes": null,
+      "createdAt": "2023-04-03T15:00:00.000Z",
+      "updatedAt": "2024-04-03T15:00:00.000Z",
+      "prefecture": {
+        "id": 4,
+        "name": "宮城県"
+      }
+    },
+    {
+      "id": "5",
+      "name": "品川駅前店",
+      "shopType": "franchise",
+      "status": "closed",
+      "prefectureCode": "05",
+      "owner": {
+        "id": "u5",
+        "name": "山田健二"
+      },
+      "address": "港区港南2-10-11",
+      "phone": "03-1004-5028",
+      "email": "shop5@example.com",
+      "website": null,
+      "openDate": "2022-05-05",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 22,
+      "notes": null,
+      "createdAt": "2023-05-04T15:00:00.000Z",
+      "updatedAt": "2024-05-04T15:00:00.000Z",
+      "prefecture": {
+        "id": 5,
+        "name": "秋田県"
+      }
+    },
+    {
+      "id": "6",
+      "name": "横浜みなとみらい店",
+      "shopType": "online",
+      "status": "suspended",
+      "prefectureCode": "06",
+      "owner": {
+        "id": "u1",
+        "name": "田中太郎"
+      },
+      "address": "西区みなとみらい2-3-1",
+      "phone": "03-1005-5035",
+      "email": "shop6@example.com",
+      "website": null,
+      "openDate": "2023-06-06",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 25,
+      "notes": "駐車場あり。大型店舗。",
+      "createdAt": "2023-06-05T15:00:00.000Z",
+      "updatedAt": "2024-06-05T15:00:00.000Z",
+      "prefecture": {
+        "id": 6,
+        "name": "山形県"
+      }
+    },
+    {
+      "id": "7",
+      "name": "川崎ラゾーナ店",
+      "shopType": "directStore",
+      "status": "preparing",
+      "prefectureCode": "07",
+      "owner": {
+        "id": "u2",
+        "name": "鈴木花子"
+      },
+      "address": "幸区堀川町72-1",
+      "phone": "03-1006-5042",
+      "email": "shop7@example.com",
+      "website": "https://shop7.example.com",
+      "openDate": "2024-07-07",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 28,
+      "notes": null,
+      "createdAt": "2023-07-06T15:00:00.000Z",
+      "updatedAt": "2024-07-06T15:00:00.000Z",
+      "prefecture": {
+        "id": 7,
+        "name": "福島県"
+      }
+    },
+    {
+      "id": "8",
+      "name": "大宮駅前店",
+      "shopType": "franchise",
+      "status": "open",
+      "prefectureCode": "08",
+      "owner": {
+        "id": "u3",
+        "name": "佐藤一郎"
+      },
+      "address": "大宮区桜木町1-7-5",
+      "phone": "03-1007-5049",
+      "email": "shop8@example.com",
+      "website": null,
+      "openDate": "2018-08-08",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 31,
+      "notes": null,
+      "createdAt": "2023-08-07T15:00:00.000Z",
+      "updatedAt": "2024-08-07T15:00:00.000Z",
+      "prefecture": {
+        "id": 8,
+        "name": "茨城県"
+      }
+    },
+    {
+      "id": "9",
+      "name": "千葉中央店",
+      "shopType": "online",
+      "status": "open",
+      "prefectureCode": "09",
+      "owner": {
+        "id": "u4",
+        "name": "高橋美咲"
+      },
+      "address": "中央区中央1-1-1",
+      "phone": "03-1008-5056",
+      "email": "shop9@example.com",
+      "website": null,
+      "openDate": "2019-09-09",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 34,
+      "notes": null,
+      "createdAt": "2023-09-08T15:00:00.000Z",
+      "updatedAt": "2024-09-08T15:00:00.000Z",
+      "prefecture": {
+        "id": 9,
+        "name": "栃木県"
+      }
+    },
+    {
+      "id": "10",
+      "name": "立川北口店",
+      "shopType": "directStore",
+      "status": "open",
+      "prefectureCode": "10",
+      "owner": {
+        "id": "u5",
+        "name": "山田健二"
+      },
+      "address": "曙町2-4-6",
+      "phone": "03-1009-5063",
+      "email": "shop10@example.com",
+      "website": "https://shop10.example.com",
+      "openDate": "2020-10-10",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 37,
+      "notes": null,
+      "createdAt": "2023-10-09T15:00:00.000Z",
+      "updatedAt": "2024-10-09T15:00:00.000Z",
+      "prefecture": {
+        "id": 10,
+        "name": "群馬県"
+      }
+    },
+    {
+      "id": "11",
+      "name": "梅田本店",
+      "shopType": "franchise",
+      "status": "closed",
+      "prefectureCode": "11",
+      "owner": {
+        "id": "u1",
+        "name": "田中太郎"
+      },
+      "address": "北区梅田1-1-3",
+      "phone": "03-1010-5070",
+      "email": "shop11@example.com",
+      "website": null,
+      "openDate": "2021-11-11",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 40,
+      "notes": "駐車場あり。大型店舗。",
+      "createdAt": "2023-11-10T15:00:00.000Z",
+      "updatedAt": "2024-11-10T15:00:00.000Z",
+      "prefecture": {
+        "id": 11,
+        "name": "埼玉県"
+      }
+    },
+    {
+      "id": "12",
+      "name": "なんば店",
+      "shopType": "online",
+      "status": "suspended",
+      "prefectureCode": "12",
+      "owner": {
+        "id": "u2",
+        "name": "鈴木花子"
+      },
+      "address": "中央区難波5-1-60",
+      "phone": "03-1011-5077",
+      "email": "shop12@example.com",
+      "website": null,
+      "openDate": "2022-12-12",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 43,
+      "notes": null,
+      "createdAt": "2023-12-11T15:00:00.000Z",
+      "updatedAt": "2024-12-11T15:00:00.000Z",
+      "prefecture": {
+        "id": 12,
+        "name": "千葉県"
+      }
+    },
+    {
+      "id": "13",
+      "name": "天王寺店",
+      "shopType": "directStore",
+      "status": "preparing",
+      "prefectureCode": "13",
+      "owner": {
+        "id": "u3",
+        "name": "佐藤一郎"
+      },
+      "address": "阿倍野区阿倍野筋1-1-43",
+      "phone": "03-1012-5084",
+      "email": "shop13@example.com",
+      "website": "https://shop13.example.com",
+      "openDate": "2023-01-13",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 46,
+      "notes": null,
+      "createdAt": "2023-01-12T15:00:00.000Z",
+      "updatedAt": "2024-01-12T15:00:00.000Z",
+      "prefecture": {
+        "id": 13,
+        "name": "東京都"
+      }
+    },
+    {
+      "id": "14",
+      "name": "心斎橋店",
+      "shopType": "franchise",
+      "status": "open",
+      "prefectureCode": "14",
+      "owner": {
+        "id": "u4",
+        "name": "高橋美咲"
+      },
+      "address": "中央区心斎橋筋2-6-14",
+      "phone": "03-1013-5091",
+      "email": "shop14@example.com",
+      "website": null,
+      "openDate": "2024-02-14",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 49,
+      "notes": null,
+      "createdAt": "2023-02-13T15:00:00.000Z",
+      "updatedAt": "2024-02-13T15:00:00.000Z",
+      "prefecture": {
+        "id": 14,
+        "name": "神奈川県"
+      }
+    },
+    {
+      "id": "15",
+      "name": "京橋店",
+      "shopType": "online",
+      "status": "open",
+      "prefectureCode": "15",
+      "owner": {
+        "id": "u5",
+        "name": "山田健二"
+      },
+      "address": "都島区東野田町2-1-38",
+      "phone": "03-1014-5098",
+      "email": "shop15@example.com",
+      "website": null,
+      "openDate": "2018-03-15",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 52,
+      "notes": null,
+      "createdAt": "2023-03-14T15:00:00.000Z",
+      "updatedAt": "2024-03-14T15:00:00.000Z",
+      "prefecture": {
+        "id": 15,
+        "name": "新潟県"
+      }
+    },
+    {
+      "id": "16",
+      "name": "名古屋栄店",
+      "shopType": "directStore",
+      "status": "open",
+      "prefectureCode": "16",
+      "owner": {
+        "id": "u1",
+        "name": "田中太郎"
+      },
+      "address": "中区栄3-5-1",
+      "phone": "03-1015-5105",
+      "email": "shop16@example.com",
+      "website": "https://shop16.example.com",
+      "openDate": "2019-04-16",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 55,
+      "notes": "駐車場あり。大型店舗。",
+      "createdAt": "2023-04-15T15:00:00.000Z",
+      "updatedAt": "2024-04-15T15:00:00.000Z",
+      "prefecture": {
+        "id": 16,
+        "name": "富山県"
+      }
+    },
+    {
+      "id": "17",
+      "name": "名駅前店",
+      "shopType": "franchise",
+      "status": "closed",
+      "prefectureCode": "17",
+      "owner": {
+        "id": "u2",
+        "name": "鈴木花子"
+      },
+      "address": "中村区名駅4-7-1",
+      "phone": "03-1016-5112",
+      "email": "shop17@example.com",
+      "website": null,
+      "openDate": "2020-05-17",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 58,
+      "notes": null,
+      "createdAt": "2023-05-16T15:00:00.000Z",
+      "updatedAt": "2024-05-16T15:00:00.000Z",
+      "prefecture": {
+        "id": 17,
+        "name": "石川県"
+      }
+    },
+    {
+      "id": "18",
+      "name": "金山店",
+      "shopType": "online",
+      "status": "suspended",
+      "prefectureCode": "18",
+      "owner": {
+        "id": "u3",
+        "name": "佐藤一郎"
+      },
+      "address": "中区金山1-17-1",
+      "phone": "03-1017-5119",
+      "email": "shop18@example.com",
+      "website": null,
+      "openDate": "2021-06-18",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 61,
+      "notes": null,
+      "createdAt": "2023-06-17T15:00:00.000Z",
+      "updatedAt": "2024-06-17T15:00:00.000Z",
+      "prefecture": {
+        "id": 18,
+        "name": "福井県"
+      }
+    },
+    {
+      "id": "19",
+      "name": "栄地下店",
+      "shopType": "directStore",
+      "status": "preparing",
+      "prefectureCode": "19",
+      "owner": {
+        "id": "u4",
+        "name": "高橋美咲"
+      },
+      "address": "中区栄3-4-5",
+      "phone": "03-1018-5126",
+      "email": "shop19@example.com",
+      "website": "https://shop19.example.com",
+      "openDate": "2022-07-19",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 64,
+      "notes": null,
+      "createdAt": "2023-07-18T15:00:00.000Z",
+      "updatedAt": "2024-07-18T15:00:00.000Z",
+      "prefecture": {
+        "id": 19,
+        "name": "山梨県"
+      }
+    },
+    {
+      "id": "20",
+      "name": "名古屋港店",
+      "shopType": "franchise",
+      "status": "open",
+      "prefectureCode": "20",
+      "owner": {
+        "id": "u5",
+        "name": "山田健二"
+      },
+      "address": "港区港町1-9",
+      "phone": "03-1019-5133",
+      "email": "shop20@example.com",
+      "website": null,
+      "openDate": "2023-08-20",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 67,
+      "notes": null,
+      "createdAt": "2023-08-19T15:00:00.000Z",
+      "updatedAt": "2024-08-19T15:00:00.000Z",
+      "prefecture": {
+        "id": 20,
+        "name": "長野県"
+      }
+    },
+    {
+      "id": "21",
+      "name": "博多駅前店",
+      "shopType": "online",
+      "status": "open",
+      "prefectureCode": "21",
+      "owner": {
+        "id": "u1",
+        "name": "田中太郎"
+      },
+      "address": "博多区博多駅中央街1-1",
+      "phone": "03-1020-5140",
+      "email": "shop21@example.com",
+      "website": null,
+      "openDate": "2024-09-21",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 70,
+      "notes": "駐車場あり。大型店舗。",
+      "createdAt": "2023-09-20T15:00:00.000Z",
+      "updatedAt": "2024-09-20T15:00:00.000Z",
+      "prefecture": {
+        "id": 21,
+        "name": "岐阜県"
+      }
+    },
+    {
+      "id": "22",
+      "name": "天神店",
+      "shopType": "directStore",
+      "status": "open",
+      "prefectureCode": "22",
+      "owner": {
+        "id": "u2",
+        "name": "鈴木花子"
+      },
+      "address": "中央区天神2-11-1",
+      "phone": "03-1021-5147",
+      "email": "shop22@example.com",
+      "website": "https://shop22.example.com",
+      "openDate": "2018-10-22",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 73,
+      "notes": null,
+      "createdAt": "2023-10-21T15:00:00.000Z",
+      "updatedAt": "2024-10-21T15:00:00.000Z",
+      "prefecture": {
+        "id": 22,
+        "name": "静岡県"
+      }
+    },
+    {
+      "id": "23",
+      "name": "小倉駅前店",
+      "shopType": "franchise",
+      "status": "closed",
+      "prefectureCode": "23",
+      "owner": {
+        "id": "u3",
+        "name": "佐藤一郎"
+      },
+      "address": "小倉北区浅野1-1-1",
+      "phone": "03-1022-5154",
+      "email": "shop23@example.com",
+      "website": null,
+      "openDate": "2019-11-23",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 76,
+      "notes": null,
+      "createdAt": "2023-11-22T15:00:00.000Z",
+      "updatedAt": "2024-11-22T15:00:00.000Z",
+      "prefecture": {
+        "id": 23,
+        "name": "愛知県"
+      }
+    },
+    {
+      "id": "24",
+      "name": "博多リバレイン店",
+      "shopType": "online",
+      "status": "suspended",
+      "prefectureCode": "24",
+      "owner": {
+        "id": "u4",
+        "name": "高橋美咲"
+      },
+      "address": "博多区下川端町3-1",
+      "phone": "03-1023-5161",
+      "email": "shop24@example.com",
+      "website": null,
+      "openDate": "2020-12-24",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 79,
+      "notes": null,
+      "createdAt": "2023-12-23T15:00:00.000Z",
+      "updatedAt": "2024-12-23T15:00:00.000Z",
+      "prefecture": {
+        "id": 24,
+        "name": "三重県"
+      }
+    },
+    {
+      "id": "25",
+      "name": "キャナルシティ店",
+      "shopType": "directStore",
+      "status": "preparing",
+      "prefectureCode": "25",
+      "owner": {
+        "id": "u5",
+        "name": "山田健二"
+      },
+      "address": "博多区住吉1-2",
+      "phone": "03-1024-5168",
+      "email": "shop25@example.com",
+      "website": "https://shop25.example.com",
+      "openDate": "2021-01-25",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 82,
+      "notes": null,
+      "createdAt": "2023-01-24T15:00:00.000Z",
+      "updatedAt": "2024-01-24T15:00:00.000Z",
+      "prefecture": {
+        "id": 25,
+        "name": "滋賀県"
+      }
+    },
+    {
+      "id": "26",
+      "name": "札幌駅前店",
+      "shopType": "franchise",
+      "status": "open",
+      "prefectureCode": "26",
+      "owner": {
+        "id": "u1",
+        "name": "田中太郎"
+      },
+      "address": "北区北6条西4-1",
+      "phone": "03-1025-5175",
+      "email": "shop26@example.com",
+      "website": null,
+      "openDate": "2022-02-26",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 85,
+      "notes": "駐車場あり。大型店舗。",
+      "createdAt": "2023-02-25T15:00:00.000Z",
+      "updatedAt": "2024-02-25T15:00:00.000Z",
+      "prefecture": {
+        "id": 26,
+        "name": "京都府"
+      }
+    },
+    {
+      "id": "27",
+      "name": "すすきの店",
+      "shopType": "online",
+      "status": "open",
+      "prefectureCode": "27",
+      "owner": {
+        "id": "u2",
+        "name": "鈴木花子"
+      },
+      "address": "中央区南4条西3-1",
+      "phone": "03-1026-5182",
+      "email": "shop27@example.com",
+      "website": null,
+      "openDate": "2023-03-27",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 88,
+      "notes": null,
+      "createdAt": "2023-03-26T15:00:00.000Z",
+      "updatedAt": "2024-03-26T15:00:00.000Z",
+      "prefecture": {
+        "id": 27,
+        "name": "大阪府"
+      }
+    },
+    {
+      "id": "28",
+      "name": "大通公園店",
+      "shopType": "directStore",
+      "status": "open",
+      "prefectureCode": "28",
+      "owner": {
+        "id": "u3",
+        "name": "佐藤一郎"
+      },
+      "address": "中央区大通西1-1",
+      "phone": "03-1027-5189",
+      "email": "shop28@example.com",
+      "website": "https://shop28.example.com",
+      "openDate": "2024-04-28",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 91,
+      "notes": null,
+      "createdAt": "2023-04-27T15:00:00.000Z",
+      "updatedAt": "2024-04-27T15:00:00.000Z",
+      "prefecture": {
+        "id": 28,
+        "name": "兵庫県"
+      }
+    },
+    {
+      "id": "29",
+      "name": "札幌ファクトリー店",
+      "shopType": "franchise",
+      "status": "closed",
+      "prefectureCode": "29",
+      "owner": {
+        "id": "u4",
+        "name": "高橋美咲"
+      },
+      "address": "中央区北2条東4-1",
+      "phone": "03-1028-5196",
+      "email": "shop29@example.com",
+      "website": null,
+      "openDate": "2018-05-01",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 94,
+      "notes": null,
+      "createdAt": "2023-04-30T15:00:00.000Z",
+      "updatedAt": "2024-04-30T15:00:00.000Z",
+      "prefecture": {
+        "id": 29,
+        "name": "奈良県"
+      }
+    },
+    {
+      "id": "30",
+      "name": "新千歳空港店",
+      "shopType": "online",
+      "status": "suspended",
+      "prefectureCode": "30",
+      "owner": {
+        "id": "u5",
+        "name": "山田健二"
+      },
+      "address": "千歳市美々",
+      "phone": "03-1029-5203",
+      "email": "shop30@example.com",
+      "website": null,
+      "openDate": "2019-06-02",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 97,
+      "notes": null,
+      "createdAt": "2023-06-01T15:00:00.000Z",
+      "updatedAt": "2024-06-01T15:00:00.000Z",
+      "prefecture": {
+        "id": 30,
+        "name": "和歌山県"
+      }
+    },
+    {
+      "id": "31",
+      "name": "仙台駅前店",
+      "shopType": "directStore",
+      "status": "preparing",
+      "prefectureCode": "31",
+      "owner": {
+        "id": "u1",
+        "name": "田中太郎"
+      },
+      "address": "青葉区中央1-1-1",
+      "phone": "03-1030-5210",
+      "email": "shop31@example.com",
+      "website": "https://shop31.example.com",
+      "openDate": "2020-07-03",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 10,
+      "notes": "駐車場あり。大型店舗。",
+      "createdAt": "2023-07-02T15:00:00.000Z",
+      "updatedAt": "2024-07-02T15:00:00.000Z",
+      "prefecture": {
+        "id": 31,
+        "name": "鳥取県"
+      }
+    },
+    {
+      "id": "32",
+      "name": "仙台一番町店",
+      "shopType": "franchise",
+      "status": "open",
+      "prefectureCode": "32",
+      "owner": {
+        "id": "u2",
+        "name": "鈴木花子"
+      },
+      "address": "青葉区一番町3-7-1",
+      "phone": "03-1031-5217",
+      "email": "shop32@example.com",
+      "website": null,
+      "openDate": "2021-08-04",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 13,
+      "notes": null,
+      "createdAt": "2023-08-03T15:00:00.000Z",
+      "updatedAt": "2024-08-03T15:00:00.000Z",
+      "prefecture": {
+        "id": 32,
+        "name": "島根県"
+      }
+    },
+    {
+      "id": "33",
+      "name": "泉中央店",
+      "shopType": "online",
+      "status": "open",
+      "prefectureCode": "33",
+      "owner": {
+        "id": "u3",
+        "name": "佐藤一郎"
+      },
+      "address": "泉区泉中央1-7-1",
+      "phone": "03-1032-5224",
+      "email": "shop33@example.com",
+      "website": null,
+      "openDate": "2022-09-05",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 16,
+      "notes": null,
+      "createdAt": "2023-09-04T15:00:00.000Z",
+      "updatedAt": "2024-09-04T15:00:00.000Z",
+      "prefecture": {
+        "id": 33,
+        "name": "岡山県"
+      }
+    },
+    {
+      "id": "34",
+      "name": "長町店",
+      "shopType": "directStore",
+      "status": "open",
+      "prefectureCode": "34",
+      "owner": {
+        "id": "u4",
+        "name": "高橋美咲"
+      },
+      "address": "太白区長町5-3-1",
+      "phone": "03-1033-5231",
+      "email": "shop34@example.com",
+      "website": "https://shop34.example.com",
+      "openDate": "2023-10-06",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 19,
+      "notes": null,
+      "createdAt": "2023-10-05T15:00:00.000Z",
+      "updatedAt": "2024-10-05T15:00:00.000Z",
+      "prefecture": {
+        "id": 34,
+        "name": "広島県"
+      }
+    },
+    {
+      "id": "35",
+      "name": "仙台空港店",
+      "shopType": "franchise",
+      "status": "closed",
+      "prefectureCode": "35",
+      "owner": {
+        "id": "u5",
+        "name": "山田健二"
+      },
+      "address": "名取市下増田",
+      "phone": "03-1034-5238",
+      "email": "shop35@example.com",
+      "website": null,
+      "openDate": "2024-11-07",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 22,
+      "notes": null,
+      "createdAt": "2023-11-06T15:00:00.000Z",
+      "updatedAt": "2024-11-06T15:00:00.000Z",
+      "prefecture": {
+        "id": 35,
+        "name": "山口県"
+      }
+    },
+    {
+      "id": "36",
+      "name": "広島本通り店",
+      "shopType": "online",
+      "status": "suspended",
+      "prefectureCode": "36",
+      "owner": {
+        "id": "u1",
+        "name": "田中太郎"
+      },
+      "address": "中区本通3-1",
+      "phone": "03-1035-5245",
+      "email": "shop36@example.com",
+      "website": null,
+      "openDate": "2018-12-08",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 25,
+      "notes": "駐車場あり。大型店舗。",
+      "createdAt": "2023-12-07T15:00:00.000Z",
+      "updatedAt": "2024-12-07T15:00:00.000Z",
+      "prefecture": {
+        "id": 36,
+        "name": "徳島県"
+      }
+    },
+    {
+      "id": "37",
+      "name": "広島駅前店",
+      "shopType": "directStore",
+      "status": "preparing",
+      "prefectureCode": "37",
+      "owner": {
+        "id": "u2",
+        "name": "鈴木花子"
+      },
+      "address": "南区松原町2-37",
+      "phone": "03-1036-5252",
+      "email": "shop37@example.com",
+      "website": "https://shop37.example.com",
+      "openDate": "2019-01-09",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 28,
+      "notes": null,
+      "createdAt": "2023-01-08T15:00:00.000Z",
+      "updatedAt": "2024-01-08T15:00:00.000Z",
+      "prefecture": {
+        "id": 37,
+        "name": "香川県"
+      }
+    },
+    {
+      "id": "38",
+      "name": "紙屋町店",
+      "shopType": "franchise",
+      "status": "open",
+      "prefectureCode": "38",
+      "owner": {
+        "id": "u3",
+        "name": "佐藤一郎"
+      },
+      "address": "中区紙屋町2-1-1",
+      "phone": "03-1037-5259",
+      "email": "shop38@example.com",
+      "website": null,
+      "openDate": "2020-02-10",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 31,
+      "notes": null,
+      "createdAt": "2023-02-09T15:00:00.000Z",
+      "updatedAt": "2024-02-09T15:00:00.000Z",
+      "prefecture": {
+        "id": 38,
+        "name": "愛媛県"
+      }
+    },
+    {
+      "id": "39",
+      "name": "八丁堀店",
+      "shopType": "online",
+      "status": "open",
+      "prefectureCode": "39",
+      "owner": {
+        "id": "u4",
+        "name": "高橋美咲"
+      },
+      "address": "中区八丁堀16-10",
+      "phone": "03-1038-5266",
+      "email": "shop39@example.com",
+      "website": null,
+      "openDate": "2021-03-11",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 34,
+      "notes": null,
+      "createdAt": "2023-03-10T15:00:00.000Z",
+      "updatedAt": "2024-03-10T15:00:00.000Z",
+      "prefecture": {
+        "id": 39,
+        "name": "高知県"
+      }
+    },
+    {
+      "id": "40",
+      "name": "広島マリーナ店",
+      "shopType": "directStore",
+      "status": "open",
+      "prefectureCode": "40",
+      "owner": {
+        "id": "u5",
+        "name": "山田健二"
+      },
+      "address": "南区宇品海岸3-1",
+      "phone": "03-1039-5273",
+      "email": "shop40@example.com",
+      "website": "https://shop40.example.com",
+      "openDate": "2022-04-12",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 37,
+      "notes": null,
+      "createdAt": "2023-04-11T15:00:00.000Z",
+      "updatedAt": "2024-04-11T15:00:00.000Z",
+      "prefecture": {
+        "id": 40,
+        "name": "福岡県"
+      }
+    },
+    {
+      "id": "41",
+      "name": "京都四条店",
+      "shopType": "franchise",
+      "status": "closed",
+      "prefectureCode": "41",
+      "owner": {
+        "id": "u1",
+        "name": "田中太郎"
+      },
+      "address": "下京区四条通烏丸東入",
+      "phone": "03-1040-5280",
+      "email": "shop41@example.com",
+      "website": null,
+      "openDate": "2023-05-13",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 40,
+      "notes": "駐車場あり。大型店舗。",
+      "createdAt": "2023-05-12T15:00:00.000Z",
+      "updatedAt": "2024-05-12T15:00:00.000Z",
+      "prefecture": {
+        "id": 41,
+        "name": "佐賀県"
+      }
+    },
+    {
+      "id": "42",
+      "name": "河原町店",
+      "shopType": "online",
+      "status": "suspended",
+      "prefectureCode": "42",
+      "owner": {
+        "id": "u2",
+        "name": "鈴木花子"
+      },
+      "address": "中京区河原町通四条上ル",
+      "phone": "03-1041-5287",
+      "email": "shop42@example.com",
+      "website": null,
+      "openDate": "2024-06-14",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 43,
+      "notes": null,
+      "createdAt": "2023-06-13T15:00:00.000Z",
+      "updatedAt": "2024-06-13T15:00:00.000Z",
+      "prefecture": {
+        "id": 42,
+        "name": "長崎県"
+      }
+    },
+    {
+      "id": "43",
+      "name": "京都駅前店",
+      "shopType": "directStore",
+      "status": "preparing",
+      "prefectureCode": "43",
+      "owner": {
+        "id": "u3",
+        "name": "佐藤一郎"
+      },
+      "address": "下京区烏丸通塩小路下ル",
+      "phone": "03-1042-5294",
+      "email": "shop43@example.com",
+      "website": "https://shop43.example.com",
+      "openDate": "2018-07-15",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 46,
+      "notes": null,
+      "createdAt": "2023-07-14T15:00:00.000Z",
+      "updatedAt": "2024-07-14T15:00:00.000Z",
+      "prefecture": {
+        "id": 43,
+        "name": "熊本県"
+      }
+    },
+    {
+      "id": "44",
+      "name": "嵐山店",
+      "shopType": "franchise",
+      "status": "open",
+      "prefectureCode": "44",
+      "owner": {
+        "id": "u4",
+        "name": "高橋美咲"
+      },
+      "address": "右京区嵯峨天龍寺芒ノ馬場町",
+      "phone": "03-1043-5301",
+      "email": "shop44@example.com",
+      "website": null,
+      "openDate": "2019-08-16",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 49,
+      "notes": null,
+      "createdAt": "2023-08-15T15:00:00.000Z",
+      "updatedAt": "2024-08-15T15:00:00.000Z",
+      "prefecture": {
+        "id": 44,
+        "name": "大分県"
+      }
+    },
+    {
+      "id": "45",
+      "name": "伏見稲荷店",
+      "shopType": "online",
+      "status": "open",
+      "prefectureCode": "45",
+      "owner": {
+        "id": "u5",
+        "name": "山田健二"
+      },
+      "address": "伏見区深草藪之内町",
+      "phone": "03-1044-5308",
+      "email": "shop45@example.com",
+      "website": null,
+      "openDate": "2020-09-17",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 52,
+      "notes": null,
+      "createdAt": "2023-09-16T15:00:00.000Z",
+      "updatedAt": "2024-09-16T15:00:00.000Z",
+      "prefecture": {
+        "id": 45,
+        "name": "宮崎県"
+      }
+    },
+    {
+      "id": "46",
+      "name": "那覇国際通り店",
+      "shopType": "directStore",
+      "status": "open",
+      "prefectureCode": "46",
+      "owner": {
+        "id": "u1",
+        "name": "田中太郎"
+      },
+      "address": "那覇市牧志3-2-10",
+      "phone": "03-1045-5315",
+      "email": "shop46@example.com",
+      "website": "https://shop46.example.com",
+      "openDate": "2021-10-18",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 55,
+      "notes": "駐車場あり。大型店舗。",
+      "createdAt": "2023-10-17T15:00:00.000Z",
+      "updatedAt": "2024-10-17T15:00:00.000Z",
+      "prefecture": {
+        "id": 46,
+        "name": "鹿児島県"
+      }
+    },
+    {
+      "id": "47",
+      "name": "北谷アメリカンビレッジ店",
+      "shopType": "franchise",
+      "status": "closed",
+      "prefectureCode": "47",
+      "owner": {
+        "id": "u2",
+        "name": "鈴木花子"
+      },
+      "address": "中頭郡北谷町美浜9-1",
+      "phone": "03-1046-5322",
+      "email": "shop47@example.com",
+      "website": null,
+      "openDate": "2022-11-19",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 58,
+      "notes": null,
+      "createdAt": "2023-11-18T15:00:00.000Z",
+      "updatedAt": "2024-11-18T15:00:00.000Z",
+      "prefecture": {
+        "id": 47,
+        "name": "沖縄県"
+      }
+    },
+    {
+      "id": "48",
+      "name": "沖縄ライカム店",
+      "shopType": "online",
+      "status": "suspended",
+      "prefectureCode": "01",
+      "owner": {
+        "id": "u3",
+        "name": "佐藤一郎"
+      },
+      "address": "中頭郡北中城村ライカム1",
+      "phone": "03-1047-5329",
+      "email": "shop48@example.com",
+      "website": null,
+      "openDate": "2023-12-20",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 61,
+      "notes": null,
+      "createdAt": "2023-12-19T15:00:00.000Z",
+      "updatedAt": "2024-12-19T15:00:00.000Z",
+      "prefecture": {
+        "id": 1,
+        "name": "北海道"
+      }
+    },
+    {
+      "id": "49",
+      "name": "首里店",
+      "shopType": "directStore",
+      "status": "preparing",
+      "prefectureCode": "02",
+      "owner": {
+        "id": "u4",
+        "name": "高橋美咲"
+      },
+      "address": "那覇市首里当蔵町1-1",
+      "phone": "03-1048-5336",
+      "email": "shop49@example.com",
+      "website": "https://shop49.example.com",
+      "openDate": "2024-01-21",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 64,
+      "notes": null,
+      "createdAt": "2023-01-20T15:00:00.000Z",
+      "updatedAt": "2024-01-20T15:00:00.000Z",
+      "prefecture": {
+        "id": 2,
+        "name": "青森県"
+      }
+    },
+    {
+      "id": "50",
+      "name": "豊崎店",
+      "shopType": "franchise",
+      "status": "open",
+      "prefectureCode": "03",
+      "owner": {
+        "id": "u5",
+        "name": "山田健二"
+      },
+      "address": "豊見城市豊崎1-411",
+      "phone": "03-1049-5343",
+      "email": "shop50@example.com",
+      "website": null,
+      "openDate": "2018-02-22",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 67,
+      "notes": null,
+      "createdAt": "2023-02-21T15:00:00.000Z",
+      "updatedAt": "2024-02-21T15:00:00.000Z",
+      "prefecture": {
+        "id": 3,
+        "name": "岩手県"
+      }
+    },
+    {
+      "id": "51",
+      "name": "神田店",
+      "shopType": "online",
+      "status": "open",
+      "prefectureCode": "04",
+      "owner": {
+        "id": "u1",
+        "name": "田中太郎"
+      },
+      "address": "千代田区神田須田町1-1",
+      "phone": "03-1050-5350",
+      "email": "shop51@example.com",
+      "website": null,
+      "openDate": "2019-03-23",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 70,
+      "notes": "駐車場あり。大型店舗。",
+      "createdAt": "2023-03-22T15:00:00.000Z",
+      "updatedAt": "2024-03-22T15:00:00.000Z",
+      "prefecture": {
+        "id": 4,
+        "name": "宮城県"
+      }
+    },
+    {
+      "id": "52",
+      "name": "秋葉原店",
+      "shopType": "directStore",
+      "status": "open",
+      "prefectureCode": "05",
+      "owner": {
+        "id": "u2",
+        "name": "鈴木花子"
+      },
+      "address": "千代田区外神田1-1",
+      "phone": "03-1051-5357",
+      "email": "shop52@example.com",
+      "website": "https://shop52.example.com",
+      "openDate": "2020-04-24",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 73,
+      "notes": null,
+      "createdAt": "2023-04-23T15:00:00.000Z",
+      "updatedAt": "2024-04-23T15:00:00.000Z",
+      "prefecture": {
+        "id": 5,
+        "name": "秋田県"
+      }
+    },
+    {
+      "id": "53",
+      "name": "上野店",
+      "shopType": "franchise",
+      "status": "closed",
+      "prefectureCode": "06",
+      "owner": {
+        "id": "u3",
+        "name": "佐藤一郎"
+      },
+      "address": "台東区上野7-1",
+      "phone": "03-1052-5364",
+      "email": "shop53@example.com",
+      "website": null,
+      "openDate": "2021-05-25",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 76,
+      "notes": null,
+      "createdAt": "2023-05-24T15:00:00.000Z",
+      "updatedAt": "2024-05-24T15:00:00.000Z",
+      "prefecture": {
+        "id": 6,
+        "name": "山形県"
+      }
+    },
+    {
+      "id": "54",
+      "name": "浅草店",
+      "shopType": "online",
+      "status": "suspended",
+      "prefectureCode": "07",
+      "owner": {
+        "id": "u4",
+        "name": "高橋美咲"
+      },
+      "address": "台東区浅草1-1",
+      "phone": "03-1053-5371",
+      "email": "shop54@example.com",
+      "website": null,
+      "openDate": "2022-06-26",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 79,
+      "notes": null,
+      "createdAt": "2023-06-25T15:00:00.000Z",
+      "updatedAt": "2024-06-25T15:00:00.000Z",
+      "prefecture": {
+        "id": 7,
+        "name": "福島県"
+      }
+    },
+    {
+      "id": "55",
+      "name": "お台場店",
+      "shopType": "directStore",
+      "status": "preparing",
+      "prefectureCode": "08",
+      "owner": {
+        "id": "u5",
+        "name": "山田健二"
+      },
+      "address": "港区台場1-7-1",
+      "phone": "03-1054-5378",
+      "email": "shop55@example.com",
+      "website": "https://shop55.example.com",
+      "openDate": "2023-07-27",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 82,
+      "notes": null,
+      "createdAt": "2023-07-26T15:00:00.000Z",
+      "updatedAt": "2024-07-26T15:00:00.000Z",
+      "prefecture": {
+        "id": 8,
+        "name": "茨城県"
+      }
+    },
+    {
+      "id": "56",
+      "name": "吉祥寺店",
+      "shopType": "franchise",
+      "status": "open",
+      "prefectureCode": "09",
+      "owner": {
+        "id": "u1",
+        "name": "田中太郎"
+      },
+      "address": "武蔵野市吉祥寺本町1-1",
+      "phone": "03-1055-5385",
+      "email": "shop56@example.com",
+      "website": null,
+      "openDate": "2024-08-28",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 85,
+      "notes": "駐車場あり。大型店舗。",
+      "createdAt": "2023-08-27T15:00:00.000Z",
+      "updatedAt": "2024-08-27T15:00:00.000Z",
+      "prefecture": {
+        "id": 9,
+        "name": "栃木県"
+      }
+    },
+    {
+      "id": "57",
+      "name": "三鷹店",
+      "shopType": "online",
+      "status": "open",
+      "prefectureCode": "10",
+      "owner": {
+        "id": "u2",
+        "name": "鈴木花子"
+      },
+      "address": "三鷹市下連雀3-1",
+      "phone": "03-1056-5392",
+      "email": "shop57@example.com",
+      "website": null,
+      "openDate": "2018-09-01",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 88,
+      "notes": null,
+      "createdAt": "2023-08-31T15:00:00.000Z",
+      "updatedAt": "2024-08-31T15:00:00.000Z",
+      "prefecture": {
+        "id": 10,
+        "name": "群馬県"
+      }
+    },
+    {
+      "id": "58",
+      "name": "町田店",
+      "shopType": "directStore",
+      "status": "open",
+      "prefectureCode": "11",
+      "owner": {
+        "id": "u3",
+        "name": "佐藤一郎"
+      },
+      "address": "町田市原町田6-1",
+      "phone": "03-1057-5399",
+      "email": "shop58@example.com",
+      "website": "https://shop58.example.com",
+      "openDate": "2019-10-02",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 91,
+      "notes": null,
+      "createdAt": "2023-10-01T15:00:00.000Z",
+      "updatedAt": "2024-10-01T15:00:00.000Z",
+      "prefecture": {
+        "id": 11,
+        "name": "埼玉県"
+      }
+    },
+    {
+      "id": "59",
+      "name": "八王子店",
+      "shopType": "franchise",
+      "status": "closed",
+      "prefectureCode": "12",
+      "owner": {
+        "id": "u4",
+        "name": "高橋美咲"
+      },
+      "address": "八王子市旭町9-1",
+      "phone": "03-1058-5406",
+      "email": "shop59@example.com",
+      "website": null,
+      "openDate": "2020-11-03",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 94,
+      "notes": null,
+      "createdAt": "2023-11-02T15:00:00.000Z",
+      "updatedAt": "2024-11-02T15:00:00.000Z",
+      "prefecture": {
+        "id": 12,
+        "name": "千葉県"
+      }
+    },
+    {
+      "id": "60",
+      "name": "府中店",
+      "shopType": "online",
+      "status": "suspended",
+      "prefectureCode": "13",
+      "owner": {
+        "id": "u5",
+        "name": "山田健二"
+      },
+      "address": "府中市宮町1-1",
+      "phone": "03-1059-5413",
+      "email": "shop60@example.com",
+      "website": null,
+      "openDate": "2021-12-04",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 97,
+      "notes": null,
+      "createdAt": "2023-12-03T15:00:00.000Z",
+      "updatedAt": "2024-12-03T15:00:00.000Z",
+      "prefecture": {
+        "id": 13,
+        "name": "東京都"
+      }
+    },
+    {
+      "id": "61",
+      "name": "横浜駅西口店",
+      "shopType": "directStore",
+      "status": "preparing",
+      "prefectureCode": "14",
+      "owner": {
+        "id": "u1",
+        "name": "田中太郎"
+      },
+      "address": "西区南幸1-1",
+      "phone": "03-1060-5420",
+      "email": "shop61@example.com",
+      "website": "https://shop61.example.com",
+      "openDate": "2022-01-05",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 10,
+      "notes": "駐車場あり。大型店舗。",
+      "createdAt": "2023-01-04T15:00:00.000Z",
+      "updatedAt": "2024-01-04T15:00:00.000Z",
+      "prefecture": {
+        "id": 14,
+        "name": "神奈川県"
+      }
+    },
+    {
+      "id": "62",
+      "name": "関内店",
+      "shopType": "franchise",
+      "status": "open",
+      "prefectureCode": "15",
+      "owner": {
+        "id": "u2",
+        "name": "鈴木花子"
+      },
+      "address": "中区港町1-1",
+      "phone": "03-1061-5427",
+      "email": "shop62@example.com",
+      "website": null,
+      "openDate": "2023-02-06",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 13,
+      "notes": null,
+      "createdAt": "2023-02-05T15:00:00.000Z",
+      "updatedAt": "2024-02-05T15:00:00.000Z",
+      "prefecture": {
+        "id": 15,
+        "name": "新潟県"
+      }
+    },
+    {
+      "id": "63",
+      "name": "藤沢店",
+      "shopType": "online",
+      "status": "open",
+      "prefectureCode": "16",
+      "owner": {
+        "id": "u3",
+        "name": "佐藤一郎"
+      },
+      "address": "藤沢市藤沢555",
+      "phone": "03-1062-5434",
+      "email": "shop63@example.com",
+      "website": null,
+      "openDate": "2024-03-07",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 16,
+      "notes": null,
+      "createdAt": "2023-03-06T15:00:00.000Z",
+      "updatedAt": "2024-03-06T15:00:00.000Z",
+      "prefecture": {
+        "id": 16,
+        "name": "富山県"
+      }
+    },
+    {
+      "id": "64",
+      "name": "鎌倉店",
+      "shopType": "directStore",
+      "status": "open",
+      "prefectureCode": "17",
+      "owner": {
+        "id": "u4",
+        "name": "高橋美咲"
+      },
+      "address": "鎌倉市小町2-1",
+      "phone": "03-1063-5441",
+      "email": "shop64@example.com",
+      "website": "https://shop64.example.com",
+      "openDate": "2018-04-08",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 19,
+      "notes": null,
+      "createdAt": "2023-04-07T15:00:00.000Z",
+      "updatedAt": "2024-04-07T15:00:00.000Z",
+      "prefecture": {
+        "id": 17,
+        "name": "石川県"
+      }
+    },
+    {
+      "id": "65",
+      "name": "茅ヶ崎店",
+      "shopType": "franchise",
+      "status": "closed",
+      "prefectureCode": "18",
+      "owner": {
+        "id": "u5",
+        "name": "山田健二"
+      },
+      "address": "茅ヶ崎市元町1-1",
+      "phone": "03-1064-5448",
+      "email": "shop65@example.com",
+      "website": null,
+      "openDate": "2019-05-09",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 22,
+      "notes": null,
+      "createdAt": "2023-05-08T15:00:00.000Z",
+      "updatedAt": "2024-05-08T15:00:00.000Z",
+      "prefecture": {
+        "id": 18,
+        "name": "福井県"
+      }
+    },
+    {
+      "id": "66",
+      "name": "渋谷本店2号",
+      "shopType": "online",
+      "status": "suspended",
+      "prefectureCode": "19",
+      "owner": {
+        "id": "u1",
+        "name": "田中太郎"
+      },
+      "address": "渋谷区道玄坂1-2-3",
+      "phone": "03-1065-5455",
+      "email": "shop66@example.com",
+      "website": null,
+      "openDate": "2020-06-10",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 25,
+      "notes": "駐車場あり。大型店舗。",
+      "createdAt": "2023-06-09T15:00:00.000Z",
+      "updatedAt": "2024-06-09T15:00:00.000Z",
+      "prefecture": {
+        "id": 19,
+        "name": "山梨県"
+      }
+    },
+    {
+      "id": "67",
+      "name": "新宿西口店2号",
+      "shopType": "directStore",
+      "status": "preparing",
+      "prefectureCode": "20",
+      "owner": {
+        "id": "u2",
+        "name": "鈴木花子"
+      },
+      "address": "新宿区西新宿1-4-5",
+      "phone": "03-1066-5462",
+      "email": "shop67@example.com",
+      "website": "https://shop67.example.com",
+      "openDate": "2021-07-11",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 28,
+      "notes": null,
+      "createdAt": "2023-07-10T15:00:00.000Z",
+      "updatedAt": "2024-07-10T15:00:00.000Z",
+      "prefecture": {
+        "id": 20,
+        "name": "長野県"
+      }
+    },
+    {
+      "id": "68",
+      "name": "池袋東口店2号",
+      "shopType": "franchise",
+      "status": "open",
+      "prefectureCode": "21",
+      "owner": {
+        "id": "u3",
+        "name": "佐藤一郎"
+      },
+      "address": "豊島区東池袋1-6-7",
+      "phone": "03-1067-5469",
+      "email": "shop68@example.com",
+      "website": null,
+      "openDate": "2022-08-12",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 31,
+      "notes": null,
+      "createdAt": "2023-08-11T15:00:00.000Z",
+      "updatedAt": "2024-08-11T15:00:00.000Z",
+      "prefecture": {
+        "id": 21,
+        "name": "岐阜県"
+      }
+    },
+    {
+      "id": "69",
+      "name": "銀座中央店2号",
+      "shopType": "online",
+      "status": "open",
+      "prefectureCode": "22",
+      "owner": {
+        "id": "u4",
+        "name": "高橋美咲"
+      },
+      "address": "中央区銀座4-8-9",
+      "phone": "03-1068-5476",
+      "email": "shop69@example.com",
+      "website": null,
+      "openDate": "2023-09-13",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 34,
+      "notes": null,
+      "createdAt": "2023-09-12T15:00:00.000Z",
+      "updatedAt": "2024-09-12T15:00:00.000Z",
+      "prefecture": {
+        "id": 22,
+        "name": "静岡県"
+      }
+    },
+    {
+      "id": "70",
+      "name": "品川駅前店2号",
+      "shopType": "directStore",
+      "status": "open",
+      "prefectureCode": "23",
+      "owner": {
+        "id": "u5",
+        "name": "山田健二"
+      },
+      "address": "港区港南2-10-11",
+      "phone": "03-1069-5483",
+      "email": "shop70@example.com",
+      "website": "https://shop70.example.com",
+      "openDate": "2024-10-14",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 37,
+      "notes": null,
+      "createdAt": "2023-10-13T15:00:00.000Z",
+      "updatedAt": "2024-10-13T15:00:00.000Z",
+      "prefecture": {
+        "id": 23,
+        "name": "愛知県"
+      }
+    },
+    {
+      "id": "71",
+      "name": "横浜みなとみらい店2号",
+      "shopType": "franchise",
+      "status": "closed",
+      "prefectureCode": "24",
+      "owner": {
+        "id": "u1",
+        "name": "田中太郎"
+      },
+      "address": "西区みなとみらい2-3-1",
+      "phone": "03-1070-5490",
+      "email": "shop71@example.com",
+      "website": null,
+      "openDate": "2018-11-15",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 40,
+      "notes": "駐車場あり。大型店舗。",
+      "createdAt": "2023-11-14T15:00:00.000Z",
+      "updatedAt": "2024-11-14T15:00:00.000Z",
+      "prefecture": {
+        "id": 24,
+        "name": "三重県"
+      }
+    },
+    {
+      "id": "72",
+      "name": "川崎ラゾーナ店2号",
+      "shopType": "online",
+      "status": "suspended",
+      "prefectureCode": "25",
+      "owner": {
+        "id": "u2",
+        "name": "鈴木花子"
+      },
+      "address": "幸区堀川町72-1",
+      "phone": "03-1071-5497",
+      "email": "shop72@example.com",
+      "website": null,
+      "openDate": "2019-12-16",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 43,
+      "notes": null,
+      "createdAt": "2023-12-15T15:00:00.000Z",
+      "updatedAt": "2024-12-15T15:00:00.000Z",
+      "prefecture": {
+        "id": 25,
+        "name": "滋賀県"
+      }
+    },
+    {
+      "id": "73",
+      "name": "大宮駅前店2号",
+      "shopType": "directStore",
+      "status": "preparing",
+      "prefectureCode": "26",
+      "owner": {
+        "id": "u3",
+        "name": "佐藤一郎"
+      },
+      "address": "大宮区桜木町1-7-5",
+      "phone": "03-1072-5504",
+      "email": "shop73@example.com",
+      "website": "https://shop73.example.com",
+      "openDate": "2020-01-17",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 46,
+      "notes": null,
+      "createdAt": "2023-01-16T15:00:00.000Z",
+      "updatedAt": "2024-01-16T15:00:00.000Z",
+      "prefecture": {
+        "id": 26,
+        "name": "京都府"
+      }
+    },
+    {
+      "id": "74",
+      "name": "千葉中央店2号",
+      "shopType": "franchise",
+      "status": "open",
+      "prefectureCode": "27",
+      "owner": {
+        "id": "u4",
+        "name": "高橋美咲"
+      },
+      "address": "中央区中央1-1-1",
+      "phone": "03-1073-5511",
+      "email": "shop74@example.com",
+      "website": null,
+      "openDate": "2021-02-18",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 49,
+      "notes": null,
+      "createdAt": "2023-02-17T15:00:00.000Z",
+      "updatedAt": "2024-02-17T15:00:00.000Z",
+      "prefecture": {
+        "id": 27,
+        "name": "大阪府"
+      }
+    },
+    {
+      "id": "75",
+      "name": "立川北口店2号",
+      "shopType": "online",
+      "status": "open",
+      "prefectureCode": "28",
+      "owner": {
+        "id": "u5",
+        "name": "山田健二"
+      },
+      "address": "曙町2-4-6",
+      "phone": "03-1074-5518",
+      "email": "shop75@example.com",
+      "website": null,
+      "openDate": "2022-03-19",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 52,
+      "notes": null,
+      "createdAt": "2023-03-18T15:00:00.000Z",
+      "updatedAt": "2024-03-18T15:00:00.000Z",
+      "prefecture": {
+        "id": 28,
+        "name": "兵庫県"
+      }
+    },
+    {
+      "id": "76",
+      "name": "梅田本店2号",
+      "shopType": "directStore",
+      "status": "open",
+      "prefectureCode": "29",
+      "owner": {
+        "id": "u1",
+        "name": "田中太郎"
+      },
+      "address": "北区梅田1-1-3",
+      "phone": "03-1075-5525",
+      "email": "shop76@example.com",
+      "website": "https://shop76.example.com",
+      "openDate": "2023-04-20",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 55,
+      "notes": "駐車場あり。大型店舗。",
+      "createdAt": "2023-04-19T15:00:00.000Z",
+      "updatedAt": "2024-04-19T15:00:00.000Z",
+      "prefecture": {
+        "id": 29,
+        "name": "奈良県"
+      }
+    },
+    {
+      "id": "77",
+      "name": "なんば店2号",
+      "shopType": "franchise",
+      "status": "closed",
+      "prefectureCode": "30",
+      "owner": {
+        "id": "u2",
+        "name": "鈴木花子"
+      },
+      "address": "中央区難波5-1-60",
+      "phone": "03-1076-5532",
+      "email": "shop77@example.com",
+      "website": null,
+      "openDate": "2024-05-21",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 58,
+      "notes": null,
+      "createdAt": "2023-05-20T15:00:00.000Z",
+      "updatedAt": "2024-05-20T15:00:00.000Z",
+      "prefecture": {
+        "id": 30,
+        "name": "和歌山県"
+      }
+    },
+    {
+      "id": "78",
+      "name": "天王寺店2号",
+      "shopType": "online",
+      "status": "suspended",
+      "prefectureCode": "31",
+      "owner": {
+        "id": "u3",
+        "name": "佐藤一郎"
+      },
+      "address": "阿倍野区阿倍野筋1-1-43",
+      "phone": "03-1077-5539",
+      "email": "shop78@example.com",
+      "website": null,
+      "openDate": "2018-06-22",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 61,
+      "notes": null,
+      "createdAt": "2023-06-21T15:00:00.000Z",
+      "updatedAt": "2024-06-21T15:00:00.000Z",
+      "prefecture": {
+        "id": 31,
+        "name": "鳥取県"
+      }
+    },
+    {
+      "id": "79",
+      "name": "心斎橋店2号",
+      "shopType": "directStore",
+      "status": "preparing",
+      "prefectureCode": "32",
+      "owner": {
+        "id": "u4",
+        "name": "高橋美咲"
+      },
+      "address": "中央区心斎橋筋2-6-14",
+      "phone": "03-1078-5546",
+      "email": "shop79@example.com",
+      "website": "https://shop79.example.com",
+      "openDate": "2019-07-23",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 64,
+      "notes": null,
+      "createdAt": "2023-07-22T15:00:00.000Z",
+      "updatedAt": "2024-07-22T15:00:00.000Z",
+      "prefecture": {
+        "id": 32,
+        "name": "島根県"
+      }
+    },
+    {
+      "id": "80",
+      "name": "京橋店2号",
+      "shopType": "franchise",
+      "status": "open",
+      "prefectureCode": "33",
+      "owner": {
+        "id": "u5",
+        "name": "山田健二"
+      },
+      "address": "都島区東野田町2-1-38",
+      "phone": "03-1079-5553",
+      "email": "shop80@example.com",
+      "website": null,
+      "openDate": "2020-08-24",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 67,
+      "notes": null,
+      "createdAt": "2023-08-23T15:00:00.000Z",
+      "updatedAt": "2024-08-23T15:00:00.000Z",
+      "prefecture": {
+        "id": 33,
+        "name": "岡山県"
+      }
+    },
+    {
+      "id": "81",
+      "name": "名古屋栄店2号",
+      "shopType": "online",
+      "status": "open",
+      "prefectureCode": "34",
+      "owner": {
+        "id": "u1",
+        "name": "田中太郎"
+      },
+      "address": "中区栄3-5-1",
+      "phone": "03-1080-5560",
+      "email": "shop81@example.com",
+      "website": null,
+      "openDate": "2021-09-25",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 70,
+      "notes": "駐車場あり。大型店舗。",
+      "createdAt": "2023-09-24T15:00:00.000Z",
+      "updatedAt": "2024-09-24T15:00:00.000Z",
+      "prefecture": {
+        "id": 34,
+        "name": "広島県"
+      }
+    },
+    {
+      "id": "82",
+      "name": "名駅前店2号",
+      "shopType": "directStore",
+      "status": "open",
+      "prefectureCode": "35",
+      "owner": {
+        "id": "u2",
+        "name": "鈴木花子"
+      },
+      "address": "中村区名駅4-7-1",
+      "phone": "03-1081-5567",
+      "email": "shop82@example.com",
+      "website": "https://shop82.example.com",
+      "openDate": "2022-10-26",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 73,
+      "notes": null,
+      "createdAt": "2023-10-25T15:00:00.000Z",
+      "updatedAt": "2024-10-25T15:00:00.000Z",
+      "prefecture": {
+        "id": 35,
+        "name": "山口県"
+      }
+    },
+    {
+      "id": "83",
+      "name": "金山店2号",
+      "shopType": "franchise",
+      "status": "closed",
+      "prefectureCode": "36",
+      "owner": {
+        "id": "u3",
+        "name": "佐藤一郎"
+      },
+      "address": "中区金山1-17-1",
+      "phone": "03-1082-5574",
+      "email": "shop83@example.com",
+      "website": null,
+      "openDate": "2023-11-27",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 76,
+      "notes": null,
+      "createdAt": "2023-11-26T15:00:00.000Z",
+      "updatedAt": "2024-11-26T15:00:00.000Z",
+      "prefecture": {
+        "id": 36,
+        "name": "徳島県"
+      }
+    },
+    {
+      "id": "84",
+      "name": "栄地下店2号",
+      "shopType": "online",
+      "status": "suspended",
+      "prefectureCode": "37",
+      "owner": {
+        "id": "u4",
+        "name": "高橋美咲"
+      },
+      "address": "中区栄3-4-5",
+      "phone": "03-1083-5581",
+      "email": "shop84@example.com",
+      "website": null,
+      "openDate": "2024-12-28",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 79,
+      "notes": null,
+      "createdAt": "2023-12-27T15:00:00.000Z",
+      "updatedAt": "2024-12-27T15:00:00.000Z",
+      "prefecture": {
+        "id": 37,
+        "name": "香川県"
+      }
+    },
+    {
+      "id": "85",
+      "name": "名古屋港店2号",
+      "shopType": "directStore",
+      "status": "preparing",
+      "prefectureCode": "38",
+      "owner": {
+        "id": "u5",
+        "name": "山田健二"
+      },
+      "address": "港区港町1-9",
+      "phone": "03-1084-5588",
+      "email": "shop85@example.com",
+      "website": "https://shop85.example.com",
+      "openDate": "2018-01-01",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 82,
+      "notes": null,
+      "createdAt": "2022-12-31T15:00:00.000Z",
+      "updatedAt": "2023-12-31T15:00:00.000Z",
+      "prefecture": {
+        "id": 38,
+        "name": "愛媛県"
+      }
+    },
+    {
+      "id": "86",
+      "name": "博多駅前店2号",
+      "shopType": "franchise",
+      "status": "open",
+      "prefectureCode": "39",
+      "owner": {
+        "id": "u1",
+        "name": "田中太郎"
+      },
+      "address": "博多区博多駅中央街1-1",
+      "phone": "03-1085-5595",
+      "email": "shop86@example.com",
+      "website": null,
+      "openDate": "2019-02-02",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 85,
+      "notes": "駐車場あり。大型店舗。",
+      "createdAt": "2023-02-01T15:00:00.000Z",
+      "updatedAt": "2024-02-01T15:00:00.000Z",
+      "prefecture": {
+        "id": 39,
+        "name": "高知県"
+      }
+    },
+    {
+      "id": "87",
+      "name": "天神店2号",
+      "shopType": "online",
+      "status": "open",
+      "prefectureCode": "40",
+      "owner": {
+        "id": "u2",
+        "name": "鈴木花子"
+      },
+      "address": "中央区天神2-11-1",
+      "phone": "03-1086-5602",
+      "email": "shop87@example.com",
+      "website": null,
+      "openDate": "2020-03-03",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 88,
+      "notes": null,
+      "createdAt": "2023-03-02T15:00:00.000Z",
+      "updatedAt": "2024-03-02T15:00:00.000Z",
+      "prefecture": {
+        "id": 40,
+        "name": "福岡県"
+      }
+    },
+    {
+      "id": "88",
+      "name": "小倉駅前店2号",
+      "shopType": "directStore",
+      "status": "open",
+      "prefectureCode": "41",
+      "owner": {
+        "id": "u3",
+        "name": "佐藤一郎"
+      },
+      "address": "小倉北区浅野1-1-1",
+      "phone": "03-1087-5609",
+      "email": "shop88@example.com",
+      "website": "https://shop88.example.com",
+      "openDate": "2021-04-04",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 91,
+      "notes": null,
+      "createdAt": "2023-04-03T15:00:00.000Z",
+      "updatedAt": "2024-04-03T15:00:00.000Z",
+      "prefecture": {
+        "id": 41,
+        "name": "佐賀県"
+      }
+    },
+    {
+      "id": "89",
+      "name": "博多リバレイン店2号",
+      "shopType": "franchise",
+      "status": "closed",
+      "prefectureCode": "42",
+      "owner": {
+        "id": "u4",
+        "name": "高橋美咲"
+      },
+      "address": "博多区下川端町3-1",
+      "phone": "03-1088-5616",
+      "email": "shop89@example.com",
+      "website": null,
+      "openDate": "2022-05-05",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 94,
+      "notes": null,
+      "createdAt": "2023-05-04T15:00:00.000Z",
+      "updatedAt": "2024-05-04T15:00:00.000Z",
+      "prefecture": {
+        "id": 42,
+        "name": "長崎県"
+      }
+    },
+    {
+      "id": "90",
+      "name": "キャナルシティ店2号",
+      "shopType": "online",
+      "status": "suspended",
+      "prefectureCode": "43",
+      "owner": {
+        "id": "u5",
+        "name": "山田健二"
+      },
+      "address": "博多区住吉1-2",
+      "phone": "03-1089-5623",
+      "email": "shop90@example.com",
+      "website": null,
+      "openDate": "2023-06-06",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 97,
+      "notes": null,
+      "createdAt": "2023-06-05T15:00:00.000Z",
+      "updatedAt": "2024-06-05T15:00:00.000Z",
+      "prefecture": {
+        "id": 43,
+        "name": "熊本県"
+      }
+    },
+    {
+      "id": "91",
+      "name": "札幌駅前店2号",
+      "shopType": "directStore",
+      "status": "preparing",
+      "prefectureCode": "44",
+      "owner": {
+        "id": "u1",
+        "name": "田中太郎"
+      },
+      "address": "北区北6条西4-1",
+      "phone": "03-1090-5630",
+      "email": "shop91@example.com",
+      "website": "https://shop91.example.com",
+      "openDate": "2024-07-07",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 10,
+      "notes": "駐車場あり。大型店舗。",
+      "createdAt": "2023-07-06T15:00:00.000Z",
+      "updatedAt": "2024-07-06T15:00:00.000Z",
+      "prefecture": {
+        "id": 44,
+        "name": "大分県"
+      }
+    },
+    {
+      "id": "92",
+      "name": "すすきの店2号",
+      "shopType": "franchise",
+      "status": "open",
+      "prefectureCode": "45",
+      "owner": {
+        "id": "u2",
+        "name": "鈴木花子"
+      },
+      "address": "中央区南4条西3-1",
+      "phone": "03-1091-5637",
+      "email": "shop92@example.com",
+      "website": null,
+      "openDate": "2018-08-08",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 13,
+      "notes": null,
+      "createdAt": "2023-08-07T15:00:00.000Z",
+      "updatedAt": "2024-08-07T15:00:00.000Z",
+      "prefecture": {
+        "id": 45,
+        "name": "宮崎県"
+      }
+    },
+    {
+      "id": "93",
+      "name": "大通公園店2号",
+      "shopType": "online",
+      "status": "open",
+      "prefectureCode": "46",
+      "owner": {
+        "id": "u3",
+        "name": "佐藤一郎"
+      },
+      "address": "中央区大通西1-1",
+      "phone": "03-1092-5644",
+      "email": "shop93@example.com",
+      "website": null,
+      "openDate": "2019-09-09",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 16,
+      "notes": null,
+      "createdAt": "2023-09-08T15:00:00.000Z",
+      "updatedAt": "2024-09-08T15:00:00.000Z",
+      "prefecture": {
+        "id": 46,
+        "name": "鹿児島県"
+      }
+    },
+    {
+      "id": "94",
+      "name": "札幌ファクトリー店2号",
+      "shopType": "directStore",
+      "status": "open",
+      "prefectureCode": "47",
+      "owner": {
+        "id": "u4",
+        "name": "高橋美咲"
+      },
+      "address": "中央区北2条東4-1",
+      "phone": "03-1093-5651",
+      "email": "shop94@example.com",
+      "website": "https://shop94.example.com",
+      "openDate": "2020-10-10",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 19,
+      "notes": null,
+      "createdAt": "2023-10-09T15:00:00.000Z",
+      "updatedAt": "2024-10-09T15:00:00.000Z",
+      "prefecture": {
+        "id": 47,
+        "name": "沖縄県"
+      }
+    },
+    {
+      "id": "95",
+      "name": "新千歳空港店2号",
+      "shopType": "franchise",
+      "status": "closed",
+      "prefectureCode": "01",
+      "owner": {
+        "id": "u5",
+        "name": "山田健二"
+      },
+      "address": "千歳市美々",
+      "phone": "03-1094-5658",
+      "email": "shop95@example.com",
+      "website": null,
+      "openDate": "2021-11-11",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 22,
+      "notes": null,
+      "createdAt": "2023-11-10T15:00:00.000Z",
+      "updatedAt": "2024-11-10T15:00:00.000Z",
+      "prefecture": {
+        "id": 1,
+        "name": "北海道"
+      }
+    },
+    {
+      "id": "96",
+      "name": "仙台駅前店2号",
+      "shopType": "online",
+      "status": "suspended",
+      "prefectureCode": "02",
+      "owner": {
+        "id": "u1",
+        "name": "田中太郎"
+      },
+      "address": "青葉区中央1-1-1",
+      "phone": "03-1095-5665",
+      "email": "shop96@example.com",
+      "website": null,
+      "openDate": "2022-12-12",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 25,
+      "notes": "駐車場あり。大型店舗。",
+      "createdAt": "2023-12-11T15:00:00.000Z",
+      "updatedAt": "2024-12-11T15:00:00.000Z",
+      "prefecture": {
+        "id": 2,
+        "name": "青森県"
+      }
+    },
+    {
+      "id": "97",
+      "name": "仙台一番町店2号",
+      "shopType": "directStore",
+      "status": "preparing",
+      "prefectureCode": "03",
+      "owner": {
+        "id": "u2",
+        "name": "鈴木花子"
+      },
+      "address": "青葉区一番町3-7-1",
+      "phone": "03-1096-5672",
+      "email": "shop97@example.com",
+      "website": "https://shop97.example.com",
+      "openDate": "2023-01-13",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 28,
+      "notes": null,
+      "createdAt": "2023-01-12T15:00:00.000Z",
+      "updatedAt": "2024-01-12T15:00:00.000Z",
+      "prefecture": {
+        "id": 3,
+        "name": "岩手県"
+      }
+    },
+    {
+      "id": "98",
+      "name": "泉中央店2号",
+      "shopType": "franchise",
+      "status": "open",
+      "prefectureCode": "04",
+      "owner": {
+        "id": "u3",
+        "name": "佐藤一郎"
+      },
+      "address": "泉区泉中央1-7-1",
+      "phone": "03-1097-5679",
+      "email": "shop98@example.com",
+      "website": null,
+      "openDate": "2024-02-14",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 31,
+      "notes": null,
+      "createdAt": "2023-02-13T15:00:00.000Z",
+      "updatedAt": "2024-02-13T15:00:00.000Z",
+      "prefecture": {
+        "id": 4,
+        "name": "宮城県"
+      }
+    },
+    {
+      "id": "99",
+      "name": "長町店2号",
+      "shopType": "online",
+      "status": "open",
+      "prefectureCode": "05",
+      "owner": {
+        "id": "u4",
+        "name": "高橋美咲"
+      },
+      "address": "太白区長町5-3-1",
+      "phone": "03-1098-5686",
+      "email": "shop99@example.com",
+      "website": null,
+      "openDate": "2018-03-15",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 34,
+      "notes": null,
+      "createdAt": "2023-03-14T15:00:00.000Z",
+      "updatedAt": "2024-03-14T15:00:00.000Z",
+      "prefecture": {
+        "id": 5,
+        "name": "秋田県"
+      }
+    },
+    {
+      "id": "100",
+      "name": "仙台空港店2号",
+      "shopType": "directStore",
+      "status": "open",
+      "prefectureCode": "06",
+      "owner": {
+        "id": "u5",
+        "name": "山田健二"
+      },
+      "address": "名取市下増田",
+      "phone": "03-1099-5693",
+      "email": "shop100@example.com",
+      "website": "https://shop100.example.com",
+      "openDate": "2019-04-16",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 37,
+      "notes": null,
+      "createdAt": "2023-04-15T15:00:00.000Z",
+      "updatedAt": "2024-04-15T15:00:00.000Z",
+      "prefecture": {
+        "id": 6,
+        "name": "山形県"
+      }
+    },
+    {
+      "id": "101",
+      "name": "広島本通り店2号",
+      "shopType": "franchise",
+      "status": "closed",
+      "prefectureCode": "07",
+      "owner": {
+        "id": "u1",
+        "name": "田中太郎"
+      },
+      "address": "中区本通3-1",
+      "phone": "03-1100-5700",
+      "email": "shop101@example.com",
+      "website": null,
+      "openDate": "2020-05-17",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 40,
+      "notes": "駐車場あり。大型店舗。",
+      "createdAt": "2023-05-16T15:00:00.000Z",
+      "updatedAt": "2024-05-16T15:00:00.000Z",
+      "prefecture": {
+        "id": 7,
+        "name": "福島県"
+      }
+    },
+    {
+      "id": "102",
+      "name": "広島駅前店2号",
+      "shopType": "online",
+      "status": "suspended",
+      "prefectureCode": "08",
+      "owner": {
+        "id": "u2",
+        "name": "鈴木花子"
+      },
+      "address": "南区松原町2-37",
+      "phone": "03-1101-5707",
+      "email": "shop102@example.com",
+      "website": null,
+      "openDate": "2021-06-18",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 43,
+      "notes": null,
+      "createdAt": "2023-06-17T15:00:00.000Z",
+      "updatedAt": "2024-06-17T15:00:00.000Z",
+      "prefecture": {
+        "id": 8,
+        "name": "茨城県"
+      }
+    },
+    {
+      "id": "103",
+      "name": "紙屋町店2号",
+      "shopType": "directStore",
+      "status": "preparing",
+      "prefectureCode": "09",
+      "owner": {
+        "id": "u3",
+        "name": "佐藤一郎"
+      },
+      "address": "中区紙屋町2-1-1",
+      "phone": "03-1102-5714",
+      "email": "shop103@example.com",
+      "website": "https://shop103.example.com",
+      "openDate": "2022-07-19",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 46,
+      "notes": null,
+      "createdAt": "2023-07-18T15:00:00.000Z",
+      "updatedAt": "2024-07-18T15:00:00.000Z",
+      "prefecture": {
+        "id": 9,
+        "name": "栃木県"
+      }
+    },
+    {
+      "id": "104",
+      "name": "八丁堀店2号",
+      "shopType": "franchise",
+      "status": "open",
+      "prefectureCode": "10",
+      "owner": {
+        "id": "u4",
+        "name": "高橋美咲"
+      },
+      "address": "中区八丁堀16-10",
+      "phone": "03-1103-5721",
+      "email": "shop104@example.com",
+      "website": null,
+      "openDate": "2023-08-20",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 49,
+      "notes": null,
+      "createdAt": "2023-08-19T15:00:00.000Z",
+      "updatedAt": "2024-08-19T15:00:00.000Z",
+      "prefecture": {
+        "id": 10,
+        "name": "群馬県"
+      }
+    },
+    {
+      "id": "105",
+      "name": "広島マリーナ店2号",
+      "shopType": "online",
+      "status": "open",
+      "prefectureCode": "11",
+      "owner": {
+        "id": "u5",
+        "name": "山田健二"
+      },
+      "address": "南区宇品海岸3-1",
+      "phone": "03-1104-5728",
+      "email": "shop105@example.com",
+      "website": null,
+      "openDate": "2024-09-21",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 52,
+      "notes": null,
+      "createdAt": "2023-09-20T15:00:00.000Z",
+      "updatedAt": "2024-09-20T15:00:00.000Z",
+      "prefecture": {
+        "id": 11,
+        "name": "埼玉県"
+      }
+    },
+    {
+      "id": "106",
+      "name": "京都四条店2号",
+      "shopType": "directStore",
+      "status": "open",
+      "prefectureCode": "12",
+      "owner": {
+        "id": "u1",
+        "name": "田中太郎"
+      },
+      "address": "下京区四条通烏丸東入",
+      "phone": "03-1105-5735",
+      "email": "shop106@example.com",
+      "website": "https://shop106.example.com",
+      "openDate": "2018-10-22",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 55,
+      "notes": "駐車場あり。大型店舗。",
+      "createdAt": "2023-10-21T15:00:00.000Z",
+      "updatedAt": "2024-10-21T15:00:00.000Z",
+      "prefecture": {
+        "id": 12,
+        "name": "千葉県"
+      }
+    },
+    {
+      "id": "107",
+      "name": "河原町店2号",
+      "shopType": "franchise",
+      "status": "closed",
+      "prefectureCode": "13",
+      "owner": {
+        "id": "u2",
+        "name": "鈴木花子"
+      },
+      "address": "中京区河原町通四条上ル",
+      "phone": "03-1106-5742",
+      "email": "shop107@example.com",
+      "website": null,
+      "openDate": "2019-11-23",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 58,
+      "notes": null,
+      "createdAt": "2023-11-22T15:00:00.000Z",
+      "updatedAt": "2024-11-22T15:00:00.000Z",
+      "prefecture": {
+        "id": 13,
+        "name": "東京都"
+      }
+    },
+    {
+      "id": "108",
+      "name": "京都駅前店2号",
+      "shopType": "online",
+      "status": "suspended",
+      "prefectureCode": "14",
+      "owner": {
+        "id": "u3",
+        "name": "佐藤一郎"
+      },
+      "address": "下京区烏丸通塩小路下ル",
+      "phone": "03-1107-5749",
+      "email": "shop108@example.com",
+      "website": null,
+      "openDate": "2020-12-24",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 61,
+      "notes": null,
+      "createdAt": "2023-12-23T15:00:00.000Z",
+      "updatedAt": "2024-12-23T15:00:00.000Z",
+      "prefecture": {
+        "id": 14,
+        "name": "神奈川県"
+      }
+    },
+    {
+      "id": "109",
+      "name": "嵐山店2号",
+      "shopType": "directStore",
+      "status": "preparing",
+      "prefectureCode": "15",
+      "owner": {
+        "id": "u4",
+        "name": "高橋美咲"
+      },
+      "address": "右京区嵯峨天龍寺芒ノ馬場町",
+      "phone": "03-1108-5756",
+      "email": "shop109@example.com",
+      "website": "https://shop109.example.com",
+      "openDate": "2021-01-25",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 64,
+      "notes": null,
+      "createdAt": "2023-01-24T15:00:00.000Z",
+      "updatedAt": "2024-01-24T15:00:00.000Z",
+      "prefecture": {
+        "id": 15,
+        "name": "新潟県"
+      }
+    },
+    {
+      "id": "110",
+      "name": "伏見稲荷店2号",
+      "shopType": "franchise",
+      "status": "open",
+      "prefectureCode": "16",
+      "owner": {
+        "id": "u5",
+        "name": "山田健二"
+      },
+      "address": "伏見区深草藪之内町",
+      "phone": "03-1109-5763",
+      "email": "shop110@example.com",
+      "website": null,
+      "openDate": "2022-02-26",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 67,
+      "notes": null,
+      "createdAt": "2023-02-25T15:00:00.000Z",
+      "updatedAt": "2024-02-25T15:00:00.000Z",
+      "prefecture": {
+        "id": 16,
+        "name": "富山県"
+      }
+    },
+    {
+      "id": "111",
+      "name": "那覇国際通り店2号",
+      "shopType": "online",
+      "status": "open",
+      "prefectureCode": "17",
+      "owner": {
+        "id": "u1",
+        "name": "田中太郎"
+      },
+      "address": "那覇市牧志3-2-10",
+      "phone": "03-1110-5770",
+      "email": "shop111@example.com",
+      "website": null,
+      "openDate": "2023-03-27",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 70,
+      "notes": "駐車場あり。大型店舗。",
+      "createdAt": "2023-03-26T15:00:00.000Z",
+      "updatedAt": "2024-03-26T15:00:00.000Z",
+      "prefecture": {
+        "id": 17,
+        "name": "石川県"
+      }
+    },
+    {
+      "id": "112",
+      "name": "北谷アメリカンビレッジ店2号",
+      "shopType": "directStore",
+      "status": "open",
+      "prefectureCode": "18",
+      "owner": {
+        "id": "u2",
+        "name": "鈴木花子"
+      },
+      "address": "中頭郡北谷町美浜9-1",
+      "phone": "03-1111-5777",
+      "email": "shop112@example.com",
+      "website": "https://shop112.example.com",
+      "openDate": "2024-04-28",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 73,
+      "notes": null,
+      "createdAt": "2023-04-27T15:00:00.000Z",
+      "updatedAt": "2024-04-27T15:00:00.000Z",
+      "prefecture": {
+        "id": 18,
+        "name": "福井県"
+      }
+    },
+    {
+      "id": "113",
+      "name": "沖縄ライカム店2号",
+      "shopType": "franchise",
+      "status": "closed",
+      "prefectureCode": "19",
+      "owner": {
+        "id": "u3",
+        "name": "佐藤一郎"
+      },
+      "address": "中頭郡北中城村ライカム1",
+      "phone": "03-1112-5784",
+      "email": "shop113@example.com",
+      "website": null,
+      "openDate": "2018-05-01",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 76,
+      "notes": null,
+      "createdAt": "2023-04-30T15:00:00.000Z",
+      "updatedAt": "2024-04-30T15:00:00.000Z",
+      "prefecture": {
+        "id": 19,
+        "name": "山梨県"
+      }
+    },
+    {
+      "id": "114",
+      "name": "首里店2号",
+      "shopType": "online",
+      "status": "suspended",
+      "prefectureCode": "20",
+      "owner": {
+        "id": "u4",
+        "name": "高橋美咲"
+      },
+      "address": "那覇市首里当蔵町1-1",
+      "phone": "03-1113-5791",
+      "email": "shop114@example.com",
+      "website": null,
+      "openDate": "2019-06-02",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 79,
+      "notes": null,
+      "createdAt": "2023-06-01T15:00:00.000Z",
+      "updatedAt": "2024-06-01T15:00:00.000Z",
+      "prefecture": {
+        "id": 20,
+        "name": "長野県"
+      }
+    },
+    {
+      "id": "115",
+      "name": "豊崎店2号",
+      "shopType": "directStore",
+      "status": "preparing",
+      "prefectureCode": "21",
+      "owner": {
+        "id": "u5",
+        "name": "山田健二"
+      },
+      "address": "豊見城市豊崎1-411",
+      "phone": "03-1114-5798",
+      "email": "shop115@example.com",
+      "website": "https://shop115.example.com",
+      "openDate": "2020-07-03",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 82,
+      "notes": null,
+      "createdAt": "2023-07-02T15:00:00.000Z",
+      "updatedAt": "2024-07-02T15:00:00.000Z",
+      "prefecture": {
+        "id": 21,
+        "name": "岐阜県"
+      }
+    },
+    {
+      "id": "116",
+      "name": "神田店2号",
+      "shopType": "franchise",
+      "status": "open",
+      "prefectureCode": "22",
+      "owner": {
+        "id": "u1",
+        "name": "田中太郎"
+      },
+      "address": "千代田区神田須田町1-1",
+      "phone": "03-1115-5805",
+      "email": "shop116@example.com",
+      "website": null,
+      "openDate": "2021-08-04",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 85,
+      "notes": "駐車場あり。大型店舗。",
+      "createdAt": "2023-08-03T15:00:00.000Z",
+      "updatedAt": "2024-08-03T15:00:00.000Z",
+      "prefecture": {
+        "id": 22,
+        "name": "静岡県"
+      }
+    },
+    {
+      "id": "117",
+      "name": "秋葉原店2号",
+      "shopType": "online",
+      "status": "open",
+      "prefectureCode": "23",
+      "owner": {
+        "id": "u2",
+        "name": "鈴木花子"
+      },
+      "address": "千代田区外神田1-1",
+      "phone": "03-1116-5812",
+      "email": "shop117@example.com",
+      "website": null,
+      "openDate": "2022-09-05",
+      "openTime": "08:00",
+      "closeTime": "20:00",
+      "seats": 88,
+      "notes": null,
+      "createdAt": "2023-09-04T15:00:00.000Z",
+      "updatedAt": "2024-09-04T15:00:00.000Z",
+      "prefecture": {
+        "id": 23,
+        "name": "愛知県"
+      }
+    },
+    {
+      "id": "118",
+      "name": "上野店2号",
+      "shopType": "directStore",
+      "status": "open",
+      "prefectureCode": "24",
+      "owner": {
+        "id": "u3",
+        "name": "佐藤一郎"
+      },
+      "address": "台東区上野7-1",
+      "phone": "03-1117-5819",
+      "email": "shop118@example.com",
+      "website": "https://shop118.example.com",
+      "openDate": "2023-10-06",
+      "openTime": "09:00",
+      "closeTime": "21:00",
+      "seats": 91,
+      "notes": null,
+      "createdAt": "2023-10-05T15:00:00.000Z",
+      "updatedAt": "2024-10-05T15:00:00.000Z",
+      "prefecture": {
+        "id": 24,
+        "name": "三重県"
+      }
+    },
+    {
+      "id": "119",
+      "name": "浅草店2号",
+      "shopType": "franchise",
+      "status": "closed",
+      "prefectureCode": "25",
+      "owner": {
+        "id": "u4",
+        "name": "高橋美咲"
+      },
+      "address": "台東区浅草1-1",
+      "phone": "03-1118-5826",
+      "email": "shop119@example.com",
+      "website": null,
+      "openDate": "2024-11-07",
+      "openTime": "10:00",
+      "closeTime": "22:00",
+      "seats": 94,
+      "notes": null,
+      "createdAt": "2023-11-06T15:00:00.000Z",
+      "updatedAt": "2024-11-06T15:00:00.000Z",
+      "prefecture": {
+        "id": 25,
+        "name": "滋賀県"
+      }
+    },
+    {
+      "id": "120",
+      "name": "お台場店2号",
+      "shopType": "online",
+      "status": "suspended",
+      "prefectureCode": "26",
+      "owner": {
+        "id": "u5",
+        "name": "山田健二"
+      },
+      "address": "港区台場1-7-1",
+      "phone": "03-1119-5833",
+      "email": "shop120@example.com",
+      "website": null,
+      "openDate": "2018-12-08",
+      "openTime": "11:00",
+      "closeTime": "23:00",
+      "seats": 97,
+      "notes": null,
+      "createdAt": "2023-12-07T15:00:00.000Z",
+      "updatedAt": "2024-12-07T15:00:00.000Z",
+      "prefecture": {
+        "id": 26,
+        "name": "京都府"
+      }
+    }
+  ]
+}
