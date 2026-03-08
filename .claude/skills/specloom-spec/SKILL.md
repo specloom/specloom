@@ -405,87 +405,57 @@ model UserShow {}
 
 ## Decorator Reference
 
-### Resource Decorators
+### Resource / Input
 
 | Decorator | Target | Description |
 |-----------|--------|-------------|
-| `@resource` | Model | Mark as resource |
-| `@label(string)` | Model, Property | Display label |
+| `@entity(#{ ... })` | Model | Resource metadata: label, pluralLabel, titleField, pageSize |
+| `@field(#{ ... })` | Property | Field UI metadata: label, visibility, readonly, placement, format |
+| `@section(#{ ... })` | Model | Form/show section layout |
+| `@rule(#{ ... })` | Model | Cross-field validation rule |
 
-### Field Decorators
-
-| Decorator | Description |
-|-----------|-------------|
-| `@kind(string)` | Field type: text, longText, number, boolean, date, datetime, enum, relation, file, image, password, email, tel, url |
-| `@readonly` | Read-only field |
-| `@computed` | Computed field (not in DB) |
-| `@createOnly` | Editable only on create, readonly on edit |
-| `@visibleWhen(expr)` | Conditional visibility (expression) |
-| `@requiredWhen(expr)` | Conditional required (expression) |
-| `@options([...])` | Enum options with labels |
-| `@relation(Model, opts)` | Relation config: `labelField` (表示用), `valueField` (スカラー型の抽出キー, デフォルト "id") |
-| `@nested(Model, opts)` | Nested child resource for inline editing (auto-sets kind to "nested") |
-| `@ui({...})` | UI hints |
-| `@filter` | Make filterable |
-| `@filter([ops])` | Filterable with specific operators |
-
-### Validation Decorators
-
-| Decorator | Description |
-|-----------|-------------|
-| `@S.required` | Required field |
-| `@S.min(n)` | Minimum value |
-| `@S.max(n)` | Maximum value |
-| `@S.minLength(n)` | Minimum length |
-| `@S.maxLength(n)` | Maximum length |
-| `@S.pattern(string)` | Regex pattern |
-| `@S.minItems(n)` | Minimum array items |
-| `@S.maxItems(n)` | Maximum array items |
-| `@S.match(field)` | Must match another field |
-
-### View Decorators
+### List / Filter
 
 | Decorator | Target | Description |
 |-----------|--------|-------------|
-| `@view(Model, type)` | Model | Define view (list, form, show) |
-| `@columns([...])` | List | Columns to display |
-| `@fields([...])` | Form, Show | Fields to display |
-| `@searchable([...])` | List | Searchable fields |
-| `@sortable([...])` | List | Sortable fields |
-| `@defaultSort(field, order)` | List | Default sort |
-| `@selection(mode)` | List | none, single, multi |
-| `@clickAction(action)` | List | Row click action |
-| `@namedFilters([...])` | List | Predefined filters (array) |
-| `@namedFilter(id, label, filter)` | List | Add a named filter (singular) |
+| `@index(#{ ... })` | Model | List view config: columns, search, sort, selection, clickAction |
+| `@filter(#["..."])` | Property | Filterable operators |
+| `@namedFilter(#{ ... })` | Model | Predefined named filter |
 
-### Action Decorators (View-level)
-
-アクションはViewモデルのデコレータとして定義します（プロパティ不要）。
-
-| Decorator | Target | Description |
-|-----------|--------|-------------|
-| `@action(id, options)` | Model | Page-level action |
-| `@action(id, options, DialogModel)` | Model | Page-level action with dialog |
-| `@rowAction(id, options)` | Model | Row-level action (for list views) |
-| `@rowAction(id, options, DialogModel)` | Model | Row-level action with dialog |
-
-#### Action Options
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `label` | string | Display label |
-| `allowedWhen` | string | Permission expression |
-| `confirm` | string | Confirmation dialog message |
-| `selection` | string | Bulk action: `"selected"` or `"query"` |
-| `ui` | `{ icon?, variant? }` | Icon and style |
-| `dialog` | `{ title?, description? }` | Dialog title/description |
-| `api` | `{ path, method?, body?, params?, query? }` | API endpoint config |
-
-### Validation Decorator (Dialog)
+### Field Behavior
 
 | Decorator | Description |
 |-----------|-------------|
-| `@match(field)` | Field validation: must match another field's value |
+| `@relation(Model, #{ ... })` | Relation field config |
+| `@nested(Model, #{ ... })` | Nested inline editing config |
+| `@options(#[])` | Static options |
+| `@optionSource(#{ ... })` | Remote options source |
+| `@computed` | Computed field |
+| `@createOnly` | Editable only on create |
+| `@visibleWhen(expr)` | Conditional visibility |
+| `@requiredWhen(expr)` | Conditional required |
+| `@readonlyWhen(expr)` | Conditional readonly |
+| `@disabledWhen(expr)` | Conditional disabled |
+| `@match(field)` | Field value must match another field |
+
+### Action
+
+| Decorator | Target | Description |
+|-----------|--------|-------------|
+| `@pageAction(#{ ... })` | Operation | Page-level action |
+| `@rowAction(#{ ... })` | Operation | Row-level action |
+
+### Validation
+
+TypeSpec built-in validation decorators を使います。
+
+- `@minValue`
+- `@maxValue`
+- `@minLength`
+- `@maxLength`
+- `@pattern`
+- `@minItems`
+- `@maxItems`
 
 ## UI Options Reference
 
@@ -534,18 +504,13 @@ model UserShow {}
 | icon | plus, pencil, trash, check, x, eye, globe, archive, download, upload |
 | variant | primary, secondary, danger, warning, ghost |
 
-## Permission Expressions
+## Expression Rules
 
 ```typespec
-// Role-based
-@allowedWhen("role == 'admin'")
-@allowedWhen("role == 'admin' || role == 'editor'")
-
-// State-based
-@allowedWhen("status == 'draft'")
-
-// Owner check
-@allowedWhen("userId == authorId")
+@visibleWhen("role == 'admin'")
+@requiredWhen("status == 'published'")
+@readonlyWhen("status == 'archived'")
+@disabledWhen("record.ownerId != user.id")
 ```
 
 ### Available Variables
@@ -553,25 +518,27 @@ model UserShow {}
 | Variable | Description |
 |----------|-------------|
 | role | User's role |
-| userId | User's ID |
-| [field] | Record's field value |
+| user | Current user object |
+| record | Current record object |
+| [field] | Current record's field value |
 
 ## Named Filters
 
 ```typespec
-@S.view(Post, "list")
-@S.namedFilters(#[
-  #{ id: "all", label: "すべて", filter: #{} },
-  #{ id: "published", label: "公開中", filter: #{ field: "status", operator: "eq", value: "published" } },
-  #{ id: "recent", label: "最近", filter: #{
-    and: [
-      #{ field: "status", operator: "eq", value: "published" },
-      #{ field: "createdAt", operator: "gte", value: "@relative(-7d)" }
-    ]
-  } },
-  #{ id: "mine", label: "自分の記事", filter: #{ field: "author.id", operator: "eq", value: "@context.user.id" } }
-])
-model PostList {}
+@index(#{
+  columns: #["title", "status", "createdAt"],
+  namedFilters: #[
+    #{ id: "all", label: "すべて", where: #{} },
+    #{ id: "published", label: "公開中", where: #{ field: "status", operator: "eq", value: "published" } },
+    #{ id: "recent", label: "最近", where: #{
+      and: #[
+        #{ field: "status", operator: "eq", value: "published" },
+        #{ field: "createdAt", operator: "gte", value: #{ relative: "-7d" } }
+      ]
+    } }
+  ]
+})
+model Post {}
 ```
 
 ### Filter Operators
@@ -589,157 +556,57 @@ model PostList {}
 
 | Value | Description |
 |-------|-------------|
-| `@relative(-7d)` | 7 days ago |
-| `@relative(-1m)` | 1 month ago |
-| `@relative(startOfDay)` | Start of today |
-| `@context.user.id` | Current user ID |
-| `@context.role` | Current role |
+| `{ relative: "-7d" }` | 7 days ago |
+| `{ relative: "-1m" }` | 1 month ago |
+| `{ context: "user.id" }` | Current user ID |
+| `{ context: "role" }` | Current role |
 
 ## Complete Example
 
 ```typespec
 import "@specloom/typespec";
 
-// ============================================================
-// Models (Resources)
-// ============================================================
+using Specloom;
 
-@S.resource
-@S.label("ユーザー")
-model User {
-  @S.readonly
-  id: string;
-
-  @S.label("名前")
-  @S.required
-  name: string;
-
-  @S.label("メール")
-  @S.kind("email")
-  @S.required
-  email: string;
-}
-
-enum PostStatus {
-  draft,
-  published,
-  archived,
-}
-
-@S.resource
-@S.label("投稿")
+@entity(#{
+  label: "投稿",
+  pluralLabel: "投稿一覧",
+  titleField: "title"
+})
+@index(#{
+  columns: #["title", "status", "createdAt"],
+  searchable: #["title"],
+  sortable: #["title", "createdAt"],
+  selection: "multi",
+  clickAction: "show"
+})
 model Post {
-  @S.readonly
+  @key
+  @field(#{ label: "ID", list: false, show: true, form: false, readonly: true })
   id: string;
 
-  @S.label("タイトル")
-  @S.kind("text")
-  @S.required
-  @maxLength(100)
-  @S.filter
+  @field(#{ label: "タイトル", list: true, show: true, form: true })
+  @minLength(1)
   title: string;
 
-  @S.label("本文")
-  @S.kind("longText")
-  @S.ui(#{ inputHint: "richtext" })
-  body: string;
-
-  @S.label("状態")
-  @S.kind("enum")
-  @S.options(#[
+  @field(#{ label: "状態", list: true, show: true, form: true })
+  @options(#[
     #{ value: "draft", label: "下書き" },
-    #{ value: "published", label: "公開中" },
-    #{ value: "archived", label: "アーカイブ" }
+    #{ value: "published", label: "公開中" }
   ])
-  @S.ui(#{ hint: "badge", inputHint: "select" })
-  @S.filter
-  status: PostStatus;
+  status: string;
 
-  @S.label("著者")
-  @S.kind("relation")
-  @S.relation(User, #{ labelField: "name" })
-  @S.ui(#{ hint: "avatar", inputHint: "autocomplete" })
-  @S.required
-  @S.filter
-  author: User;
-
-  @S.label("作成日時")
-  @S.kind("datetime")
-  @S.readonly
-  @S.filter(#["gte", "lte"])
-  createdAt: utcDateTime;
+  @field(#{ label: "公開URL", form: true })
+  @requiredWhen("status == 'published'")
+  publishUrl?: string;
 }
-
-// ============================================================
-// Views
-// ============================================================
-
-@S.view(Post, "list")
-@S.columns(#["title", "status", "author", "createdAt"])
-@S.searchable(#["title"])
-@S.sortable(#["title", "createdAt"])
-@S.defaultSort("createdAt", "desc")
-@S.selection("multi")
-@S.clickAction("show")
-@S.namedFilters(#[
-  #{ id: "all", label: "すべて", filter: #{} },
-  #{ id: "published", label: "公開中", filter: #{ field: "status", operator: "eq", value: "published" } },
-  #{ id: "draft", label: "下書き", filter: #{ field: "status", operator: "eq", value: "draft" } }
-])
-@S.action("create", #{
-  label: "新規作成",
-  allowedWhen: "role == 'admin' || role == 'editor'",
-  ui: #{ icon: "plus", variant: "primary" }
-})
-@S.action("bulkDelete", #{
-  label: "一括削除",
-  selection: "selected",
-  allowedWhen: "role == 'admin'",
-  confirm: "選択した項目を削除しますか？"
-})
-@S.rowAction("edit", #{
-  label: "編集",
-  allowedWhen: "role == 'admin' || role == 'editor'",
-  ui: #{ icon: "pencil" }
-})
-@S.rowAction("delete", #{
-  label: "削除",
-  allowedWhen: "role == 'admin'",
-  confirm: "本当に削除しますか？",
-  ui: #{ icon: "trash", variant: "danger" }
-})
-model PostList {}
-
-@S.view(Post, "form")
-@S.fields(#["title", "body", "status", "author"])
-@S.action("save", #{
-  label: "保存",
-  ui: #{ icon: "check", variant: "primary" }
-})
-@S.action("cancel", #{ label: "キャンセル" })
-model PostForm {}
-
-@S.view(Post, "show")
-@S.fields(#["title", "body", "status", "author", "createdAt"])
-@S.action("edit", #{
-  label: "編集",
-  allowedWhen: "role == 'admin' || role == 'editor'",
-  ui: #{ icon: "pencil" }
-})
-@S.action("delete", #{
-  label: "削除",
-  allowedWhen: "role == 'admin'",
-  confirm: "本当に削除しますか？",
-  ui: #{ icon: "trash", variant: "danger" }
-})
-model PostShow {}
 ```
 
-## FormVM Usage
+## FormState Usage
 
 ### Submitting Form Data
 
-`FormVM.submittableValues` returns API-ready values with automatic conversion:
+`serialize()` は送信仕様に従って API-ready values を返します。
 
 1. `readonly` / `visible: false` フィールドを除外
 2. **relation (スカラー型)** → `valueField` で値を抽出（デフォルト `"id"`）
@@ -748,39 +615,31 @@ model PostShow {}
 5. **datetime** → ISO datetime string (`YYYY-MM-DDTHH:mm:ssZ`)
 
 ```typescript
-import { createAdmin, parseSpec } from 'specloom'
+import { createFormState, parseSpec } from "specloom"
 
 const spec = parseSpec(jsonString)
-const admin = createAdmin(spec, { role: 'admin' })
-
-// Create form ViewModel
-const form = admin.form('Post', { mode: 'create', data: initialValues })
+let form = createFormState({
+  spec,
+  resource: "Post",
+  mode: "create",
+  context: { role: "admin" },
+  values: initialValues,
+})
 
 // User edits
-const updated = form
-  .setValue('title', 'Hello')
-  .setValue('status', 'draft')
-  .setValue('author', { id: 'u1', name: '田中' })        // Model型 relation
-  .setValue('prefecture_id', { id: 13, name: '東京' })    // スカラー型 relation
-  .validate()
+form = form
+  .setValue("title", "Hello")
+  .setValue("status", "draft")
 
-if (updated.canSubmit) {
-  // submittableValues は送信仕様に従い自動変換
-  const body = updated.submittableValues
-  // => {
-  //   title: "Hello",
-  //   status: "draft",
-  //   author: { id: "u1", name: "田中" },   // Model型 → そのまま
-  //   prefecture_id: 13,                      // スカラー型 → id 抽出
-  // }
+const { state: validated, result } = form.validate()
+
+if (result.valid) {
+  const body = validated.serialize()
   await fetch('/api/posts', {
     method: 'POST',
     body: JSON.stringify(body),
   })
 }
-
-// All values (including readonly, no conversion) - use `values` instead
-const allValues = form.values
 ```
 
 ### Submit Value Conversion Rules
@@ -796,39 +655,39 @@ const allValues = form.values
 | スカラー[] 型（relation） | `valueField` で抽出した配列 |
 | nested | 子フィールドに同じルールを再帰適用 |
 
-### Key FormVM Properties
+### Key FormState Methods
 
-| Property / Method | Description |
-|-------------------|-------------|
-| `values` | All field values as `{ name: value }` (no conversion) |
-| `submittableValues` | API-ready values with type-based conversion |
-| `visibleFields` | Fields where `visible !== false` |
-| `requiredFields` | Fields where `required === true` |
-| `readonlyFields` | Fields where `readonly === true` |
-| `canSubmit` | `isValid && !isSubmitting` |
-| `validate()` | Run client-side validation, returns new FormVM |
-| `setValue(name, value)` | Set field value, returns new FormVM (immutable) |
+| Method | Description |
+|--------|-------------|
+| `snapshot()` | Current immutable state snapshot |
+| `view()` | Derive `FormViewModel` |
+| `setValue(name, value)` | Set field value and normalize input |
+| `patch(values)` | Update multiple values |
+| `validate()` | Run field + rule validation |
+| `serialize()` | Build API-ready payload |
+| `reset()` | Reset to initial values |
 
 ## Checklist
 
 Before completing a spec:
 
-- [ ] All resources have `@resource` and `@label`
-- [ ] ID fields have `@readonly`
-- [ ] Required fields have `@required`
-- [ ] Enum fields have `@kind("enum")` and `@options`
-- [ ] Relation fields have `@kind("relation")` and `@relation`
+- [ ] All resources have `@entity`
+- [ ] Fields that should render have `@field`
+- [ ] ID fields are hidden from form or readonly where needed
+- [ ] Required constraints use built-in validation or `@requiredWhen`
+- [ ] Enum-like fields have `@options` or `@optionSource`
+- [ ] Relation fields use `@relation`
 - [ ] Relation の TypeSpec 型がスカラー（`int32` 等）か Model かで送信形式が決まることを確認
 - [ ] スカラー型 relation で `id` 以外を抽出する場合は `valueField` を指定
-- [ ] Nested fields have `@nested(ChildModel)` with optional `min`/`max` constraints
-- [ ] List views have `@columns`, `@action(id, opts)` for page actions, `@rowAction(id, opts)` for row actions
+- [ ] Nested fields use `@nested(ChildModel)`
+- [ ] List views use `@index`
 - [ ] Bulk actions have `selection: "selected"` or `selection: "query"` in options
-- [ ] Form views have `@fields` and save/cancel actions
-- [ ] Actions have appropriate `allowedWhen` in options
-- [ ] Destructive actions have `confirm` in options
+- [ ] Page actions use `@pageAction`, row actions use `@rowAction`
+- [ ] Visibility / readonly / disabled rules use expression decorators
+- [ ] Destructive actions have `confirmMessage`
 - [ ] Filterable fields have `@filter`
-- [ ] Actions with user input have `dialog` in options + DialogModel as 4th argument
-- [ ] Actions with API calls have `api` in options
+- [ ] Actions with user input point to an input model
+- [ ] Actions with API calls define `operation`
 - [ ] Password confirm fields use `@match("password")`
 
 ## Compile
