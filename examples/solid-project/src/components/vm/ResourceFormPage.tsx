@@ -1,10 +1,11 @@
 import { A } from "@solidjs/router"
-import { createMemo, For, Show } from "solid-js"
+import { createMemo, createSignal, For, Show } from "solid-js"
 import { useSpecloom, createFormStore } from "@specloom/solidjs"
 import { generateMockData } from "~/admin/mock-data"
 import { FieldRenderer } from "~/admin/field-registry"
 import { Button } from "~/components/ui/button"
 import { Separator } from "~/components/ui/separator"
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert"
 
 export function ResourceNewPage(props: { resource: string }) {
   return <ResourceFormInner resource={props.resource} mode="create" />
@@ -23,6 +24,10 @@ function ResourceFormInner(props: {
   const spec = client.spec
   const resource = createMemo(() => spec.resources[props.resource])
 
+  if (!resource()) {
+    return <div class="text-sm text-muted-foreground">Unknown resource: {props.resource}</div>
+  }
+
   const keyField = createMemo(() => {
     const fields = resource().fields
     for (const f of Object.values(fields)) {
@@ -34,7 +39,7 @@ function ResourceFormInner(props: {
   const initialValues = createMemo(() => {
     if (props.mode === "create") return undefined
     const data = generateMockData(spec, props.resource)
-    return data.find((r) => r[keyField()] === props.id) ?? data[0]
+    return data.find((r) => r[keyField()] === props.id)
   })
 
   // Store is recreated when resource/mode/id changes
@@ -47,9 +52,23 @@ function ResourceFormInner(props: {
     })
   )
   const vm = createMemo(() => store().view())
+  const snapshot = createMemo(() => store().snapshot())
+  const [hasValidated, setHasValidated] = createSignal(false)
+
+  if (props.mode === "edit" && !initialValues()) {
+    return <div class="text-sm text-muted-foreground">Record not found: {props.id}</div>
+  }
+
+  const handleFieldChange = (name: string, value: unknown) => {
+    store().setValue(name, value)
+    if (hasValidated()) {
+      store().validate()
+    }
+  }
 
   const handleSubmit = (e: Event) => {
     e.preventDefault()
+    setHasValidated(true)
     const result = store().validate()
     if (!result.valid) {
       console.log("Validation failed:", result)
@@ -76,6 +95,19 @@ function ResourceFormInner(props: {
       </h1>
 
       <form onSubmit={handleSubmit} class="space-y-8 max-w-2xl">
+        <Show when={snapshot().formErrors.length > 0}>
+          <Alert variant="destructive">
+            <AlertTitle>Validation failed</AlertTitle>
+            <AlertDescription>
+              <ul class="list-disc pl-5">
+                <For each={snapshot().formErrors}>
+                  {(error) => <li>{error}</li>}
+                </For>
+              </ul>
+            </AlertDescription>
+          </Alert>
+        </Show>
+
         <For each={vm().sections}>
           {(section) => (
             <div>
@@ -88,6 +120,7 @@ function ResourceFormInner(props: {
                         name={field.name}
                         label={field.label}
                         value={field.value}
+                        fieldType={field.type}
                         widget={field.ui.widget}
                         required={field.required}
                         readonly={field.readonly}
@@ -99,7 +132,7 @@ function ResourceFormInner(props: {
                           value: o.value,
                           label: o.label,
                         }))}
-                        onChange={(v) => store().setValue(field.name, v)}
+                        onChange={(v) => handleFieldChange(field.name, v)}
                       />
                     </Show>
                   )}
@@ -119,6 +152,7 @@ function ResourceFormInner(props: {
                   name={field.name}
                   label={field.label}
                   value={field.value}
+                  fieldType={field.type}
                   widget={field.ui.widget}
                   required={field.required}
                   readonly={field.readonly}
@@ -130,7 +164,7 @@ function ResourceFormInner(props: {
                     value: o.value,
                     label: o.label,
                   }))}
-                  onChange={(v) => store().setValue(field.name, v)}
+                  onChange={(v) => handleFieldChange(field.name, v)}
                 />
               )}
             </For>

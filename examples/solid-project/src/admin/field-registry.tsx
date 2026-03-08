@@ -1,3 +1,4 @@
+import type { CompiledFieldType } from "@specloom/spec"
 import { Dynamic } from "solid-js/web"
 import { For, Show, type Component } from "solid-js"
 
@@ -5,14 +6,13 @@ import { TextField, TextFieldInput, TextFieldTextArea, TextFieldLabel, TextField
 import { NumberField, NumberFieldGroup, NumberFieldInput, NumberFieldLabel } from "~/components/ui/number-field"
 import { Switch, SwitchControl, SwitchThumb, SwitchLabel } from "~/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select"
-import { Checkbox } from "~/components/ui/checkbox"
-import { Badge } from "~/components/ui/badge"
 import { Label } from "~/components/ui/label"
 
 export interface FieldRendererProps {
   name: string
   label: string
   value: unknown
+  fieldType?: CompiledFieldType
   widget?: string
   required?: boolean
   readonly?: boolean
@@ -31,8 +31,13 @@ const TextInputField: Component<FieldRendererProps> = (props) => (
     disabled={props.disabled}
     readOnly={props.readonly}
   >
-    <TextFieldLabel>{props.label}</TextFieldLabel>
-    <TextFieldInput placeholder={props.placeholder} />
+    <TextFieldLabel class={props.errors?.length ? "text-destructive" : undefined}>
+      {renderLabel(props.label, props.required)}
+    </TextFieldLabel>
+    <TextFieldInput
+      placeholder={props.placeholder}
+      class={props.errors?.length ? "border-error-foreground text-error-foreground" : undefined}
+    />
     <Show when={props.help}>
       <p class="text-xs text-muted-foreground">{props.help}</p>
     </Show>
@@ -51,8 +56,14 @@ const PasswordField: Component<FieldRendererProps> = (props) => (
     disabled={props.disabled}
     readOnly={props.readonly}
   >
-    <TextFieldLabel>{props.label}</TextFieldLabel>
-    <TextFieldInput type="password" placeholder={props.placeholder} />
+    <TextFieldLabel class={props.errors?.length ? "text-destructive" : undefined}>
+      {renderLabel(props.label, props.required)}
+    </TextFieldLabel>
+    <TextFieldInput
+      type="password"
+      placeholder={props.placeholder}
+      class={props.errors?.length ? "border-error-foreground text-error-foreground" : undefined}
+    />
     <Show when={props.errors?.length}>
       <For each={props.errors}>
         {(err) => <TextFieldErrorMessage>{err}</TextFieldErrorMessage>}
@@ -68,8 +79,13 @@ const TextAreaField: Component<FieldRendererProps> = (props) => (
     disabled={props.disabled}
     readOnly={props.readonly}
   >
-    <TextFieldLabel>{props.label}</TextFieldLabel>
-    <TextFieldTextArea placeholder={props.placeholder} />
+    <TextFieldLabel class={props.errors?.length ? "text-destructive" : undefined}>
+      {renderLabel(props.label, props.required)}
+    </TextFieldLabel>
+    <TextFieldTextArea
+      placeholder={props.placeholder}
+      class={props.errors?.length ? "border-error-foreground text-error-foreground" : undefined}
+    />
     <Show when={props.errors?.length}>
       <For each={props.errors}>
         {(err) => <TextFieldErrorMessage>{err}</TextFieldErrorMessage>}
@@ -85,10 +101,17 @@ const NumberInputField: Component<FieldRendererProps> = (props) => (
     disabled={props.disabled}
     readOnly={props.readonly}
   >
-    <NumberFieldLabel>{props.label}</NumberFieldLabel>
+    <NumberFieldLabel class={props.errors?.length ? "text-destructive" : undefined}>
+      {renderLabel(props.label, props.required)}
+    </NumberFieldLabel>
     <NumberFieldGroup>
-      <NumberFieldInput />
+      <NumberFieldInput
+        class={props.errors?.length ? "border-error-foreground text-error-foreground" : undefined}
+      />
     </NumberFieldGroup>
+    <Show when={props.help}>
+      <p class="text-xs text-muted-foreground">{props.help}</p>
+    </Show>
     <Show when={props.errors?.length}>
       <For each={props.errors}>
         {(err) => <p class="text-xs text-error-foreground">{err}</p>}
@@ -106,7 +129,7 @@ const SwitchField: Component<FieldRendererProps> = (props) => (
     <SwitchControl>
       <SwitchThumb />
     </SwitchControl>
-    <SwitchLabel>{props.label}</SwitchLabel>
+    <SwitchLabel>{renderLabel(props.label, props.required)}</SwitchLabel>
   </Switch>
 )
 
@@ -116,7 +139,9 @@ const SelectField: Component<FieldRendererProps> = (props) => {
 
   return (
     <div class="flex flex-col gap-1">
-      <Label>{props.label}</Label>
+      <Label class={props.errors?.length ? "text-destructive" : undefined}>
+        {renderLabel(props.label, props.required)}
+      </Label>
       <Select<{ value: unknown; label: string }>
         options={options()}
         optionValue="value"
@@ -131,13 +156,18 @@ const SelectField: Component<FieldRendererProps> = (props) => {
           </SelectItem>
         )}
       >
-        <SelectTrigger>
+        <SelectTrigger
+          class={props.errors?.length ? "border-error-foreground text-error-foreground" : undefined}
+        >
           <SelectValue<{ value: unknown; label: string }>>
             {(state) => state.selectedOption()?.label}
           </SelectValue>
         </SelectTrigger>
         <SelectContent />
       </Select>
+      <Show when={props.help}>
+        <p class="text-xs text-muted-foreground">{props.help}</p>
+      </Show>
       <Show when={props.errors?.length}>
         <For each={props.errors}>
           {(err) => <p class="text-xs text-error-foreground">{err}</p>}
@@ -147,9 +177,62 @@ const SelectField: Component<FieldRendererProps> = (props) => {
   )
 }
 
+const DateTimeField: Component<FieldRendererProps> = (props) => (
+  <TextField
+    value={toDateTimeLocalValue(props.value)}
+    onChange={(v: string) => props.onChange?.(toDateTimeValue(v))}
+    disabled={props.disabled}
+    readOnly={props.readonly}
+  >
+    <TextFieldLabel class={props.errors?.length ? "text-destructive" : undefined}>
+      {renderLabel(props.label, props.required)}
+    </TextFieldLabel>
+    <TextFieldInput
+      type="datetime-local"
+      class={props.errors?.length ? "border-error-foreground text-error-foreground" : undefined}
+    />
+    <Show when={props.help}>
+      <p class="text-xs text-muted-foreground">{props.help}</p>
+    </Show>
+    <Show when={props.errors?.length}>
+      <For each={props.errors}>
+        {(err) => <TextFieldErrorMessage>{err}</TextFieldErrorMessage>}
+      </For>
+    </Show>
+  </TextField>
+)
+
+const ArrayTextField: Component<FieldRendererProps> = (props) => (
+  <TextField
+    value={toArrayText(props.value)}
+    onChange={(v: string) => props.onChange?.(parseArrayText(v))}
+    disabled={props.disabled}
+    readOnly={props.readonly}
+  >
+    <TextFieldLabel class={props.errors?.length ? "text-destructive" : undefined}>
+      {renderLabel(props.label, props.required)}
+    </TextFieldLabel>
+    <TextFieldTextArea
+      placeholder={props.placeholder ?? "One value per line or comma-separated"}
+      class={props.errors?.length ? "border-error-foreground text-error-foreground" : undefined}
+    />
+    <Show when={props.help}>
+      <p class="text-xs text-muted-foreground">{props.help}</p>
+    </Show>
+    <Show when={!props.help}>
+      <p class="text-xs text-muted-foreground">One value per line or comma-separated</p>
+    </Show>
+    <Show when={props.errors?.length}>
+      <For each={props.errors}>
+        {(err) => <TextFieldErrorMessage>{err}</TextFieldErrorMessage>}
+      </For>
+    </Show>
+  </TextField>
+)
+
 const ColorField: Component<FieldRendererProps> = (props) => (
   <div class="flex flex-col gap-1">
-    <Label>{props.label}</Label>
+    <Label>{renderLabel(props.label, props.required)}</Label>
     <input
       type="color"
       value={String(props.value ?? "#000000")}
@@ -162,7 +245,7 @@ const ColorField: Component<FieldRendererProps> = (props) => (
 
 const ReadonlyField: Component<FieldRendererProps> = (props) => (
   <div class="flex flex-col gap-1">
-    <Label class="text-muted-foreground">{props.label}</Label>
+    <Label class="text-muted-foreground">{renderLabel(props.label, props.required)}</Label>
     <span class="text-sm">{formatDisplayValue(props.value)}</span>
   </div>
 )
@@ -190,17 +273,93 @@ const widgetMap: Record<string, Component<FieldRendererProps>> = {
   "badge-select": SelectField,
   "password-input": PasswordField,
   "color-input": ColorField,
+  "datetime": DateTimeField,
   "date-range": TextInputField,
   "multi-combobox": TextInputField,
 }
 
-export function resolveFieldComponent(widget?: string, readonly?: boolean): Component<FieldRendererProps> {
-  if (readonly) return ReadonlyField
-  if (!widget) return TextInputField
-  return widgetMap[widget] ?? TextInputField
+export function resolveFieldComponent(props: Pick<FieldRendererProps, "fieldType" | "options" | "readonly" | "widget">): Component<FieldRendererProps> {
+  if (props.readonly) return ReadonlyField
+  if (shouldUseSelect(props)) return SelectField
+  if (shouldUseArrayText(props)) return ArrayTextField
+  if (!props.widget) return TextInputField
+  return widgetMap[props.widget] ?? TextInputField
 }
 
 export const FieldRenderer: Component<FieldRendererProps> = (props) => {
-  const Comp = () => resolveFieldComponent(props.widget, props.readonly)
+  const Comp = () => resolveFieldComponent(props)
   return <Dynamic component={Comp()} {...props} />
+}
+
+function shouldUseArrayText(
+  props: Pick<FieldRendererProps, "fieldType" | "widget">,
+) {
+  if (!props.fieldType || !("array" in props.fieldType) || !props.fieldType.array) {
+    return false
+  }
+
+  return props.widget === undefined || props.widget === "text" || props.widget === "textarea"
+}
+
+function shouldUseSelect(
+  props: Pick<FieldRendererProps, "fieldType" | "options" | "widget">,
+) {
+  if (!props.options?.length) {
+    return false
+  }
+
+  if (props.fieldType && "array" in props.fieldType && props.fieldType.array) {
+    return false
+  }
+
+  return props.widget === undefined || props.widget === "text" || props.widget === "select" || props.widget === "badge-select"
+}
+
+function renderLabel(label: string, required?: boolean) {
+  return (
+    <>
+      {label}
+      <Show when={required}>
+        <span class="ml-1 text-destructive">*</span>
+      </Show>
+    </>
+  )
+}
+
+function toDateTimeLocalValue(value: unknown) {
+  if (typeof value !== "string" || value.length === 0) {
+    return ""
+  }
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return value
+  }
+
+  const pad = (input: number) => String(input).padStart(2, "0")
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
+function toDateTimeValue(value: string) {
+  if (value === "") {
+    return ""
+  }
+
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? value : date.toISOString()
+}
+
+function toArrayText(value: unknown) {
+  if (!Array.isArray(value)) {
+    return String(value ?? "")
+  }
+
+  return value.map((item) => String(item)).join("\n")
+}
+
+function parseArrayText(value: string) {
+  return value
+    .split(/[\n,]/)
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0)
 }
