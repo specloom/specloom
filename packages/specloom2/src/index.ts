@@ -7,4 +7,6 @@ export * from "./facade/index.js";
 export * from "./loader/index.js";
 export * from "./resolver/index.js";
 export * from "./serialize/index.js";
+export * from "./ui/index.js";
+export * from "./validation/index.js";
 export * from "./vm/types.js";
