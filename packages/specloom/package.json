@@ -1,7 +1,8 @@
 {
   "name": "specloom",
-  "version": "0.1.0",
-  "description": "Headless Admin ViewModel Spec",
+  "version": "1.0.0",
+  "description": "Headless admin runtime for specloom spec v1",
+  "private": true,
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -18,20 +19,19 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "typecheck": "tsc --noEmit",
-    "test": "vitest"
+    "test": "../../node_modules/.bin/vitest run"
   },
   "keywords": [
+    "specloom",
     "admin",
-    "headless",
-    "viewmodel",
-    "spec"
+    "runtime",
+    "viewmodel"
   ],
-  "engines": {
-    "node": ">=17.0.0"
-  },
   "license": "MIT",
+  "dependencies": {
+    "@specloom/spec": "workspace:*"
+  },
   "devDependencies": {
-    "@vitest/coverage-v8": "4.0.17",
     "typescript": "^5.7.0",
     "vitest": "4.0.17"
   }

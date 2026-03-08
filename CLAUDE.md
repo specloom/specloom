@@ -4,13 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-specloom is a headless admin ViewModel specification library. It defines admin UI "meaning" via TypeSpec, compiles to JSON spec, then evaluates with runtime context (user, role) to produce ViewModels that UI frameworks render.
+specloom is a headless admin runtime and TypeSpec DSL. It defines admin UI semantics via TypeSpec, compiles to compiled spec v1 JSON, then evaluates with runtime context to produce state, validation, ViewModel, and UI metadata that UI frameworks render.
 
 ```
-TypeSpec (定義) → JSON spec (仕様) → ViewModel (評価済み) → UI (描画)
+TypeSpec (定義) → compiled spec JSON (仕様) → state / validation / VM / UI metadata → UI
 ```
 
-Key principle: **UI contains no permission logic** - it just reads `allowed` flags from the ViewModel.
+Key principle: **UI contains no permission logic**. It reads state, validation results, ViewModel flags, and UI metadata from `specloom`.
 
 ## Commands
 
@@ -46,30 +46,36 @@ pnpm dev
 
 | Package | Purpose |
 |---------|---------|
-| `packages/specloom` | Core library: spec types, ViewModel, builder, loader, evaluator, validation |
-| `packages/typespec` | TypeSpec decorators + emitter for compiling `.tsp` to JSON spec |
+| `packages/specloom` | Runtime core: loader, evaluator, facade, state, validation, normalize, serialize, options, filter, format, action, UI resolver |
+| `packages/spec` | Shared compiled spec v1 contract |
+| `packages/typespec` | TypeSpec decorators + emitter for compiling `.tsp` to compiled spec JSON |
 | `packages/auth-provider` | Authentication provider abstraction (Firebase Identity Platform impl) |
 | `packages/data-provider` | Data provider abstraction with REST impl and authenticated HTTP client |
-| `packages/solidjs` | SolidJS UI components |
-| `packages/svelte` | Svelte UI components |
 | `packages/api` | OpenAPI spec definition |
 
 ### Core specloom Modules
 
-- **spec/** - TypeScript types for JSON spec format (resources, views, fields, actions)
-- **vm/** - ViewModel types (evaluated spec with runtime context)
-- **builder/** - Programmatic spec construction
 - **loader/** - JSON spec loading/parsing
-- **evaluator/** - Evaluates spec + context → ViewModel (handles `allowedWhen` expressions)
-- **validation/** - Field validation rules
+- **resolver/** - Resource, input, and field resolution
+- **evaluator/** - Evaluates spec + context → ViewModel
+- **state/** - `createFormState`, `createInputState`, `createListState`
+- **validation/** - Field and rule validation
+- **normalize/** - Input value normalization and nested/relation updates
+- **serialize/** - Submit payload generation
+- **options/** - Static/remote option resolution
+- **filter/** - Named filter and filter expression evaluation
+- **format/** - Display formatting helpers
+- **action/** - Action request descriptor helpers
+- **ui/** - Renderer-agnostic UI presentation resolver
+- **vm/** - ViewModel types
 
 ### Spec Concepts
 
 Three main elements define an admin UI:
 
-1. **Resource** - Data model with fields, kinds, validation, relations
-2. **View** - Screen type (list/form/show) with columns, filters, sorting
-3. **Action** - Operations with placement, permissions (`allowedWhen`), confirmation
+1. **Resource / Input** - Data model, form model, fields, validation, relations
+2. **View** - List / form / show config with columns, sections, filters, sorting
+3. **Action / Rule** - Operations and cross-field constraints
 
 ### Auth Provider (`@specloom/auth-provider`)
 
@@ -87,15 +93,18 @@ Three main elements define an admin UI:
 ### TypeSpec Decorators
 
 The `@specloom/typespec` package provides decorators:
-- `@resource`, `@label`, `@kind`, `@ui`, `@options`
-- `@view`, `@columns`, `@fields`, `@searchable`, `@defaultSort`
-- `@action(id, options?, dialogModel?)`, `@rowAction(id, options?, dialogModel?)` - view-level (Model target)
-- `@relation`, `@required`, `@readonly`, validation decorators
+- `@entity`, `@field`, `@index`, `@section`
+- `@filter`, `@namedFilter`, `@options`, `@optionSource`
+- `@relation`, `@nested`
+- `@pageAction`, `@rowAction`, `@rule`
+- `@visibleWhen`, `@requiredWhen`, `@readonlyWhen`, `@disabledWhen`, `@match`
+- TypeSpec built-ins: `@minValue`, `@maxValue`, `@minLength`, `@maxLength`, `@pattern`, `@minItems`, `@maxItems`
 
 ## Documentation
 
 - `docs/typespec/` - TypeSpec usage guide with decorator references
-- `docs/spec/v0.1.md` - JSON spec format reference
+- `docs/spec/v1-compiled.md` - Compiled spec v1 reference
+- `docs/spec/v1-status.md` - Current design status
 - `docs/spec/view_model.md` - ViewModel spec reference
 - `docs/spec/api.md` - API spec reference
 - `docs/guides/solid-integration.md` - SolidJS integration guide (AuthContext, DataContext, AuthGuard)
@@ -105,7 +114,3 @@ The `@specloom/typespec` package provides decorators:
 - コミット前に必ず確認を求める
 - コミットメッセージは日本語で記述
 - conventional commit 形式を使用（feat:, fix:, refactor:, docs: など）
-
-## Development Status
-
-🚧 Under development - source files are scaffolded but implementations are empty.

@@ -15,6 +15,7 @@
     "noEmit": true,
   },
   "references": [
+    { "path": "./packages/spec" },
     { "path": "./packages/specloom" },
     { "path": "./packages/specloom2" },
     { "path": "./packages/typespec" },

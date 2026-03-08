@@ -1,253 +1,217 @@
-// ============================================================
-// Filter Evaluator
-// ============================================================
+import type { CompiledNamedFilter, FilterExpression, FilterValue } from "@specloom/spec";
+import { buildEnvironment } from "../expression/index.js";
+import type { Context } from "../vm/types.js";
 
-import type {
-  FilterExpression,
-  FilterCondition,
-  FilterOperator,
-} from "../spec/index.js";
+export interface ResolveFilterValueArgs {
+  value: FilterValue;
+  context?: Context;
+  now?: Date;
+}
 
-/**
- * フィルター式をデータに対して評価する
- */
-export function evaluateFilter(
-  filter: FilterExpression,
-  data: Record<string, unknown>,
-): boolean {
-  // AND
+export interface EvaluateFilterArgs {
+  filter: FilterExpression;
+  record: Record<string, unknown>;
+  context?: Context;
+  now?: Date;
+}
+
+export interface FilterRecordsArgs {
+  data: Record<string, unknown>[];
+  filter: FilterExpression;
+  context?: Context;
+  now?: Date;
+}
+
+export interface ApplyNamedFilterArgs {
+  data: Record<string, unknown>[];
+  namedFilter: CompiledNamedFilter;
+  context?: Context;
+  now?: Date;
+}
+
+export function resolveFilterValue(args: ResolveFilterValueArgs): unknown {
+  const { value, context = {}, now = new Date() } = args;
+
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    if ("context" in value && typeof value.context === "string") {
+      return resolvePath(buildEnvironment(context, {}), value.context);
+    }
+
+    if ("relative" in value && typeof value.relative === "string") {
+      return toRelativeIso(now, value.relative);
+    }
+  }
+
+  return value;
+}
+
+export function evaluateFilter(args: EvaluateFilterArgs): boolean {
+  const { filter, record, context = {}, now = new Date() } = args;
+
+  if (isEmptyFilter(filter)) {
+    return true;
+  }
+
   if ("and" in filter) {
-    return filter.and.every((expr) => evaluateFilter(expr, data));
-  }
-
-  // OR
-  if ("or" in filter) {
-    return filter.or.some((expr) => evaluateFilter(expr, data));
-  }
-
-  // NOT
-  if ("not" in filter) {
-    return !evaluateFilter(filter.not, data);
-  }
-
-  // FilterCondition
-  return evaluateCondition(filter, data);
-}
-
-/**
- * 単一条件を評価する
- */
-function evaluateCondition(
-  condition: FilterCondition,
-  data: Record<string, unknown>,
-): boolean {
-  const { field, operator, value } = condition;
-  const fieldValue = getFieldValue(data, field);
-
-  return evaluateOperator(operator, fieldValue, value);
-}
-
-/**
- * ドット記法でネストしたフィールド値を取得
- */
-function getFieldValue(data: Record<string, unknown>, path: string): unknown {
-  const parts = path.split(".");
-  let current: unknown = data;
-
-  for (const part of parts) {
-    if (current === null || current === undefined) {
-      return undefined;
-    }
-    if (typeof current === "object") {
-      current = (current as Record<string, unknown>)[part];
-    } else {
-      return undefined;
-    }
-  }
-
-  return current;
-}
-
-/**
- * 演算子を評価する
- */
-function evaluateOperator(
-  op: FilterOperator,
-  fieldValue: unknown,
-  compareValue: unknown,
-): boolean {
-  switch (op) {
-    // 比較演算子
-    case "eq":
-      return fieldValue === compareValue;
-
-    case "ne":
-      return fieldValue !== compareValue;
-
-    case "gt":
-      return (
-        typeof fieldValue === "number" &&
-        typeof compareValue === "number" &&
-        fieldValue > compareValue
-      );
-
-    case "gte":
-      return (
-        typeof fieldValue === "number" &&
-        typeof compareValue === "number" &&
-        fieldValue >= compareValue
-      );
-
-    case "lt":
-      return (
-        typeof fieldValue === "number" &&
-        typeof compareValue === "number" &&
-        fieldValue < compareValue
-      );
-
-    case "lte":
-      return (
-        typeof fieldValue === "number" &&
-        typeof compareValue === "number" &&
-        fieldValue <= compareValue
-      );
-
-    // 文字列演算子
-    case "contains":
-      return (
-        typeof fieldValue === "string" &&
-        typeof compareValue === "string" &&
-        fieldValue.includes(compareValue)
-      );
-
-    case "starts_with":
-    case "startsWith":
-      return (
-        typeof fieldValue === "string" &&
-        typeof compareValue === "string" &&
-        fieldValue.startsWith(compareValue)
-      );
-
-    case "ends_with":
-    case "endsWith":
-      return (
-        typeof fieldValue === "string" &&
-        typeof compareValue === "string" &&
-        fieldValue.endsWith(compareValue)
-      );
-
-    case "matches":
-      if (typeof fieldValue !== "string" || typeof compareValue !== "string") {
-        return false;
-      }
-      try {
-        return new RegExp(compareValue).test(fieldValue);
-      } catch {
-        return false;
-      }
-
-    case "ilike":
-      return (
-        typeof fieldValue === "string" &&
-        typeof compareValue === "string" &&
-        fieldValue.toLowerCase().includes(compareValue.toLowerCase())
-      );
-
-    // 集合演算子
-    case "in":
-      return Array.isArray(compareValue) && compareValue.includes(fieldValue);
-
-    case "not_in":
-    case "notIn":
-      return Array.isArray(compareValue) && !compareValue.includes(fieldValue);
-
-    // 存在演算子
-    case "is_null":
-    case "isNull":
-      return compareValue
-        ? fieldValue === null || fieldValue === undefined
-        : fieldValue !== null && fieldValue !== undefined;
-
-    case "is_empty":
-    case "isEmpty":
-      if (compareValue) {
-        return (
-          fieldValue === "" ||
-          fieldValue === null ||
-          fieldValue === undefined ||
-          (Array.isArray(fieldValue) && fieldValue.length === 0)
-        );
-      }
-      return (
-        fieldValue !== "" &&
-        fieldValue !== null &&
-        fieldValue !== undefined &&
-        !(Array.isArray(fieldValue) && fieldValue.length === 0)
-      );
-
-    // 配列演算子
-    case "has_any":
-    case "hasAny":
-      return (
-        Array.isArray(fieldValue) &&
-        Array.isArray(compareValue) &&
-        compareValue.some((v) => fieldValue.includes(v))
-      );
-
-    case "has_all":
-    case "hasAll":
-      return (
-        Array.isArray(fieldValue) &&
-        Array.isArray(compareValue) &&
-        compareValue.every((v) => fieldValue.includes(v))
-      );
-
-    case "has_none":
-    case "hasNone":
-      return (
-        Array.isArray(fieldValue) &&
-        Array.isArray(compareValue) &&
-        !compareValue.some((v) => fieldValue.includes(v))
-      );
-
-    default:
-      return false;
-  }
-}
-
-/**
- * フィルター式が有効かどうかを検証する（型ガード）
- */
-export function isFilterExpression(value: unknown): value is FilterExpression {
-  if (typeof value !== "object" || value === null) {
-    return false;
-  }
-
-  const obj = value as Record<string, unknown>;
-
-  // AND
-  if ("and" in obj) {
-    return (
-      Array.isArray(obj.and) && obj.and.every((v) => isFilterExpression(v))
+    return filter.and.every((child) =>
+      evaluateFilter({ filter: child, record, context, now }),
     );
   }
 
-  // OR
-  if ("or" in obj) {
-    return Array.isArray(obj.or) && obj.or.every((v) => isFilterExpression(v));
+  if ("or" in filter) {
+    return filter.or.some((child) =>
+      evaluateFilter({ filter: child, record, context, now }),
+    );
   }
 
-  // NOT
-  if ("not" in obj) {
-    return isFilterExpression(obj.not);
+  if ("not" in filter) {
+    return !evaluateFilter({ filter: filter.not, record, context, now });
   }
 
-  // FilterCondition
-  return (
-    "field" in obj &&
-    "operator" in obj &&
-    "value" in obj &&
-    typeof obj.field === "string" &&
-    typeof obj.operator === "string"
+  const left = resolvePath(record, filter.field);
+  const right = resolveFilterValue({
+    value: filter.value,
+    context,
+    now,
+  });
+
+  return compareFilterValues(left, right, filter.operator);
+}
+
+export function filterRecords(args: FilterRecordsArgs): Record<string, unknown>[] {
+  const { data, filter, context, now } = args;
+  return data.filter((record) =>
+    evaluateFilter({
+      filter,
+      record,
+      context,
+      now,
+    }),
   );
+}
+
+export function applyNamedFilter(args: ApplyNamedFilterArgs): Record<string, unknown>[] {
+  const { data, namedFilter, context, now } = args;
+  return filterRecords({
+    data,
+    filter: namedFilter.where,
+    context,
+    now,
+  });
+}
+
+function compareFilterValues(left: unknown, right: unknown, operator: string): boolean {
+  switch (operator) {
+    case "eq":
+    case "==":
+      return left === right;
+    case "neq":
+    case "!=":
+      return left !== right;
+    case "contains":
+      return String(left ?? "")
+        .toLowerCase()
+        .includes(String(right ?? "").toLowerCase());
+    case "notContains":
+      return !String(left ?? "")
+        .toLowerCase()
+        .includes(String(right ?? "").toLowerCase());
+    case "startsWith":
+      return String(left ?? "")
+        .toLowerCase()
+        .startsWith(String(right ?? "").toLowerCase());
+    case "endsWith":
+      return String(left ?? "")
+        .toLowerCase()
+        .endsWith(String(right ?? "").toLowerCase());
+    case "in":
+      return Array.isArray(right) ? right.includes(left as never) : false;
+    case "notIn":
+      return Array.isArray(right) ? !right.includes(left as never) : true;
+    case "gt":
+    case ">":
+      return compareOrdered(left, right, (a, b) => a > b);
+    case "gte":
+    case ">=":
+      return compareOrdered(left, right, (a, b) => a >= b);
+    case "lt":
+    case "<":
+      return compareOrdered(left, right, (a, b) => a < b);
+    case "lte":
+    case "<=":
+      return compareOrdered(left, right, (a, b) => a <= b);
+    case "exists":
+      return left !== undefined && left !== null && left !== "";
+    case "notExists":
+      return left === undefined || left === null || left === "";
+    default:
+      return left === right;
+  }
+}
+
+function compareOrdered(
+  left: unknown,
+  right: unknown,
+  predicate: (left: string | number, right: string | number) => boolean,
+): boolean {
+  if (typeof left === "number" && typeof right === "number") {
+    return predicate(left, right);
+  }
+
+  const leftDate = toTimestamp(left);
+  const rightDate = toTimestamp(right);
+  if (leftDate !== undefined && rightDate !== undefined) {
+    return predicate(leftDate, rightDate);
+  }
+
+  if (typeof left === "string" && typeof right === "string") {
+    return predicate(left, right);
+  }
+
+  return false;
+}
+
+function toTimestamp(value: unknown): number | undefined {
+  if (value instanceof Date) {
+    return value.getTime();
+  }
+  if (typeof value === "string") {
+    const parsed = Date.parse(value);
+    if (!Number.isNaN(parsed)) {
+      return parsed;
+    }
+  }
+  return undefined;
+}
+
+function resolvePath(record: Record<string, unknown>, path: string): unknown {
+  return path.split(".").reduce<unknown>((value, segment) => {
+    if (typeof value !== "object" || value === null) {
+      return undefined;
+    }
+    return (value as Record<string, unknown>)[segment];
+  }, record);
+}
+
+function isEmptyFilter(filter: FilterExpression): boolean {
+  return !("field" in filter || "and" in filter || "or" in filter || "not" in filter);
+}
+
+function toRelativeIso(now: Date, expression: string): string {
+  const match = /^([+-]?\d+)([smhdw])$/.exec(expression.trim());
+  if (!match) {
+    return now.toISOString();
+  }
+
+  const amount = Number(match[1]);
+  const unit = match[2];
+  const multipliers: Record<string, number> = {
+    s: 1_000,
+    m: 60_000,
+    h: 3_600_000,
+    d: 86_400_000,
+    w: 604_800_000,
+  };
+
+  return new Date(now.getTime() + amount * multipliers[unit]!).toISOString();
 }

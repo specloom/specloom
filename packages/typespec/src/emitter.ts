@@ -1,631 +1,860 @@
 import {
+  parseExpression,
+  type CompiledAction,
+  type CompiledColumn,
+  type CompiledField,
+  type CompiledFieldType,
+  type CompiledInput,
+  type CompiledListView,
+  type CompiledNamedFilter,
+  type CompiledRecordView,
+  type CompiledResource,
+  type CompiledRule,
+  type CompiledSection,
+  type CompiledSpec,
+  type ExpressionAst,
+  type FilterExpression,
+} from "@specloom/spec";
+import {
   emitFile,
-  resolvePath,
-  navigateProgram,
-  getSourceLocation,
-  getMinLength as getMinLengthStd,
-  getMaxLength as getMaxLengthStd,
-  getPattern as getPatternStd,
-  getMinItems as getMinItemsStd,
+  getMaxValue as getMaxValueStd,
   getMaxItems as getMaxItemsStd,
+  getMaxLength as getMaxLengthStd,
+  getMinValue as getMinValueStd,
+  getMinItems as getMinItemsStd,
+  getMinLength as getMinLengthStd,
+  getPattern as getPatternStd,
+  getSourceLocation,
+  navigateProgram,
+  resolvePath,
   type EmitContext,
   type Model,
   type ModelProperty,
+  type Operation,
   type Program,
 } from "@typespec/compiler";
 
 import type { SpecloomEmitterOptions } from "./lib.js";
 import {
-  getResourceName,
-  getRequiredOneOf,
-  getLabel,
-  getKind,
+  getDisabledWhen,
+  getEntity,
+  getField,
+  getFilter,
+  getIndex,
+  getMatch,
+  getNamedFilters,
+  getNested,
+  getOptionSource,
   getOptions,
+  getPageAction,
+  getReadonlyWhen,
   getRelation,
-  getCardinality,
-  getUI,
-  isReadonly,
+  getRowAction,
+  getRules,
+  getSections,
+  getRequiredWhen,
+  getVisibleWhen,
+  hasAnySpecloomMetadata,
+  hasEntity,
   isComputed,
   isCreateOnly,
-  isRequired,
-  getFilter,
-  getView,
-  getColumns,
-  getFields,
-  getSearchable,
-  getSortable,
-  getDefaultSort,
-  getClickAction,
-  getSelection,
-  getNamedFilters,
-  getViewActions,
-  getViewRowActions,
-  getVisibleWhen,
-  getRequiredWhen,
-  getMatch,
-  getMin,
-  getMax,
-  getMinLength,
-  getMaxLength,
-  getPattern,
-  getMinItems,
-  getMaxItems,
-  getNested,
-  type ViewActionDef,
+  isHidden,
+  type ActionDef,
+  type FieldDef,
+  type IndexDef,
+  type RuleDef,
+  type SectionDef,
 } from "./decorators.js";
-
-interface Spec {
-  version: "0.1";
-  resources: Resource[];
-  views: View[];
-}
-
-interface Resource {
-  name: string;
-  label?: string;
-  fields: Field[];
-  validation?: {
-    requiredOneOf?: string[][];
-  };
-}
-
-interface Field {
-  name: string;
-  type: string;
-  label?: string;
-  kind?: string;
-  required?: boolean;
-  readonly?: boolean;
-  computed?: boolean;
-  createOnly?: boolean;
-  filter?: true | string[];
-  visibleWhen?: string;
-  requiredWhen?: string;
-  options?: { value: string; label: string }[];
-  relation?: {
-    resource: string;
-    labelField?: string;
-    valueField?: string;
-    submitField?: string;
-    searchable?: boolean;
-    cardinality?: string;
-  };
-  nested?: {
-    resource: string;
-    min?: number;
-    max?: number;
-  };
-  validation?: {
-    required?: boolean;
-    minLength?: number;
-    maxLength?: number;
-    min?: number;
-    max?: number;
-    pattern?: string;
-    match?: string;
-    minItems?: number;
-    maxItems?: number;
-  };
-  ui?: Record<string, unknown>;
-}
-
-interface View {
-  resource: string;
-  type: "list" | "form" | "show";
-  columns?: string[];
-  fields?: string[];
-  searchable?: string[];
-  sortable?: string[];
-  defaultSort?: { field: string; order: string };
-  clickAction?: string;
-  selectionMode?: string;
-  namedFilters?: { id: string; label: string; filter: unknown }[];
-  actions: Action[];
-  rowActions?: Action[];
-}
-
-interface Action {
-  id: string;
-  label: string;
-  selection?: "selected" | "query";
-  allowedWhen?: string;
-  confirm?: string | true;
-  ui?: Record<string, unknown>;
-  dialog?: {
-    title?: string;
-    description?: string;
-    fields: DialogField[];
-  };
-  api?: {
-    path: string;
-    method: string;
-    params?: unknown;
-    body?: string[];
-    query?: unknown;
-  };
-}
-
-interface DialogField {
-  name: string;
-  label?: string;
-  kind?: string;
-  validation?: {
-    required?: boolean;
-    minLength?: number;
-    maxLength?: number;
-    min?: number;
-    max?: number;
-    pattern?: string;
-    match?: string;
-  };
-}
 
 export async function $onEmit(context: EmitContext<SpecloomEmitterOptions>) {
   if (context.program.compilerOptions.noEmit) {
     return;
   }
 
-  const specs = buildSpecsBySourceFile(context.program);
+  const spec = buildCompiledSpec(context.program);
+  const outputFile = context.options["output-file"]?.trim();
+  const outputRoot = getOutputRoot(context.emitterOutputDir);
 
-  for (const [sourceFile, spec] of specs) {
-    // Skip empty specs
-    if (spec.resources.length === 0 && spec.views.length === 0) {
-      continue;
-    }
-
-    // Convert .tsp to .json
-    const outputFile = sourceFile.replace(/\.tsp$/, ".json");
-
+  if (outputFile) {
     await emitFile(context.program, {
-      path: resolvePath(context.emitterOutputDir, outputFile),
+      path: resolvePath(outputRoot, outputFile),
       content: JSON.stringify(spec, null, 2) + "\n",
+    });
+    return;
+  }
+
+  for (const [resourceName, resource] of Object.entries(spec.resources)) {
+    const partial = createResourceSpec(spec, resourceName, resource);
+    await emitFile(context.program, {
+      path: resolvePath(outputRoot, `${toKebabCase(resourceName)}.json`),
+      content: JSON.stringify(partial, null, 2) + "\n",
     });
   }
 }
 
-function getSourceFileName(model: Model, program: Program): string | undefined {
-  const location = getSourceLocation(model);
-  if (!location?.file) {
-    return undefined;
-  }
-  // Get relative path from project root to preserve directory structure
-  const filePath = location.file.path;
-  const projectRoot = program.projectRoot + "/";
-  if (filePath.startsWith(projectRoot)) {
-    return filePath.slice(projectRoot.length);
-  }
-  // Fallback: just the filename
-  const lastSlash = filePath.lastIndexOf("/");
-  return lastSlash >= 0 ? filePath.slice(lastSlash + 1) : filePath;
-}
+function buildCompiledSpec(program: Program): CompiledSpec {
+  const models: Model[] = [];
+  const operations: Operation[] = [];
 
-function buildSpecsBySourceFile(program: Program): Map<string, Spec> {
-  const specsByFile = new Map<
-    string,
-    { resources: Resource[]; views: View[] }
-  >();
-
-  // Collect resources and views grouped by source file
   navigateProgram(program, {
-    model(model) {
-      const sourceFile = getSourceFileName(model, program);
-      if (!sourceFile) {
-        return;
+    model(model: Model) {
+      if (
+        isLocalDeclaration(model) &&
+        model.name &&
+        model.properties.size > 0
+      ) {
+        models.push(model);
       }
-
-      // Skip library files (from node_modules or lib folder)
-      if (sourceFile.includes("node_modules") || sourceFile.endsWith(".d.ts")) {
-        return;
-      }
-
-      if (!specsByFile.has(sourceFile)) {
-        specsByFile.set(sourceFile, { resources: [], views: [] });
-      }
-      const spec = specsByFile.get(sourceFile)!;
-
-      const resourceName = getResourceName(program, model);
-      if (resourceName) {
-        spec.resources.push(buildResource(program, model));
-      }
-
-      const viewInfo = getView(program, model);
-      if (viewInfo) {
-        spec.views.push(buildView(program, model));
+    },
+    operation(operation: Operation) {
+      if (isLocalDeclaration(operation) && operation.name) {
+        operations.push(operation);
       }
     },
   });
 
-  // Convert to Spec format
-  const result = new Map<string, Spec>();
-  for (const [file, data] of specsByFile) {
-    result.set(file, {
-      version: "0.1",
-      resources: data.resources,
-      views: data.views,
-    });
+  const actionInputModels = new Set<Model>();
+  const referencedResourceNames = new Set<string>();
+  const actionsByResource = new Map<string, CompiledAction[]>();
+
+  for (const operation of operations) {
+    const pageAction = getPageAction(program, operation);
+    const rowAction = getRowAction(program, operation);
+    const def = pageAction ?? rowAction;
+    if (!def) {
+      continue;
+    }
+
+    referencedResourceNames.add(def.resource);
+    if (def.inputModel) {
+      actionInputModels.add(def.inputModel);
+    }
+
+    const compiled = buildAction(program, operation, def);
+    const existing = actionsByResource.get(def.resource) ?? [];
+    existing.push(compiled);
+    actionsByResource.set(def.resource, existing);
   }
 
+  const resources: Record<string, CompiledResource> = {};
+  for (const model of models) {
+    if (actionInputModels.has(model)) {
+      continue;
+    }
+    if (!shouldCompileResource(program, model, referencedResourceNames)) {
+      continue;
+    }
+    resources[model.name] = buildResource(program, model);
+  }
+
+  for (const resourceName of referencedResourceNames) {
+    resources[resourceName] ??= createEmptyResource(resourceName);
+  }
+
+  for (const [resourceName, actions] of actionsByResource) {
+    const resource =
+      resources[resourceName] ?? createEmptyResource(resourceName);
+    resources[resourceName] = attachActions(resource, actions);
+  }
+
+  const inputs: Record<string, CompiledInput> = {};
+  for (const model of actionInputModels) {
+    inputs[model.name] = buildInput(program, model);
+  }
+
+  return {
+    version: "1",
+    resources,
+    ...(Object.keys(inputs).length > 0 ? { inputs } : {}),
+  };
+}
+
+function shouldCompileResource(
+  program: Program,
+  model: Model,
+  referencedResourceNames: Set<string>,
+): boolean {
+  if (hasEntity(program, model) || referencedResourceNames.has(model.name)) {
+    return true;
+  }
+
+  for (const [, prop] of model.properties) {
+    if (hasAnySpecloomMetadata(program, prop)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function buildResource(program: Program, model: Model): CompiledResource {
+  const meta = getEntity(program, model);
+  const fields = buildFields(program, model);
+  const listMeta = getIndex(program, model);
+  const rules = buildRules(program, model);
+
+  return {
+    name: model.name,
+    meta: {
+      label: meta?.label ?? model.name,
+      ...(meta?.pluralLabel ? { pluralLabel: meta.pluralLabel } : {}),
+      ...(meta?.titleField ? { titleField: meta.titleField } : {}),
+      ...(meta?.pageSize !== undefined ? { pageSize: meta.pageSize } : {}),
+      ...(isRecord(meta?.client) ? { client: meta?.client } : {}),
+    },
+    fields,
+    views: {
+      list: buildListView(program, model, fields, listMeta),
+      form: buildRecordView(program, model, fields, "form"),
+      show: buildRecordView(program, model, fields, "show"),
+    },
+    rules,
+  };
+}
+
+function buildInput(program: Program, model: Model): CompiledInput {
+  const fields = buildFields(program, model);
+  return {
+    name: model.name,
+    label: getEntity(program, model)?.label,
+    fields,
+    form: {
+      sections: buildSections(program, model, fields, "form"),
+    },
+    rules: buildRules(program, model),
+  };
+}
+
+function buildFields(
+  program: Program,
+  model: Model,
+): Record<string, CompiledField> {
+  const result: Record<string, CompiledField> = {};
+  for (const [, prop] of model.properties) {
+    result[prop.name] = buildField(program, prop);
+  }
   return result;
 }
 
-function buildResource(program: Program, model: Model): Resource {
-  const resourceName = getResourceName(program, model)!;
-  const label = getLabel(program, model);
-  const requiredOneOf = getRequiredOneOf(program, model);
-  const fields: Field[] = [];
+function buildField(program: Program, prop: ModelProperty): CompiledField {
+  const field = getField(program, prop);
+  const hidden = isHidden(program, prop);
+  const computed = isComputed(program, prop);
+  const createOnly = isCreateOnly(program, prop);
+  const relation = getRelation(program, prop);
+  const nested = getNested(program, prop);
+  const relationCardinality = relation?.cardinality ?? inferCardinality(prop);
+  const nestedCardinality = nested?.cardinality ?? inferCardinality(prop);
+  const relationStorage = inferRelationStorage(prop);
+  const type = buildFieldType(
+    prop,
+    relation?.resource,
+    relationCardinality,
+    relationStorage,
+    nested?.resource,
+    nestedCardinality,
+  );
+  const validation = buildValidation(program, prop);
+  const rules = buildFieldRules(program, prop);
 
-  for (const [, prop] of model.properties) {
-    // Skip computed fields from resource (they're not in DB)
-    if (isComputed(program, prop)) {
-      continue;
-    }
-    fields.push(buildField(program, prop));
-  }
+  const showVisible = hidden ? false : (field?.show ?? !computed);
+  const formVisible = hidden ? false : (field?.form ?? !computed);
+  const listVisible = hidden ? false : (field?.list ?? false);
 
-  const resource: Resource = {
-    name: resourceName,
-    fields,
+  const compiled: CompiledField = {
+    name: prop.name,
+    type,
+    ...(hasDecoratorNamed(prop, "key") ? { key: true } : {}),
+    ...(hidden ? { hidden: true } : {}),
+    ...(computed ? { computed: true } : {}),
+    ...(createOnly ? { createOnly: true } : {}),
+    ui: {
+      label: field?.label ?? prop.name,
+      widget: field?.widget ?? inferWidget(prop, relation, nested),
+      appearance: field?.appearance,
+      section: field?.section,
+      order: field?.order,
+      visibleIn: {
+        list: listVisible,
+        show: showVisible,
+        form: formVisible,
+      },
+      readonly: field?.readonly,
+      placeholder: field?.placeholder,
+      help: field?.help,
+      defaultValue: field?.defaultValue,
+      format: field?.format,
+      emptyText: field?.emptyText,
+      display: field?.display,
+      placement: field?.placement,
+      ...(isRecord(field?.client) ? { client: field?.client } : {}),
+    },
+    ...(validation ? { validation } : {}),
+    ...(rules ? { rules } : {}),
+    ...(getOptions(program, prop)
+      ? { options: getOptions(program, prop) }
+      : {}),
+    ...(getOptionSource(program, prop)
+      ? { optionsSource: getOptionSource(program, prop) }
+      : {}),
+    ...(normalizeFilter(getFilter(program, prop))
+      ? { filter: normalizeFilter(getFilter(program, prop)) }
+      : {}),
+    ...(relation
+      ? {
+          relation: {
+            resource: relation.resource,
+            kind: relation.kind ?? "belongsTo",
+            cardinality: relationCardinality,
+            labelField: relation.labelField ?? "name",
+            valueField: relation.valueField ?? "id",
+            submitField: relation.submitField,
+            searchFields: relation.searchFields,
+            lookupResource: relation.lookupResource,
+            lookupOp: relation.lookupOp,
+            linkTo: relation.linkTo,
+            creatable: relation.creatable,
+            ...(isRecord(relation.client) ? { client: relation.client } : {}),
+          },
+        }
+      : {}),
+    ...(nested
+      ? {
+          nested: {
+            resource: nested.resource,
+            cardinality: nestedCardinality,
+            minItems: nested.minItems,
+            maxItems: nested.maxItems,
+            widget: nested.widget,
+            maxDepth: 3 as const,
+          },
+        }
+      : {}),
+    submit: buildSubmit(
+      prop,
+      relation,
+      relationCardinality,
+      relationStorage,
+      nested,
+      nestedCardinality,
+    ),
   };
 
-  if (label) {
-    resource.label = label;
-  }
-
-  if (requiredOneOf && requiredOneOf.length > 0) {
-    resource.validation = {
-      requiredOneOf,
-    };
-  }
-
-  return resource;
+  return compiled;
 }
 
-function buildField(program: Program, prop: ModelProperty): Field {
-  const field: Field = {
-    name: prop.name,
-    type: getTypeString(prop),
+function buildListView(
+  program: Program,
+  model: Model,
+  fields: Record<string, CompiledField>,
+  listMeta: IndexDef | undefined,
+): CompiledListView {
+  const entity = getEntity(program, model);
+  return {
+    enabled: entity?.views?.list?.enabled ?? true,
+    columns: buildColumns(fields, listMeta),
+    ...(listMeta?.searchable && listMeta.searchable.length > 0
+      ? { search: { fields: listMeta.searchable } }
+      : {}),
+    sortable: listMeta?.sortable ?? [],
+    defaultSort: listMeta?.defaultSort ?? entity?.defaultSort,
+    selection: listMeta?.selection ?? "none",
+    clickAction: listMeta?.clickAction ?? "none",
+    namedFilters:
+      (getNamedFilters(program, model)?.map((item) => ({
+        id: item.id,
+        label: item.label,
+        ...(item.order !== undefined ? { order: item.order } : {}),
+        where: normalizeFilterExpression(item.where),
+      })) as CompiledNamedFilter[] | undefined) ?? [],
+    pageActions: [],
+    rowActions: [],
   };
+}
 
-  const label = getLabel(program, prop);
-  if (label) {
-    field.label = label;
+function buildRecordView(
+  program: Program,
+  model: Model,
+  fields: Record<string, CompiledField>,
+  view: "form" | "show",
+): CompiledRecordView {
+  const entity = getEntity(program, model);
+  return {
+    enabled: entity?.views?.[view]?.enabled ?? true,
+    sections: buildSections(program, model, fields, view),
+    pageActions: [],
+  };
+}
+
+function buildSections(
+  program: Program,
+  model: Model,
+  fields: Record<string, CompiledField>,
+  view: "form" | "show",
+): CompiledSection[] {
+  const explicit = (getSections(program, model) ?? []).filter(
+    (section) => !section.view || section.view === view,
+  );
+
+  const bySection = new Map<string, string[]>();
+  for (const field of Object.values(fields)) {
+    if (!field.ui.visibleIn[view]) {
+      continue;
+    }
+    const sectionId = field.ui.section ?? "main";
+    const existing = bySection.get(sectionId) ?? [];
+    existing.push(field.name);
+    bySection.set(sectionId, existing);
   }
 
-  // Handle enum type: auto-generate kind and options
-  if (prop.type.kind === "Enum") {
-    field.kind = "enum";
-    field.options = [];
-    for (const member of prop.type.members.values()) {
-      const value = member.value ?? member.name;
-      field.options.push({
-        value: String(value),
-        label: String(value),
+  if (explicit.length > 0) {
+    const sections = explicit.map((section) => ({
+      id: section.id,
+      label: section.label,
+      view,
+      ...(section.order !== undefined ? { order: section.order } : {}),
+      ...(section.placement ? { placement: section.placement } : {}),
+      ...(section.collapsible !== undefined
+        ? { collapsible: section.collapsible }
+        : {}),
+      ...(section.defaultCollapsed !== undefined
+        ? { defaultCollapsed: section.defaultCollapsed }
+        : {}),
+      fields: sortFieldNames(bySection.get(section.id) ?? [], fields),
+    }));
+
+    const assigned = new Set(explicit.map((section) => section.id));
+    for (const [id, names] of bySection) {
+      if (assigned.has(id)) {
+        continue;
+      }
+      sections.push({
+        id,
+        label: humanizeId(id),
+        view,
+        fields: sortFieldNames(names, fields),
       });
     }
+    return sortSections(sections);
   }
 
-  const kind = getKind(program, prop);
-  if (kind) {
-    field.kind = kind;
+  if (bySection.size === 0) {
+    return [];
   }
 
-  const required = isRequired(program, prop);
-  if (required) {
-    field.required = true;
+  const sections: CompiledSection[] = [];
+  for (const [id, names] of bySection) {
+    sections.push({
+      id,
+      label: humanizeId(id),
+      view,
+      fields: sortFieldNames(names, fields),
+    });
   }
+  return sortSections(sections);
+}
 
-  const readonly = isReadonly(program, prop);
-  if (readonly) {
-    field.readonly = true;
-  }
-
-  const createOnly = isCreateOnly(program, prop);
-  if (createOnly) {
-    field.createOnly = true;
-  }
-
-  const filter = getFilter(program, prop);
-  if (filter !== undefined) {
-    field.filter = filter;
-  }
-
-  // Manual options override auto-generated enum options
-  const options = getOptions(program, prop);
-  if (options) {
-    field.options = options;
-  }
-
-  const relation = getRelation(program, prop);
-  if (relation) {
-    const cardinality = getCardinality(program, prop);
-    field.relation = {
-      ...relation,
-      ...(cardinality ? { cardinality } : {}),
-    };
-  }
-
-  const nested = getNested(program, prop);
-  if (nested) {
-    field.nested = {
-      resource: nested.resource,
-      ...(nested.min !== undefined ? { min: nested.min } : {}),
-      ...(nested.max !== undefined ? { max: nested.max } : {}),
-    };
-  }
-
-  const visibleWhen = getVisibleWhen(program, prop);
-  if (visibleWhen) {
-    field.visibleWhen = visibleWhen;
-  }
-
-  const requiredWhen = getRequiredWhen(program, prop);
-  if (requiredWhen) {
-    field.requiredWhen = requiredWhen;
-  }
-
-  const ui = getUI(program, prop);
-  if (ui && Object.keys(ui).length > 0) {
-    field.ui = ui;
-  }
-
-  // Build validation
-  const validation = buildValidation(program, prop);
-  if (validation && Object.keys(validation).length > 0) {
-    field.validation = validation;
-  }
-
-  return field;
+function buildRules(program: Program, model: Model): CompiledRule[] {
+  return (getRules(program, model) ?? []).map((rule) => ({
+    kind: normalizeRuleKind(rule.kind),
+    ...(rule.fields ? { fields: rule.fields } : {}),
+    ...(rule.field ? { field: rule.field } : {}),
+    ...(rule.left ? { left: rule.left } : {}),
+    ...(rule.right ? { right: rule.right } : {}),
+    ...(rule.operator ? { operator: rule.operator } : {}),
+    ...(rule.when ? { when: compileExpression(rule.when) } : {}),
+    ...(rule.message ? { message: rule.message } : {}),
+  }));
 }
 
 function buildValidation(
   program: Program,
   prop: ModelProperty,
-): Field["validation"] {
-  const validation: NonNullable<Field["validation"]> = {};
+): CompiledField["validation"] | undefined {
+  const minValue = getMinValueStd(program, prop);
+  const maxValue = getMaxValueStd(program, prop);
+  const minLength = getMinLengthStd(program, prop);
+  const maxLength = getMaxLengthStd(program, prop);
+  const pattern = getPatternStd(program, prop);
+  const minItems = getMinItemsStd(program, prop);
+  const maxItems = getMaxItemsStd(program, prop);
+  const match = getMatch(program, prop);
 
-  const required = isRequired(program, prop);
-  if (required) {
-    validation.required = true;
+  const validation: NonNullable<CompiledField["validation"]> = {};
+  if (minValue !== undefined) {
+    validation.minValue = toNumericValidationValue(minValue);
   }
-
-  const minLength =
-    getMinLength(program, prop) ?? getMinLengthStd(program, prop);
+  if (maxValue !== undefined) {
+    validation.maxValue = toNumericValidationValue(maxValue);
+  }
   if (minLength !== undefined) {
     validation.minLength = minLength;
   }
-
-  const maxLength =
-    getMaxLength(program, prop) ?? getMaxLengthStd(program, prop);
   if (maxLength !== undefined) {
     validation.maxLength = maxLength;
   }
-
-  const min = getMin(program, prop);
-  if (min !== undefined) {
-    validation.min = min;
-  }
-
-  const max = getMax(program, prop);
-  if (max !== undefined) {
-    validation.max = max;
-  }
-
-  const pattern = getPattern(program, prop) ?? getPatternStd(program, prop);
   if (pattern !== undefined) {
     validation.pattern = pattern;
   }
-
-  const match = getMatch(program, prop);
-  if (match !== undefined) {
-    validation.match = match;
-  }
-
-  const minItems = getMinItems(program, prop) ?? getMinItemsStd(program, prop);
   if (minItems !== undefined) {
     validation.minItems = minItems;
   }
-
-  const maxItems = getMaxItems(program, prop) ?? getMaxItemsStd(program, prop);
   if (maxItems !== undefined) {
     validation.maxItems = maxItems;
   }
-
-  return validation;
-}
-
-function buildView(program: Program, model: Model): View {
-  const viewInfo = getView(program, model)!;
-  const actions: Action[] = [];
-  const rowActions: Action[] = [];
-
-  // View-level action decorators (Model target)
-  const viewActionDefs = getViewActions(program, model);
-  const viewRowActionDefs = getViewRowActions(program, model);
-
-  if (viewActionDefs) {
-    for (const def of viewActionDefs) {
-      actions.push(buildActionFromDef(program, def));
-    }
-  }
-  if (viewRowActionDefs) {
-    for (const def of viewRowActionDefs) {
-      rowActions.push(buildActionFromDef(program, def));
-    }
-  }
-
-  const view: View = {
-    resource: viewInfo.resource,
-    type: viewInfo.type as View["type"],
-    actions,
-  };
-
-  // Only include rowActions for list views
-  if (viewInfo.type === "list" && rowActions.length > 0) {
-    view.rowActions = rowActions;
-  }
-
-  if (viewInfo.type === "list") {
-    const columns = getColumns(program, model);
-    if (columns) {
-      view.columns = columns;
-    }
-
-    const searchable = getSearchable(program, model);
-    if (searchable) {
-      view.searchable = searchable;
-    }
-
-    const sortable = getSortable(program, model);
-    if (sortable) {
-      view.sortable = sortable;
-    }
-
-    const defaultSort = getDefaultSort(program, model);
-    if (defaultSort) {
-      view.defaultSort = defaultSort;
-    }
-
-    const clickAction = getClickAction(program, model);
-    if (clickAction) {
-      view.clickAction = clickAction;
-    }
-
-    const selectionMode = getSelection(program, model);
-    if (selectionMode) {
-      view.selectionMode = selectionMode;
-    }
-
-    const namedFilters = getNamedFilters(program, model);
-    if (namedFilters) {
-      view.namedFilters = namedFilters;
-    }
-  } else {
-    const fields = getFields(program, model);
-    if (fields) {
-      view.fields = fields;
-    }
-  }
-
-  return view;
-}
-
-function buildActionFromDef(program: Program, def: ViewActionDef): Action {
-  const action: Action = {
-    id: def.id,
-    label: def.label ?? def.id,
-  };
-
-  if (def.selection) {
-    action.selection = def.selection as "selected" | "query";
-  }
-
-  if (def.allowedWhen) {
-    action.allowedWhen = def.allowedWhen;
-  }
-
-  if (def.confirm) {
-    action.confirm = def.confirm;
-  }
-
-  if (def.ui && Object.keys(def.ui).length > 0) {
-    action.ui = def.ui;
-  }
-
-  if (def.dialogModel) {
-    action.dialog = {
-      title: def.dialog?.title,
-      description: def.dialog?.description,
-      fields: buildDialogFields(program, def.dialogModel),
-    };
-  }
-
-  if (def.api) {
-    action.api = {
-      path: def.api.path,
-      method: (def.api.method as string) ?? "POST",
-      params: def.api.params,
-      body: def.api.body,
-      query: def.api.query,
-    };
-  }
-
-  return action;
-}
-
-function buildDialogFields(program: Program, model: Model): DialogField[] {
-  const fields: DialogField[] = [];
-
-  for (const [, prop] of model.properties) {
-    const field: DialogField = {
-      name: prop.name,
-    };
-
-    const label = getLabel(program, prop);
-    if (label) {
-      field.label = label;
-    }
-
-    const kind = getKind(program, prop);
-    if (kind) {
-      field.kind = kind;
-    }
-
-    // Build validation for dialog field
-    const validation = buildDialogFieldValidation(program, prop);
-    if (validation && Object.keys(validation).length > 0) {
-      field.validation = validation;
-    }
-
-    fields.push(field);
-  }
-
-  return fields;
-}
-
-function buildDialogFieldValidation(
-  program: Program,
-  prop: ModelProperty,
-): DialogField["validation"] {
-  const validation: NonNullable<DialogField["validation"]> = {};
-
-  const required = isRequired(program, prop);
-  if (required) {
-    validation.required = true;
-  }
-
-  const minLength =
-    getMinLength(program, prop) ?? getMinLengthStd(program, prop);
-  if (minLength !== undefined) {
-    validation.minLength = minLength;
-  }
-
-  const maxLength =
-    getMaxLength(program, prop) ?? getMaxLengthStd(program, prop);
-  if (maxLength !== undefined) {
-    validation.maxLength = maxLength;
-  }
-
-  const min = getMin(program, prop);
-  if (min !== undefined) {
-    validation.min = min;
-  }
-
-  const max = getMax(program, prop);
-  if (max !== undefined) {
-    validation.max = max;
-  }
-
-  const pattern = getPattern(program, prop) ?? getPatternStd(program, prop);
-  if (pattern !== undefined) {
-    validation.pattern = pattern;
-  }
-
-  const match = getMatch(program, prop);
   if (match !== undefined) {
     validation.match = match;
   }
 
-  return validation;
+  return Object.keys(validation).length > 0 ? validation : undefined;
+}
+
+function toNumericValidationValue(value: unknown): number | undefined {
+  if (typeof value === "number") {
+    return value;
+  }
+
+  if (
+    value &&
+    typeof value === "object" &&
+    "asNumber" in value &&
+    typeof (value as { asNumber?: unknown }).asNumber === "function"
+  ) {
+    return (value as { asNumber(): number }).asNumber();
+  }
+
+  return undefined;
+}
+
+function buildFieldRules(
+  program: Program,
+  prop: ModelProperty,
+): CompiledField["rules"] | undefined {
+  const visibleWhen = getVisibleWhen(program, prop);
+  const requiredWhen = getRequiredWhen(program, prop);
+  const readonlyWhen = getReadonlyWhen(program, prop);
+  const disabledWhen = getDisabledWhen(program, prop);
+
+  const rules: NonNullable<CompiledField["rules"]> = {};
+  if (visibleWhen) {
+    rules.visibleWhen = compileExpression(visibleWhen);
+  }
+  if (requiredWhen) {
+    rules.requiredWhen = compileExpression(requiredWhen);
+  }
+  if (readonlyWhen) {
+    rules.readonlyWhen = compileExpression(readonlyWhen);
+  }
+  if (disabledWhen) {
+    rules.disabledWhen = compileExpression(disabledWhen);
+  }
+
+  return Object.keys(rules).length > 0 ? rules : undefined;
+}
+
+function buildAction(
+  program: Program,
+  operation: Operation,
+  def: ActionDef,
+): CompiledAction {
+  const disabledWhen = def.disabledWhen ?? getDisabledWhen(program, operation);
+  const inputModelName = def.inputModel?.name;
+  return {
+    id: def.id,
+    kind: def.kind,
+    view: def.view,
+    resource: def.resource,
+    label: def.label ?? def.id,
+    placement: def.placement,
+    order: def.order,
+    icon: def.icon,
+    prominence: def.prominence,
+    confirmMessage: def.confirmMessage,
+    selection: def.selection,
+    args: def.args,
+    ...(inputModelName ? { input: inputModelName } : {}),
+    ...(def.when ? { when: compileExpression(def.when) } : {}),
+    ...(disabledWhen ? { disabledWhen: compileExpression(disabledWhen) } : {}),
+    operation: {
+      id: operation.name,
+      method: inferHttpMethod(operation),
+      path: inferRoutePath(operation, def.resource),
+      ...(inputModelName ? { inputModel: inputModelName } : {}),
+      ...(getModelName((operation as { returnType?: unknown }).returnType)
+        ? {
+            outputModel: getModelName(
+              (operation as { returnType?: unknown }).returnType,
+            ),
+          }
+        : {}),
+    },
+    ...(isRecord(def.client) ? { client: def.client } : {}),
+  };
+}
+
+function attachActions(
+  resource: CompiledResource,
+  actions: CompiledAction[],
+): CompiledResource {
+  const next = structuredClone(resource);
+  for (const action of actions) {
+    if (action.kind === "row") {
+      next.views.list.rowActions.push(action);
+      continue;
+    }
+
+    if (action.view === "list") {
+      next.views.list.pageActions.push(action);
+    } else if (action.view === "form") {
+      next.views.form.pageActions.push(action);
+    } else {
+      next.views.show.pageActions.push(action);
+    }
+  }
+  return next;
+}
+
+function buildColumns(
+  fields: Record<string, CompiledField>,
+  listMeta: IndexDef | undefined,
+): CompiledColumn[] {
+  const sortable = new Set(listMeta?.sortable ?? []);
+  if (Array.isArray(listMeta?.columns) && listMeta.columns.length > 0) {
+    return listMeta.columns
+      .map((column, index) => normalizeColumn(column, fields, sortable, index))
+      .filter((column): column is CompiledColumn => column !== undefined);
+  }
+
+  return Object.values(fields)
+    .filter((field) => field.ui.visibleIn.list)
+    .sort((left, right) => (left.ui.order ?? 0) - (right.ui.order ?? 0))
+    .map((field) => ({
+      field: field.name,
+      label: field.ui.label ?? field.name,
+      sortable: sortable.has(field.name),
+      ...(field.ui.display?.list?.template
+        ? { template: field.ui.display.list.template }
+        : {}),
+      ...(field.ui.placement?.list
+        ? { placement: field.ui.placement.list }
+        : {}),
+    }));
+}
+
+function normalizeColumn(
+  value: unknown,
+  fields: Record<string, CompiledField>,
+  sortable: Set<string>,
+  index: number,
+): CompiledColumn | undefined {
+  if (typeof value === "string") {
+    const field = fields[value];
+    if (!field) {
+      return undefined;
+    }
+    return {
+      field: value,
+      label: field.ui.label ?? value,
+      sortable: sortable.has(value),
+      ...(field.ui.display?.list?.template
+        ? { template: field.ui.display.list.template }
+        : {}),
+    };
+  }
+
+  if (!isRecord(value) || typeof value.field !== "string") {
+    return undefined;
+  }
+
+  const field = fields[value.field];
+  return {
+    field: value.field,
+    label:
+      typeof value.label === "string"
+        ? value.label
+        : (field?.ui.label ?? value.field),
+    template:
+      typeof value.template === "string"
+        ? value.template
+        : field?.ui.display?.list?.template,
+    sortable:
+      typeof value.sortable === "boolean"
+        ? value.sortable
+        : sortable.has(value.field),
+    ...(typeof value.order === "number"
+      ? { order: value.order }
+      : { order: index }),
+    ...(typeof value.placement === "string"
+      ? { placement: value.placement }
+      : {}),
+  };
+}
+
+function normalizeFilter(
+  filter: ReturnType<typeof getFilter>,
+): CompiledField["filter"] | undefined {
+  if (!filter) {
+    return undefined;
+  }
+  return {
+    operators: filter.operators ?? [],
+    ...(filter.widget ? { widget: filter.widget } : {}),
+    ...(filter.order !== undefined ? { order: filter.order } : {}),
+    ...(filter.placement ? { placement: filter.placement } : {}),
+    ...(filter.defaultValue !== undefined
+      ? { defaultValue: filter.defaultValue }
+      : {}),
+  };
+}
+
+function normalizeFilterExpression(value: unknown): FilterExpression {
+  if (!value || typeof value !== "object") {
+    return {};
+  }
+  return value as FilterExpression;
+}
+
+function buildSubmit(
+  prop: ModelProperty,
+  relation: ReturnType<typeof getRelation>,
+  relationCardinality: "one" | "many",
+  relationStorage: "scalar" | "object",
+  nested: ReturnType<typeof getNested>,
+  nestedCardinality: "one" | "many",
+): CompiledField["submit"] {
+  if (relation) {
+    return {
+      field: relation.submitField ?? prop.name,
+      shape:
+        relationCardinality === "many"
+          ? relationStorage === "scalar"
+            ? "scalar[]"
+            : "object[]"
+          : relationStorage === "scalar"
+            ? "scalar"
+            : "object",
+      ...(relationStorage === "scalar"
+        ? { valueField: relation.valueField ?? "id" }
+        : {}),
+    };
+  }
+
+  if (nested) {
+    return {
+      field: prop.name,
+      shape: nestedCardinality === "many" ? "object[]" : "object",
+    };
+  }
+
+  return {
+    field: prop.name,
+    shape: "self",
+  };
+}
+
+function buildFieldType(
+  prop: ModelProperty,
+  relationResource: string | undefined,
+  relationCardinality: "one" | "many",
+  relationStorage: "scalar" | "object",
+  nestedResource: string | undefined,
+  nestedCardinality: "one" | "many",
+): CompiledFieldType {
+  if (relationResource) {
+    return {
+      kind: "relation",
+      resource: relationResource,
+      cardinality: relationCardinality,
+      storage: relationStorage,
+    };
+  }
+
+  if (nestedResource) {
+    return {
+      kind: "nested",
+      resource: nestedResource,
+      cardinality: nestedCardinality,
+    };
+  }
+
+  const type = prop.type;
+  switch (type.kind) {
+    case "Enum":
+      return {
+        kind: "enum",
+        name: type.name || "string",
+        nullable: isOptional(prop),
+        array: isArrayType(prop.type),
+      };
+    default:
+      return {
+        kind: "scalar",
+        name: getTypeString(prop),
+        nullable: isOptional(prop),
+        array: isArrayType(prop.type),
+      };
+  }
+}
+
+function inferWidget(
+  prop: ModelProperty,
+  relation: ReturnType<typeof getRelation>,
+  nested: ReturnType<typeof getNested>,
+): string {
+  if (nested) {
+    return nested.widget ?? "inline-form";
+  }
+  if (relation) {
+    return "autocomplete";
+  }
+
+  const type = getTypeString(prop);
+  switch (type) {
+    case "boolean":
+      return "checkbox";
+    case "date":
+      return "date";
+    case "datetime":
+      return "datetime";
+    case "int32":
+    case "int64":
+    case "float32":
+    case "float64":
+      return "number";
+    default:
+      return "text";
+  }
+}
+
+function inferCardinality(prop: ModelProperty): "one" | "many" {
+  return isArrayType(prop.type) ? "many" : "one";
+}
+
+function inferRelationStorage(prop: ModelProperty): "scalar" | "object" {
+  const elementType = getArrayElementType(prop.type) ?? prop.type;
+  return elementType.kind === "Model" ? "object" : "scalar";
+}
+
+function getArrayElementType(type: ModelProperty["type"]) {
+  if (
+    type.kind === "Model" &&
+    type.name === "Array" &&
+    type.templateMapper?.args
+  ) {
+    const elementType = type.templateMapper.args[0];
+    if (elementType && elementType.entityKind === "Type") {
+      return elementType;
+    }
+  }
+  return undefined;
+}
+
+function isArrayType(type: ModelProperty["type"]): boolean {
+  return type.kind === "Model" && type.name === "Array";
+}
+
+function isOptional(prop: ModelProperty): boolean {
+  return Boolean((prop as { optional?: boolean }).optional);
 }
 
 function getTypeString(prop: ModelProperty): string {
@@ -634,32 +863,25 @@ function getTypeString(prop: ModelProperty): string {
   switch (type.kind) {
     case "Scalar":
       return mapScalarType(type.name);
-    case "Model":
-      // Check if it's an array
-      if (type.name === "Array" && type.templateMapper?.args) {
-        const elementType = type.templateMapper.args[0];
-        if (elementType && elementType.entityKind === "Type") {
-          // Handle Model element type (e.g., Tag[])
-          if (elementType.kind === "Model") {
-            return `${elementType.name}[]`;
-          }
-          // Handle Scalar element type (e.g., string[])
-          if (elementType.kind === "Scalar") {
-            return `${mapScalarType(elementType.name)}[]`;
-          }
-          // Handle Enum element type (e.g., Status[])
-          if (elementType.kind === "Enum") {
-            return "string[]";
-          }
+    case "Model": {
+      const elementType = getArrayElementType(type);
+      if (elementType) {
+        if (elementType.kind === "Model") {
+          return `${elementType.name}[]`;
         }
-        // Fallback for unknown array element type
-        return "unknown[]";
+        if (elementType.kind === "Scalar") {
+          return `${mapScalarType(elementType.name)}[]`;
+        }
+        if (elementType.kind === "Enum") {
+          return "string[]";
+        }
       }
       return type.name;
+    }
     case "Enum":
       return "string";
     case "Union":
-      return "string"; // Simplify unions to string for now
+      return "string";
     default:
       return "string";
   }
@@ -678,4 +900,283 @@ function mapScalarType(name: string): string {
     offsetDateTime: "datetime",
   };
   return mapping[name] ?? name;
+}
+
+function normalizeRuleKind(kind: string): CompiledRule["kind"] {
+  switch (kind) {
+    case "comparison":
+    case "requiredIf":
+    case "mutuallyExclusive":
+    case "requiredTogether":
+      return kind;
+    default:
+      return "requireOneOf";
+  }
+}
+
+function compileExpression(source: string): ExpressionAst {
+  return parseExpression(source);
+}
+
+function inferHttpMethod(operation: Operation): string {
+  const decoratorNames = getDecoratorNames(operation);
+  if (decoratorNames.includes("get")) return "GET";
+  if (decoratorNames.includes("post")) return "POST";
+  if (decoratorNames.includes("put")) return "PUT";
+  if (decoratorNames.includes("patch")) return "PATCH";
+  if (decoratorNames.includes("delete")) return "DELETE";
+  return "POST";
+}
+
+function inferRoutePath(operation: Operation, resourceName: string): string {
+  const interfaceTarget = (operation as { interface?: unknown }).interface;
+  const interfaceRoute = getDecoratorStringArg(interfaceTarget, "route");
+  const operationRoute = getDecoratorStringArg(operation, "route");
+
+  const normalizedResource = `/${toKebabCase(resourceName)}`;
+  if (interfaceRoute || operationRoute) {
+    return joinPaths(interfaceRoute ?? "", operationRoute ?? "");
+  }
+
+  return joinPaths(normalizedResource, `/${toKebabCase(operation.name)}`);
+}
+
+function getModelName(type: unknown): string | undefined {
+  if (!type || typeof type !== "object" || !("entityKind" in type)) {
+    return undefined;
+  }
+  const entity = type as { entityKind: string; kind?: string; name?: string };
+  if (entity.entityKind === "Type" && entity.kind === "Model" && entity.name) {
+    return entity.name;
+  }
+  return undefined;
+}
+
+function getDecoratorNames(target: unknown): string[] {
+  const decorators = getDecorators(target);
+  return decorators
+    .map((decorator) => getDecoratorName(decorator))
+    .filter((name): name is string => Boolean(name));
+}
+
+function getDecoratorStringArg(
+  target: unknown,
+  decoratorName: string,
+): string | undefined {
+  for (const decorator of getDecorators(target)) {
+    const name = getDecoratorName(decorator);
+    if (name !== decoratorName) {
+      continue;
+    }
+
+    const args =
+      (decorator as { args?: unknown[]; arguments?: unknown[] }).args ??
+      (decorator as { args?: unknown[]; arguments?: unknown[] }).arguments ??
+      [];
+    const first = args[0];
+    const extracted = extractLiteralString(first);
+    if (extracted) {
+      return extracted;
+    }
+  }
+  return undefined;
+}
+
+function getDecorators(target: unknown): unknown[] {
+  if (!target || typeof target !== "object") {
+    return [];
+  }
+  const direct = (target as { decorators?: unknown[] }).decorators;
+  if (Array.isArray(direct)) {
+    return direct;
+  }
+  const nodeDecorators = (target as { node?: { decorators?: unknown[] } }).node
+    ?.decorators;
+  return Array.isArray(nodeDecorators) ? nodeDecorators : [];
+}
+
+function getDecoratorName(decorator: unknown): string | undefined {
+  if (!decorator || typeof decorator !== "object") {
+    return undefined;
+  }
+  const byDecorator = (decorator as { decorator?: { name?: string } }).decorator
+    ?.name;
+  if (byDecorator) {
+    return byDecorator;
+  }
+  const byTarget = (decorator as { target?: { sv?: string } }).target?.sv;
+  if (byTarget) {
+    return byTarget;
+  }
+  const byNode = (decorator as { kind?: string; target?: { kind?: string } })
+    .kind;
+  return byNode;
+}
+
+function extractLiteralString(value: unknown): string | undefined {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (value && typeof value === "object") {
+    const direct = (value as { value?: unknown }).value;
+    if (typeof direct === "string") {
+      return direct;
+    }
+    const sv = (value as { sv?: string }).sv;
+    if (typeof sv === "string") {
+      return sv;
+    }
+  }
+
+  return undefined;
+}
+
+function isLocalDeclaration(target: Model | Operation): boolean {
+  const location = getSourceLocation(target);
+  const path = location?.file?.path;
+  return Boolean(
+    path && !path.includes("node_modules") && !path.endsWith(".d.ts"),
+  );
+}
+
+function createEmptyResource(name: string): CompiledResource {
+  return {
+    name,
+    meta: {
+      label: name,
+    },
+    fields: {},
+    views: {
+      list: {
+        enabled: true,
+        columns: [],
+        sortable: [],
+        selection: "none",
+        clickAction: "none",
+        namedFilters: [],
+        pageActions: [],
+        rowActions: [],
+      },
+      form: {
+        enabled: true,
+        sections: [],
+        pageActions: [],
+      },
+      show: {
+        enabled: true,
+        sections: [],
+        pageActions: [],
+      },
+    },
+    rules: [],
+  };
+}
+
+function createResourceSpec(
+  spec: CompiledSpec,
+  resourceName: string,
+  resource: CompiledResource,
+): CompiledSpec {
+  const inputNames = collectReferencedInputNames(resource);
+  const inputs =
+    spec.inputs && inputNames.size > 0
+      ? Object.fromEntries(
+          [...inputNames]
+            .map((name) => [name, spec.inputs?.[name]] as const)
+            .filter((entry): entry is [string, CompiledInput] =>
+              Boolean(entry[1]),
+            ),
+        )
+      : undefined;
+
+  return {
+    version: "1",
+    resources: {
+      [resourceName]: resource,
+    },
+    ...(inputs && Object.keys(inputs).length > 0 ? { inputs } : {}),
+  };
+}
+
+function collectReferencedInputNames(resource: CompiledResource): Set<string> {
+  const names = new Set<string>();
+  const actions = [
+    ...resource.views.list.pageActions,
+    ...resource.views.list.rowActions,
+    ...resource.views.form.pageActions,
+    ...resource.views.show.pageActions,
+  ];
+
+  for (const action of actions) {
+    if (action.input) {
+      names.add(action.input);
+    }
+  }
+
+  return names;
+}
+
+function humanizeId(value: string): string {
+  return value
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[-_]/g, " ")
+    .replace(/^\w/, (char) => char.toUpperCase());
+}
+
+function sortFieldNames(
+  names: string[],
+  fields: Record<string, CompiledField>,
+): string[] {
+  return [...names].sort(
+    (left, right) =>
+      (fields[left]?.ui.order ?? Number.MAX_SAFE_INTEGER) -
+      (fields[right]?.ui.order ?? Number.MAX_SAFE_INTEGER),
+  );
+}
+
+function sortSections(sections: CompiledSection[]): CompiledSection[] {
+  return [...sections].sort(
+    (left, right) =>
+      (left.order ?? Number.MAX_SAFE_INTEGER) -
+      (right.order ?? Number.MAX_SAFE_INTEGER),
+  );
+}
+
+function joinPaths(left: string, right: string): string {
+  const normalizedLeft = left.replace(/\/+$/, "");
+  const normalizedRight = right.replace(/^\/+/, "");
+  if (!normalizedLeft) {
+    return `/${normalizedRight}`;
+  }
+  if (!normalizedRight) {
+    return normalizedLeft.startsWith("/")
+      ? normalizedLeft
+      : `/${normalizedLeft}`;
+  }
+  return `${normalizedLeft.startsWith("/") ? normalizedLeft : `/${normalizedLeft}`}/${normalizedRight}`;
+}
+
+function getOutputRoot(emitterOutputDir: string): string {
+  const normalized = emitterOutputDir.replace(/\\/g, "/");
+  const suffix = "/@specloom/typespec";
+  if (normalized.endsWith(suffix)) {
+    return emitterOutputDir.slice(0, emitterOutputDir.length - suffix.length);
+  }
+  return emitterOutputDir;
+}
+
+function toKebabCase(value: string): string {
+  return value
+    .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+    .replace(/_/g, "-")
+    .toLowerCase();
+}
+
+function hasDecoratorNamed(target: unknown, name: string): boolean {
+  return getDecoratorNames(target).includes(name);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }

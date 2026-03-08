@@ -1,310 +1,134 @@
-# specloom 設計思想
+# specloom Philosophy
 
-specloom の設計原則と責務の境界を明確にします。
+## Overview
 
-## 全体像
-
-```
-TypeSpec (ユーザーまたは AI が書く)
-    ↓ コンパイル
-Definition Spec (JSON)
-    ↓ 評価 (Context: user, role, data)
-ViewModel (評価済み)
-    ↓
-UI (描画するだけ)
+```text
+TypeSpec -> compiled spec JSON -> specloom runtime -> state / validation / ViewModel / UI metadata -> UI
 ```
 
-## コアコンセプト: ViewModel = 評価済み結果
-
-specloom の最も重要な原則は **「UIは判断しない」** ことです。
+現行の specloom は UI component library ではなく、headless runtime です。
 
-### allowedWhen → allowed: boolean
-
-TypeSpec:
-```typespec
-@action("delete")
-@allowedWhen("role == 'admin'")
-delete: never;
-```
-
-Definition Spec (コンパイル結果):
-```json
-{
-  "id": "delete",
-  "allowedWhen": "role == 'admin'"
-}
-```
+## Core Principle
 
-ViewModel (評価結果):
-```json
-{
-  "id": "delete",
-  "allowed": true
-}
-```
-
-UI は `allowed` を見て `disabled` にするだけ。条件式の評価ロジックを持たない。
-
-## 責務の分離（4つの真実）
-
-### 1. Domain Truth（ドメインの真実）
-
-**誰が定義**: TypeSpec（ユーザーまたは AI）  
-**何を定義**: データ構造、フィールド、型、リレーション
-
-```typespec
-@resource
-model Post {
-  id: string;
-  title: string;
-  status: Status;
-  author: User;
-}
-```
-
-### 2. Capability Truth（能力の真実）
-
-**誰が評価**: specloom Evaluator  
-**何を評価**: 許可/不許可、表示/非表示
-
-```json
-{
-  "allowed": true,
-  "visible": true
-}
-```
-
-### 3. View Truth（画面の真実）
-
-**誰が定義**: TypeSpec（ユーザーまたは AI）  
-**何を定義**: どのフィールドを、どの順序で、どのアクションと共に
-
-```typespec
-@view(Post, "list")
-@columns(["title", "status", "author"])
-model PostList {}
-```
-
-### 4. UI Truth（見た目の真実）
-
-**誰が定義**: UI フレームワーク / ローカル設定  
-**何を定義**: CSS、レイアウト、アニメーション、ダークモード
-
-> **specloom は UI Truth に関与しない**
-
-## specloom が定義するもの
-
-| カテゴリ | 内容 |
-|---------|------|
-| **意味** | フィールドのラベル、説明 |
-| **種別** | kind（text, email, relation, status...） |
-| **制約** | バリデーションルール |
-| **権限** | allowedWhen（評価されて allowed になる） |
-| **ヒント** | ui.hint, ui.inputHint（参考情報） |
-
-## specloom が定義しないもの
-
-| カテゴリ | 理由 |
-|---------|------|
-| **幅・高さ** | デバイス・レスポンシブ依存 |
-| **色・フォント** | デザインシステム依存 |
-| **レイアウト** | UI フレームワーク依存 |
-| **アニメーション** | UX デザイン依存 |
-| **CSS クラス** | 実装詳細 |
-
-## Canonical と Legacy
-
-新規 spec は **canonical 記法** を使い、legacy は互換目的でのみ利用します。
-
-| 分類 | Canonical | Legacy alias |
-|------|-----------|--------------|
-| Filter operator | `starts_with`, `ends_with`, `not_in` など snake_case | `startsWith`, `endsWith`, `notIn` など camelCase |
-| UI ヒント | `@ui(#{ ... })` | `@hint`, `@inputHint` |
-| Row/Bulk action | `@rowAction`, `@requiresSelection` | `@placement("row" \| "bulk")` |
-
-原則:
-- ドキュメントと新規サンプルは canonical を使う
-- legacy は読み込み時に正規化して受理する
-- 将来は warning を追加し、段階的に縮退可能な状態を保つ
-
-### ui.hint の役割
-
-`hint` は「意味的なヒント」であり、「見た目の指定」ではない。
-
-```json
-{
-  "ui": {
-    "hint": "avatar"  // 「これは人物を表す」という意味
-  }
-}
-```
-
-UI がどう表現するかは自由：
-- 丸いアバター画像
-- イニシャルバッジ
-- アイコン + 名前
-- 写真なしでテキストのみ
-
-## namedFilter について
-
-### タブではない
-
-```json
-{
-  "namedFilters": [
-    { "id": "all", "label": "すべて", "filter": {} },
-    { "id": "published", "label": "公開中", "filter": {...} },
-    { "id": "draft", "label": "下書き", "filter": {...} }
-  ]
-}
-```
-
-これは「定義済みフィルター」であり、「タブ」ではない。
-
-UI での表現は自由：
-- タブ UI
-- ドロップダウン
-- サイドバーのリンク
-- チップ/ピル
-- ラジオボタン
-
-### 検索との関係
-
-namedFilter と自由検索は共存する：
-
-```json
-{
-  "filters": {
-    "named": [
-      { "id": "published", "label": "公開中", "active": true }
-    ],
-    "custom": {
-      "and": [
-        { "field": "title", "operator": "contains", "value": "React" }
-      ]
-    }
-  }
-}
-```
-
-「公開中の記事」+ 「タイトルに React を含む」
-
-## react-admin との違い
-
-### react-admin
-
-```jsx
-<List>
-  <Datagrid>
-    <TextField source="title" />
-    <DateField source="createdAt" />
-  </Datagrid>
-</List>
-```
-
-- UI コンポーネントでスキーマを定義
-- React に依存
-- 権限ロジックが UI に混在
-
-### specloom
-
-TypeSpec で定義:
-```typespec
-@view(Post, "list")
-@columns(["title", "createdAt"])
-model PostList {
-  @action("create")
-  @allowedWhen("role == 'admin'")
-  create: never;
-}
-```
-
-ViewModel (評価結果):
-```json
-{
-  "type": "list",
-  "fields": [
-    { "name": "title", "kind": "text" },
-    { "name": "createdAt", "kind": "datetime" }
-  ],
-  "pageActions": [
-    { "id": "create", "allowed": true }
-  ]
-}
-```
-
-- TypeSpec でスキーマを定義
-- フレームワーク非依存
-- 権限は評価済みの boolean
-
-## Headless Admin
-
-specloom は「Headless Admin」のコア：
-
-```
-TypeSpec → Definition Spec → ViewModel → 任意の UI
-                                              ↓
-                                        - React
-                                        - Vue
-                                        - Angular
-                                        - Svelte
-                                        - Terminal UI
-                                        - Mobile (Flutter, RN)
-```
-
-### ローカル Spec + Data API
-
-ViewModel は API で直接配信せず、アプリ側で `spec.json` を読み込んで評価する：
-
-```
-TypeSpec → Definition Spec(JSON) → App がローカルで読み込み → ViewModel → UI
-```
-
-API はリソースデータの取得/更新に専念する：
-
-```
-GET    /api/posts
-GET    /api/posts/{id}
-POST   /api/posts
-PUT    /api/posts/{id}
-DELETE /api/posts/{id}
-```
-
-## BFF としての specloom
-
-specloom は BFF（Backend for Frontend）の進化形：
-
-```
-従来の BFF:
-  Backend → BFF → Frontend
-  (データ加工、認可チェック、レスポンス整形)
-
-specloom:
-  Backend → specloom Evaluator → ViewModel → Frontend
-  (スキーマ定義、権限評価、UI ヒント付与)
-```
-
-### 違い
-
-| 観点 | 従来の BFF | specloom |
-|------|-----------|----------|
-| 定義方法 | コードで実装 | 宣言的スキーマ |
-| 権限評価 | ロジックを書く | 式を評価 |
-| 出力形式 | 任意 | 標準化された ViewModel |
-| 再利用性 | プロジェクト固有 | 汎用ライブラリ |
-
-## 実装優先順位
-
-1. **TypeScript** - 最初の実装言語
-2. **Rust** - パフォーマンス重視の実装
-3. **Go** - サーバーサイド実装
-4. **Python** - データ分析/ML 連携
-
-各言語で同じ Definition Spec を処理し、同じ ViewModel を出力する。
-
-## 関連ドキュメント
-
-- [Definition Spec](./v0.1.md) - 静的定義の仕様
-- [ViewModel Spec](./view_model.md) - 評価結果の仕様
-- [Filter Spec](./filter.md) - 高度なフィルタリング仕様
-- [API Spec](./api.md) - HTTP API 仕様
+UI は spec の意味を再実装しません。
+
+- 表示条件は runtime が評価する
+- validation は runtime が評価する
+- action 実行情報は runtime helper が組み立てる
+- UI は state / ViewModel / UI metadata を描画する
+
+## Boundaries
+
+### TypeSpec
+
+TypeSpec 側で定義するもの:
+
+- resource と input の構造
+- field metadata
+- list/form/show metadata
+- relation / nested / options
+- conditional rule
+- model-level rule
+- action metadata
+
+代表的な decorator:
+
+- `@entity`
+- `@field`
+- `@index`
+- `@filter`
+- `@namedFilter`
+- `@relation`
+- `@nested`
+- `@section`
+- `@pageAction`
+- `@rowAction`
+- `@rule`
+
+### Compiled Spec
+
+compiled spec は runtime の正本です。
+
+- authoring DSL には依存しない
+- frontend / backend の両方から読める
+- `ExpressionAst` や `submit` metadata まで含む
+
+### Runtime
+
+runtime が解決するもの:
+
+- `parseSpec`, `validateSpec`
+- field / form validation
+- input value normalization
+- form / input / list state
+- list / show / form ViewModel
+- options resolution
+- filter evaluation
+- value formatting
+- action request descriptor
+- UI presentation metadata
+
+### UI
+
+UI 側が持つ責務:
+
+- component 選択
+- layout / theme / animation
+- renderer registry
+- framework ごとの state binding
+
+## Current Shape
+
+### ViewModel is Display Data
+
+ViewModel は表示用です。状態更新 API は持ちません。
+
+- `createListVM`
+- `createShowVM`
+- `createFormVM`
+- `createInputVM`
+
+状態更新は `createFormState` / `createInputState` / `createListState` を使います。
+
+### State is the Mutation Surface
+
+UI が直接触る API は state helper です。
+
+- `setValue`
+- `patch`
+- `validate`
+- `serialize`
+- `setSearch`
+- `setNamedFilter`
+- `setSort`
+- `toggleSelect`
+
+### UI Resolver is Metadata, Not Components
+
+`createUiResolver` は component を返しません。
+
+- renderer key
+- merged props
+- merged client metadata
+
+だけを返します。React / Solid / Svelte 側で registry に結びます。
+
+## What specloom Does Not Do
+
+- React / Solid / Svelte component を同梱しない
+- CSS や design token を持たない
+- API レスポンスを ViewModel に固定しない
+- backend 実装を規定しない
+
+## Backend Use
+
+specloom は frontend 専用ではありません。
+
+backend 側でも次を共通利用できます。
+
+- `validateForm`
+- `filterRecords`
+- `resolveFilterValue`
+- `buildActionRequest`
+- `serializeResource`
+- `serializeInput`
