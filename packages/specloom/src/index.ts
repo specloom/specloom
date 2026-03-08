@@ -5,6 +5,7 @@ export {
   normalizeSpec,
   parseExpression,
 } from "@specloom/spec";
+export type { CompiledField, CompiledSpec } from "@specloom/spec";
 export * from "./action/index.js";
 export * from "./errors.js";
 export * from "./evaluator/index.js";
