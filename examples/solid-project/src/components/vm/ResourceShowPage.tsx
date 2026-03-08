@@ -1,15 +1,20 @@
 import { A } from "@solidjs/router"
 import { createMemo, For, Show } from "solid-js"
 import { useSpecloom } from "@specloom/solidjs"
+import { createShowVM, type ShowFieldVM } from "specloom"
 import { generateMockData } from "~/admin/mock-data"
 import { Separator } from "~/components/ui/separator"
 import { Button } from "~/components/ui/button"
-import { Badge } from "~/components/ui/badge"
+import { SpecFieldValue } from "~/components/vm/SpecValue"
 
 export function ResourceShowPage(props: { resource: string; id: string }) {
   const client = useSpecloom()
   const spec = client.spec
   const resource = createMemo(() => spec.resources[props.resource])
+
+  if (!resource()) {
+    return <div class="text-sm text-muted-foreground">Unknown resource: {props.resource}</div>
+  }
 
   const keyField = () => {
     for (const f of Object.values(resource().fields)) {
@@ -20,10 +25,21 @@ export function ResourceShowPage(props: { resource: string; id: string }) {
 
   const record = createMemo(() => {
     const data = generateMockData(spec, props.resource)
-    return data.find((r) => r[keyField()] === props.id) ?? data[0]
+    return data.find((r) => r[keyField()] === props.id)
   })
 
-  const showSections = createMemo(() => resource().views.show.sections)
+  const vm = createMemo(() => {
+    const current = record()
+    if (!current) return undefined
+    return createShowVM(spec, props.resource, {
+      context: client.resolveContext(),
+      record: current,
+    })
+  })
+
+  if (!record() || !vm()) {
+    return <div class="text-sm text-muted-foreground">Record not found: {props.id}</div>
+  }
 
   return (
     <div>
@@ -47,19 +63,16 @@ export function ResourceShowPage(props: { resource: string; id: string }) {
 
       <div class="max-w-2xl space-y-6">
         <Show
-          when={showSections().length > 0}
+          when={vm()!.sections.length > 0}
           fallback={
-            <FieldGrid record={record()} fields={Object.values(resource().fields)} />
+            <FieldGrid fields={vm()!.fields} />
           }
         >
-          <For each={showSections()}>
+          <For each={vm()!.sections}>
             {(section) => (
               <div>
                 <h2 class="text-lg font-semibold mb-3">{section.label}</h2>
-                <FieldGrid
-                  record={record()}
-                  fields={section.fields.map((name) => resource().fields[name]).filter(Boolean)}
-                />
+                <FieldGrid fields={section.fields} />
                 <Separator class="mt-4" />
               </div>
             )}
@@ -71,41 +84,20 @@ export function ResourceShowPage(props: { resource: string; id: string }) {
 }
 
 function FieldGrid(props: {
-  record: Record<string, unknown>
-  fields: Array<{ name: string; ui: { label?: string; visibleIn: { show: boolean }; appearance?: string } }>
+  fields: ShowFieldVM[]
 }) {
-  const visibleFields = () => props.fields.filter((f) => f.ui.visibleIn.show)
-
   return (
     <dl class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-      <For each={visibleFields()}>
+      <For each={props.fields}>
         {(field) => (
           <div>
-            <dt class="text-sm font-medium text-muted-foreground">{field.ui.label ?? field.name}</dt>
+            <dt class="text-sm font-medium text-muted-foreground">{field.label}</dt>
             <dd class="mt-1 text-sm">
-              <Show
-                when={field.ui.appearance === "badge"}
-                fallback={formatShow(props.record[field.name])}
-              >
-                <Badge variant="secondary">
-                  {formatShow(props.record[field.name])}
-                </Badge>
-              </Show>
+              <SpecFieldValue field={field} value={field.value} />
             </dd>
           </div>
         )}
       </For>
     </dl>
   )
-}
-
-function formatShow(value: unknown): string {
-  if (value == null) return "-"
-  if (typeof value === "boolean") return value ? "Yes" : "No"
-  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}T/.test(value)) {
-    return new Date(value).toLocaleDateString()
-  }
-  if (Array.isArray(value)) return value.map(formatShow).join(", ")
-  if (typeof value === "object") return JSON.stringify(value)
-  return String(value)
 }

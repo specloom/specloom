@@ -1,6 +1,7 @@
 import { A } from "@solidjs/router"
 import { createMemo, For, Show } from "solid-js"
 import { useSpecloom, createListStore, type SolidListStore } from "@specloom/solidjs"
+import { formatColumnValue, type ListColumnVM } from "specloom"
 import { generateMockData } from "~/admin/mock-data"
 import {
   Table,
@@ -12,6 +13,7 @@ import {
 } from "~/components/ui/table"
 import { TextField, TextFieldInput } from "~/components/ui/text-field"
 import { Button } from "~/components/ui/button"
+import { presentTextValue } from "~/components/vm/SpecValue"
 
 export function ResourceListPage(props: { resource: string }) {
   const client = useSpecloom()
@@ -19,6 +21,10 @@ export function ResourceListPage(props: { resource: string }) {
 
   const resource = createMemo(() => spec.resources[props.resource])
   const mockData = createMemo(() => generateMockData(spec, props.resource))
+
+  if (!resource()) {
+    return <div class="text-sm text-muted-foreground">Unknown resource: {props.resource}</div>
+  }
 
   // Store is recreated when resource changes
   const store = createMemo<SolidListStore>(() =>
@@ -109,7 +115,9 @@ export function ResourceListPage(props: { resource: string }) {
                   </TableHead>
                 )}
               </For>
-              <TableHead class="w-16">Actions</TableHead>
+              <Show when={vm().clickAction !== "none"}>
+                <TableHead class="w-16">Open</TableHead>
+              </Show>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -124,17 +132,21 @@ export function ResourceListPage(props: { resource: string }) {
                 >
                   <For each={vm().columns}>
                     {(col) => (
-                      <TableCell>{formatCell(row.values[col.field])}</TableCell>
+                      <TableCell>{renderColumnCell(col, row.record)}</TableCell>
                     )}
                   </For>
-                  <TableCell>
-                    <A
-                      href={`/resources/${props.resource}/${row.id}`}
-                      class="text-sm text-primary hover:underline"
-                    >
-                      View
-                    </A>
-                  </TableCell>
+                  <Show when={rowHref(props.resource, vm().clickAction, row.id)}>
+                    {(href) => (
+                      <TableCell>
+                        <A
+                          href={href()}
+                          class="text-sm text-primary hover:underline"
+                        >
+                          {linkLabel(vm().clickAction)}
+                        </A>
+                      </TableCell>
+                    )}
+                  </Show>
                 </TableRow>
               )}
             </For>
@@ -174,13 +186,31 @@ export function ResourceListPage(props: { resource: string }) {
   )
 }
 
-function formatCell(value: unknown): string {
-  if (value == null) return "-"
-  if (typeof value === "boolean") return value ? "Yes" : "No"
-  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}T/.test(value)) {
-    return new Date(value).toLocaleDateString()
+function renderColumnCell(
+  column: ListColumnVM,
+  record: Record<string, unknown>,
+) {
+  return presentTextValue(
+    formatColumnValue(column, record),
+    column.fieldSpec.ui.appearance,
+    record[column.field],
+  )
+}
+
+function rowHref(
+  resource: string,
+  clickAction: "none" | "show" | "edit",
+  id: string,
+) {
+  if (!id || clickAction === "none") {
+    return undefined
   }
-  if (Array.isArray(value)) return value.map(formatCell).join(", ")
-  if (typeof value === "object") return JSON.stringify(value)
-  return String(value)
+
+  return clickAction === "edit"
+    ? `/resources/${resource}/${id}/edit`
+    : `/resources/${resource}/${id}`
+}
+
+function linkLabel(clickAction: "none" | "show" | "edit") {
+  return clickAction === "edit" ? "Edit" : "View"
 }
