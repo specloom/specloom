@@ -2,6 +2,8 @@
 
 `@specloom/auth-provider` と `@specloom/data-provider` を SolidJS / SolidStart アプリに統合する方法。
 
+`specloom` runtime 自体の接続方法は [docs/guides/solid/runtime.md](./solid/runtime.md) を参照してください。
+
 ## 概要
 
 パッケージはフレームワーク非依存で設計されています。

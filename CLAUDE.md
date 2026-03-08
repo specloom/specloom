@@ -107,7 +107,9 @@ The `@specloom/typespec` package provides decorators:
 - `docs/spec/v1-status.md` - Current design status
 - `docs/spec/view_model.md` - ViewModel spec reference
 - `docs/spec/api.md` - API spec reference
-- `docs/guides/solid-integration.md` - SolidJS integration guide (AuthContext, DataContext, AuthGuard)
+- `docs/guides/solid/README.md` - SolidJS guides index
+- `docs/guides/solid/runtime.md` - specloom runtime integration for SolidJS
+- `docs/guides/solid-integration.md` - provider-oriented SolidJS integration guide (AuthContext, DataContext, AuthGuard)
 
 ## Git ワークフロー
 
