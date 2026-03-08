@@ -1,7 +1,7 @@
 import type { CompiledSpec, CompiledField } from "@specloom/spec";
 
 function generateValue(field: CompiledField, index: number): unknown {
-  if (field.key) return `${field.name}-${index + 1}`;
+  if (field.key || field.name === "id") return `${field.name}-${index + 1}`;
   if (field.hidden || field.computed) return undefined;
   if (field.options && field.options.length > 0) {
     return field.options[index % field.options.length].value;
