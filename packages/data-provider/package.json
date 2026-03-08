@@ -1,6 +1,6 @@
 {
   "name": "@specloom/data-provider",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Data provider abstraction for specloom",
   "private": true,
   "type": "module",

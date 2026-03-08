@@ -1,214 +1,531 @@
-import type { Field } from "../spec/index.js";
-import { i18n } from "../i18n/index.js";
+import type { CompiledField, CompiledInput, CompiledResource, CompiledRule } from "@specloom/spec";
+import { buildEnvironment, evaluateExpression } from "../expression/index.js";
+import { getField } from "../resolver/index.js";
+import type { Context, ValidationErrors } from "../vm/types.js";
 
-/**
- * フィールドごとのエラーメッセージ
- */
-export type ValidationErrors = Record<string, string[]>;
+export type ValidationMode = "create" | "edit";
+export type ValidationView = "list" | "show" | "form";
 
-/**
- * フォームデータをバリデーションする
- */
-export function validateForm(
-  fields: Field[],
-  data: Record<string, unknown>,
-): ValidationErrors {
+export interface FieldRuntimeState {
+  visible: boolean;
+  required: boolean;
+  readonly: boolean;
+  disabled: boolean;
+}
+
+export interface ResolveFieldStateArgs {
+  field: CompiledField;
+  context?: Context;
+  values?: Record<string, unknown>;
+  mode?: ValidationMode;
+  view?: ValidationView;
+}
+
+export interface ValidationResult {
+  valid: boolean;
+  errors: ValidationErrors;
+  formErrors: string[];
+  fieldStates: Record<string, FieldRuntimeState>;
+}
+
+export interface ValidateFormArgs {
+  resource: CompiledResource | CompiledInput;
+  values?: Record<string, unknown>;
+  context?: Context;
+  mode?: ValidationMode;
+}
+
+export interface ValidateFieldArgs extends ValidateFormArgs {
+  fieldName: string;
+}
+
+export function resolveFieldState(
+  args: ResolveFieldStateArgs,
+): FieldRuntimeState {
+  const {
+    field,
+    context = {},
+    values = {},
+    mode = "create",
+    view = "form",
+  } = args;
+
+  return {
+    visible: isFieldVisible(field, view, context, values),
+    required:
+      isFieldRequiredByType(field) ||
+      evaluateExpression(field.rules?.requiredWhen, context, values, false),
+    readonly:
+      field.ui.readonly === true ||
+      field.computed === true ||
+      (mode === "edit" && field.createOnly === true) ||
+      evaluateExpression(field.rules?.readonlyWhen, context, values, false),
+    disabled: evaluateExpression(
+      field.rules?.disabledWhen,
+      context,
+      values,
+      false,
+    ),
+  };
+}
+
+export function validateField(args: ValidateFieldArgs): string[] {
+  const {
+    resource,
+    fieldName,
+    values = {},
+    context = {},
+    mode = "create",
+  } = args;
+  const field = getField(resource, fieldName);
+  const effectiveValues = toEffectiveValues(resource, values);
+
+  return validateResolvedField({
+    field,
+    resource,
+    value: effectiveValues[fieldName],
+    values: effectiveValues,
+    context,
+    mode,
+  });
+}
+
+export function validateForm(args: ValidateFormArgs): ValidationResult {
+  const {
+    resource,
+    values = {},
+    context = {},
+    mode = "create",
+  } = args;
+  const effectiveValues = toEffectiveValues(resource, values);
   const errors: ValidationErrors = {};
+  const fieldStates: Record<string, FieldRuntimeState> = {};
+  const formErrors: string[] = [];
 
-  for (const field of fields) {
-    const value = data[field.name];
-    const fieldErrors = validateField(field, value, data);
+  for (const field of Object.values(resource.fields)) {
+    fieldStates[field.name] = resolveFieldState({
+      field,
+      context,
+      values: effectiveValues,
+      mode,
+      view: "form",
+    });
+
+    const fieldErrors = validateResolvedField({
+      field,
+      resource,
+      value: effectiveValues[field.name],
+      values: effectiveValues,
+      context,
+      mode,
+    });
+
     if (fieldErrors.length > 0) {
       errors[field.name] = fieldErrors;
     }
   }
 
-  return errors;
-}
-
-export function validateField(
-  field: Field,
-  value: unknown,
-  allValues?: Record<string, unknown>,
-): string[] {
-  const errors: string[] = [];
-  const validation = field.validation ?? {};
-  const t = i18n.t();
-
-  // required
-  if (field.required || validation.required) {
-    if (isEmpty(value)) {
-      errors.push(t.validation.required(field.label ?? field.name));
-      return errors; // 必須エラーの場合、他のバリデーションはスキップ
-    }
+  for (const rule of resource.rules ?? []) {
+    applyRuleValidation({
+      rule,
+      resource,
+      values: effectiveValues,
+      context,
+      errors,
+      formErrors,
+    });
   }
 
-  // 値がない場合、他のバリデーションはスキップ（配列は除く）
+  return {
+    valid: Object.keys(errors).length === 0 && formErrors.length === 0,
+    errors,
+    formErrors,
+    fieldStates,
+  };
+}
+
+interface ValidateResolvedFieldArgs {
+  field: CompiledField;
+  resource: CompiledResource | CompiledInput;
+  value: unknown;
+  values: Record<string, unknown>;
+  context: Context;
+  mode: ValidationMode;
+}
+
+function validateResolvedField(args: ValidateResolvedFieldArgs): string[] {
+  const { field, resource, value, values, context, mode } = args;
+  const state = resolveFieldState({
+    field,
+    context,
+    values,
+    mode,
+    view: "form",
+  });
+
+  if (!state.visible || state.disabled || state.readonly) {
+    return [];
+  }
+
+  const errors: string[] = [];
+  const label = field.ui.label ?? field.name;
+  const validation = field.validation;
+
+  if (state.required && isEmpty(value)) {
+    errors.push(`${label} is required`);
+    return errors;
+  }
+
   if (isEmpty(value) && !Array.isArray(value)) {
     return errors;
   }
 
-  // 文字列バリデーション
+  const numericValue = toNumber(value);
+  if (numericValue !== undefined) {
+    if (
+      validation?.minValue != null &&
+      numericValue < validation.minValue
+    ) {
+      errors.push(`Must be greater than or equal to ${validation.minValue}`);
+    }
+
+    if (
+      validation?.maxValue != null &&
+      numericValue > validation.maxValue
+    ) {
+      errors.push(`Must be less than or equal to ${validation.maxValue}`);
+    }
+  }
+
   if (typeof value === "string") {
-    if (validation.minLength != null && value.length < validation.minLength) {
-      errors.push(t.validation.minLength(validation.minLength));
+    if (
+      validation?.minLength != null &&
+      value.length < validation.minLength
+    ) {
+      errors.push(`Must be at least ${validation.minLength} characters`);
     }
-    if (validation.maxLength != null && value.length > validation.maxLength) {
-      errors.push(t.validation.maxLength(validation.maxLength));
+
+    if (
+      validation?.maxLength != null &&
+      value.length > validation.maxLength
+    ) {
+      errors.push(`Must be at most ${validation.maxLength} characters`);
     }
-    if (validation.pattern != null) {
-      const patternError = validatePattern(value, validation.pattern, t);
+
+    if (validation?.pattern != null) {
+      const patternError = validatePattern(value, validation.pattern);
       if (patternError) {
         errors.push(patternError);
       }
     }
   }
 
-  // 数値バリデーション
-  if (typeof value === "number") {
-    if (validation.min != null && value < validation.min) {
-      errors.push(t.validation.min(validation.min));
-    }
-    if (validation.max != null && value > validation.max) {
-      errors.push(t.validation.max(validation.max));
-    }
-  }
-
-  // 配列バリデーション
   if (Array.isArray(value)) {
-    if (validation.minItems != null && value.length < validation.minItems) {
-      errors.push(t.validation.minItems(validation.minItems));
+    if (validation?.minItems != null && value.length < validation.minItems) {
+      errors.push(`Select at least ${validation.minItems} items`);
     }
-    if (validation.maxItems != null && value.length > validation.maxItems) {
-      errors.push(t.validation.maxItems(validation.maxItems));
+
+    if (validation?.maxItems != null && value.length > validation.maxItems) {
+      errors.push(`Select at most ${validation.maxItems} items`);
     }
   }
 
-  // 他フィールドとの一致チェック（例: password / passwordConfirm）
-  if (validation.match) {
-    const otherValue = allValues?.[validation.match];
+  if (validation?.match) {
+    const otherValue = values[validation.match];
     if (otherValue !== undefined && value !== otherValue) {
-      errors.push(t.validation.match(validation.match));
+      const otherLabel =
+        resource.fields[validation.match]?.ui.label ?? validation.match;
+      errors.push(`Must match ${otherLabel}`);
     }
   }
 
   return errors;
 }
 
-/**
- * パターンバリデーション
- */
-function validatePattern(
-  value: string,
-  pattern: string,
-  t: ReturnType<typeof i18n.t>,
-): string | null {
+function applyRuleValidation(args: {
+  rule: CompiledRule;
+  resource: CompiledResource | CompiledInput;
+  values: Record<string, unknown>;
+  context: Context;
+  errors: ValidationErrors;
+  formErrors: string[];
+}): void {
+  const { rule, resource, values, context, errors, formErrors } = args;
+
+  if (rule.when && !evaluateExpression(rule.when, context, values, false)) {
+    return;
+  }
+
+  switch (rule.kind) {
+    case "requireOneOf":
+      validateRequireOneOf(rule, resource, values, errors, formErrors);
+      return;
+    case "comparison":
+      validateComparison(rule, values, context, formErrors);
+      return;
+    case "requiredIf":
+      validateRequiredIf(rule, resource, values, errors);
+      return;
+    case "mutuallyExclusive":
+      validateMutuallyExclusive(rule, values, errors, formErrors);
+      return;
+    case "requiredTogether":
+      validateRequiredTogether(rule, values, errors, formErrors);
+      return;
+  }
+}
+
+function validateRequireOneOf(
+  rule: CompiledRule,
+  resource: CompiledResource | CompiledInput,
+  values: Record<string, unknown>,
+  errors: ValidationErrors,
+  formErrors: string[],
+): void {
+  const fields = rule.fields ?? [];
+  if (fields.some((field) => !isEmpty(values[field]))) {
+    return;
+  }
+
+  const message =
+    rule.message ?? `At least one of ${fields.join(", ")} is required`;
+  pushFormError(formErrors, message);
+  for (const field of fields) {
+    const label = resource.fields[field]?.ui.label ?? field;
+    pushFieldError(errors, field, rule.message ?? `${label} is required`);
+  }
+}
+
+function validateComparison(
+  rule: CompiledRule,
+  values: Record<string, unknown>,
+  context: Context,
+  formErrors: string[],
+): void {
+  if (!rule.left || !rule.right || !rule.operator) {
+    return;
+  }
+
+  const env = buildEnvironment(context, values);
+  const left = resolvePath(env, rule.left);
+  const right = resolvePath(env, rule.right);
+
+  if (!compareValues(left, right, rule.operator)) {
+    pushFormError(
+      formErrors,
+      rule.message ?? `${rule.left} must be ${rule.operator} ${rule.right}`,
+    );
+  }
+}
+
+function validateRequiredIf(
+  rule: CompiledRule,
+  resource: CompiledResource | CompiledInput,
+  values: Record<string, unknown>,
+  errors: ValidationErrors,
+): void {
+  if (!rule.field || isEmpty(values[rule.field])) {
+    if (rule.field) {
+      const label = resource.fields[rule.field]?.ui.label ?? rule.field;
+      pushFieldError(errors, rule.field, rule.message ?? `${label} is required`);
+    }
+  }
+}
+
+function validateMutuallyExclusive(
+  rule: CompiledRule,
+  values: Record<string, unknown>,
+  errors: ValidationErrors,
+  formErrors: string[],
+): void {
+  const populated = (rule.fields ?? []).filter((field) => !isEmpty(values[field]));
+  if (populated.length <= 1) {
+    return;
+  }
+
+  const message =
+    rule.message ?? `${populated.join(", ")} cannot be provided together`;
+  pushFormError(formErrors, message);
+  for (const field of populated) {
+    pushFieldError(errors, field, message);
+  }
+}
+
+function validateRequiredTogether(
+  rule: CompiledRule,
+  values: Record<string, unknown>,
+  errors: ValidationErrors,
+  formErrors: string[],
+): void {
+  const fields = rule.fields ?? [];
+  const populated = fields.filter((field) => !isEmpty(values[field]));
+  if (populated.length === 0 || populated.length === fields.length) {
+    return;
+  }
+
+  const missing = fields.filter((field) => isEmpty(values[field]));
+  const message =
+    rule.message ?? `These fields must be provided together: ${fields.join(", ")}`;
+  pushFormError(formErrors, message);
+  for (const field of missing) {
+    pushFieldError(errors, field, message);
+  }
+}
+
+function validatePattern(value: string, pattern: string): string | null {
   switch (pattern) {
     case "email": {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(value)) {
-        return t.validation.email;
-      }
-      break;
+      return emailRegex.test(value) ? null : "Invalid email address";
     }
     case "url": {
       try {
         new URL(value);
+        return null;
       } catch {
-        return t.validation.url;
+        return "Invalid URL";
       }
-      break;
     }
     case "tel": {
       const telRegex = /^[\d\-+()]+$/;
-      if (!telRegex.test(value)) {
-        return t.validation.tel;
-      }
-      break;
+      return telRegex.test(value) ? null : "Invalid telephone number";
     }
     default: {
-      // カスタム正規表現
       try {
         const regex = new RegExp(pattern);
-        if (!regex.test(value)) {
-          return t.validation.pattern;
-        }
+        return regex.test(value) ? null : "Invalid format";
       } catch {
-        // 無効な正規表現は無視
+        return null;
       }
     }
   }
-
-  return null;
 }
 
-/**
- * 値が空かどうかを判定
- */
+function toEffectiveValues(
+  resource: CompiledResource | CompiledInput,
+  values: Record<string, unknown>,
+): Record<string, unknown> {
+  const next: Record<string, unknown> = { ...values };
+
+  for (const field of Object.values(resource.fields)) {
+    next[field.name] = values[field.name] ?? field.ui.defaultValue;
+  }
+
+  return next;
+}
+
+function isFieldVisible(
+  field: CompiledField,
+  view: ValidationView,
+  context: Context,
+  values: Record<string, unknown>,
+): boolean {
+  if (field.hidden === true) {
+    return false;
+  }
+
+  if (!field.ui.visibleIn[view]) {
+    return false;
+  }
+
+  return evaluateExpression(field.rules?.visibleWhen, context, values, true);
+}
+
+function isFieldRequiredByType(field: CompiledField): boolean {
+  switch (field.type.kind) {
+    case "scalar":
+    case "enum":
+      return field.type.nullable !== true && field.type.array !== true;
+    case "relation":
+    case "nested":
+      return field.type.cardinality === "one";
+  }
+}
+
 function isEmpty(value: unknown): boolean {
-  if (typeof value === "boolean") return false;
-  if (value == null) return true;
-  if (value === "") return true;
-  if (Array.isArray(value) && value.length === 0) return true;
+  if (typeof value === "boolean") {
+    return false;
+  }
+
+  if (value == null || value === "") {
+    return true;
+  }
+
+  if (Array.isArray(value) && value.length === 0) {
+    return true;
+  }
+
   return false;
 }
 
-// ============================================================
-// Validate - バリデーション操作関数
-// ============================================================
+function toNumber(value: unknown): number | undefined {
+  if (typeof value === "number") {
+    return Number.isNaN(value) ? undefined : value;
+  }
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? undefined : parsed;
+  }
+  return undefined;
+}
 
-/**
- * バリデーション操作関数
- * UIモジュールと連携して使用する
- */
-export const Validate = {
-  /**
-   * フォーム全体をバリデーション
-   */
-  form: validateForm,
+function compareValues(left: unknown, right: unknown, operator: string): boolean {
+  switch (operator) {
+    case "==":
+      return left === right;
+    case "!=":
+      return left !== right;
+    case ">":
+      return compareOrdered(left, right, (a, b) => a > b);
+    case ">=":
+      return compareOrdered(left, right, (a, b) => a >= b);
+    case "<":
+      return compareOrdered(left, right, (a, b) => a < b);
+    case "<=":
+      return compareOrdered(left, right, (a, b) => a <= b);
+    default:
+      return false;
+  }
+}
 
-  /**
-   * 単一フィールドをバリデーション
-   */
-  field: validateField,
+function compareOrdered(
+  left: unknown,
+  right: unknown,
+  predicate: (left: string | number, right: string | number) => boolean,
+): boolean {
+  if (typeof left === "number" && typeof right === "number") {
+    return predicate(left, right);
+  }
 
-  /**
-   * バリデーション結果が有効かどうか
-   */
-  valid: (errors: ValidationErrors): boolean => {
-    return Object.keys(errors).length === 0;
-  },
+  if (typeof left === "string" && typeof right === "string") {
+    return predicate(left, right);
+  }
 
-  /**
-   * 特定フィールドのエラーを取得
-   */
-  errors: (errors: ValidationErrors, fieldName: string): string[] => {
-    return errors[fieldName] ?? [];
-  },
+  return false;
+}
 
-  /**
-   * 特定フィールドにエラーがあるか
-   */
-  hasError: (errors: ValidationErrors, fieldName: string): boolean => {
-    return (errors[fieldName]?.length ?? 0) > 0;
-  },
+function resolvePath(env: Record<string, unknown>, path: string): unknown {
+  return path.split(".").reduce<unknown>((value, segment) => {
+    if (typeof value !== "object" || value === null) {
+      return undefined;
+    }
+    return (value as Record<string, unknown>)[segment];
+  }, env);
+}
 
-  /**
-   * 最初のエラーメッセージを取得
-   */
-  firstError: (errors: ValidationErrors, fieldName: string): string | null => {
-    return errors[fieldName]?.[0] ?? null;
-  },
+function pushFieldError(
+  errors: ValidationErrors,
+  fieldName: string,
+  message: string,
+): void {
+  const existing = errors[fieldName] ?? [];
+  if (!existing.includes(message)) {
+    errors[fieldName] = [...existing, message];
+  }
+}
 
-  /**
-   * 全エラーメッセージをフラット配列で取得
-   */
-  allErrors: (errors: ValidationErrors): string[] => {
-    return Object.values(errors).flat();
-  },
-
-  /**
-   * 空値チェック
-   */
-  empty: isEmpty,
-};
+function pushFormError(formErrors: string[], message: string): void {
+  if (!formErrors.includes(message)) {
+    formErrors.push(message);
+  }
+}

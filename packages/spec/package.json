@@ -1,7 +1,7 @@
 {
   "name": "@specloom/spec",
-  "version": "0.0.0",
-  "description": "Shared spec contract for specloom v2",
+  "version": "1.0.0",
+  "description": "Shared spec contract for specloom v1",
   "private": true,
   "type": "module",
   "main": "./dist/index.js",

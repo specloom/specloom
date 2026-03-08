@@ -1,293 +1,130 @@
-// ============================================================
-// Serialize - 送信用データ変換
-// ============================================================
+import type {
+  CompiledField,
+  CompiledInput,
+  CompiledResource,
+} from "@specloom/spec";
+import type { FormFieldVM, FormViewModel } from "../vm/types.js";
 
-import type { FormViewModel } from "../vm/types.js";
-import { FormVM } from "../vm/form.js";
-
-/**
- * シリアライズオプション
- */
 export interface SerializeOptions {
-  /** nullを除外するか */
+  excludeUndefined?: boolean;
   excludeNull?: boolean;
-  /** 空文字を除外するか */
-  excludeEmpty?: boolean;
-  /** 日付のフォーマット */
-  dateFormat?: "iso" | "timestamp" | "date-only";
+  excludeEmptyString?: boolean;
 }
 
-/**
- * シリアライズ関数
- */
-export const Serialize = {
-  /**
-   * フォームデータを送信用オブジェクトに変換
-   * 送信仕様に従い、relation の valueField 抽出・date/datetime ISO 変換を行う
-   */
-  formData: (
-    vm: FormViewModel,
-    options?: SerializeOptions,
-  ): Record<string, unknown> => {
-    const formVM = new FormVM(vm);
-    const result: Record<string, unknown> = {};
-
-    // submittableValues で送信仕様に従った変換を適用しつつ、
-    // dateFormat オプションがある場合は date/datetime フィールドに再適用
-    const submittable = formVM.submittableValues;
-
-    for (const field of vm.fields) {
-      if (!(field.name in submittable)) continue;
-      let value = submittable[field.name];
-
-      // null除外
-      if (options?.excludeNull && value == null) continue;
-
-      // 空文字除外
-      if (options?.excludeEmpty && value === "") continue;
-
-      // dateFormat オプション: Date オブジェクトまたは date/datetime フィールドの ISO 文字列を再変換
-      if (options?.dateFormat && (field.kind === "date" || field.kind === "datetime")) {
-        if (value instanceof Date) {
-          value = serializeDate(value, options.dateFormat);
-        } else if (typeof value === "string") {
-          const parsed = new Date(value);
-          if (!isNaN(parsed.getTime())) {
-            value = serializeDate(parsed, options.dateFormat);
-          }
-        }
-      } else if (value instanceof Date) {
-        value = serializeDate(value, options?.dateFormat);
-      }
-
-      result[field.name] = value;
-    }
-
-    return result;
-  },
-
-  /**
-   * 変更されたフィールドのみを取得
-   */
-  dirtyFields: (
-    vm: FormViewModel,
-    original: Record<string, unknown>,
-  ): Record<string, unknown> => {
-    const result: Record<string, unknown> = {};
-
-    for (const field of vm.fields) {
-      const currentValue = field.value;
-      const originalValue = original[field.name];
-
-      if (!deepEqual(currentValue, originalValue)) {
-        result[field.name] = currentValue;
-      }
-    }
-
-    return result;
-  },
-
-  /**
-   * URLクエリパラメータに変換
-   */
-  queryParams: (
-    params: Record<string, unknown>,
-    options?: { arrayFormat?: "bracket" | "index" | "comma" },
-  ): string => {
-    const searchParams = new URLSearchParams();
-
-    for (const [key, value] of Object.entries(params)) {
-      if (value == null) continue;
-
-      if (Array.isArray(value)) {
-        serializeArray(searchParams, key, value, options?.arrayFormat);
-      } else if (typeof value === "object") {
-        // オブジェクトはJSON文字列化
-        searchParams.append(key, JSON.stringify(value));
-      } else {
-        searchParams.append(key, String(value));
-      }
-    }
-
-    return searchParams.toString();
-  },
-
-  /**
-   * FormDataオブジェクトに変換（ファイルアップロード対応）
-   */
-  multipart: (
-    vm: FormViewModel,
-    files?: Record<string, File | File[]>,
-  ): FormData => {
-    const formData = new FormData();
-
-    for (const field of vm.fields) {
-      const value = field.value;
-      if (value == null) continue;
-
-      if (value instanceof File || value instanceof Blob) {
-        // File/Blob はそのまま追加
-        formData.append(field.name, value);
-      } else if (value instanceof Date) {
-        formData.append(field.name, value.toISOString());
-      } else if (Array.isArray(value)) {
-        for (const item of value) {
-          if (item instanceof File || item instanceof Blob) {
-            formData.append(`${field.name}[]`, item);
-          } else {
-            formData.append(`${field.name}[]`, String(item));
-          }
-        }
-      } else if (typeof value === "object") {
-        // プレーンオブジェクトのみ JSON 文字列化
-        formData.append(field.name, JSON.stringify(value));
-      } else {
-        formData.append(field.name, String(value));
-      }
-    }
-
-    // ファイル追加
-    if (files) {
-      for (const [key, file] of Object.entries(files)) {
-        if (Array.isArray(file)) {
-          for (const f of file) {
-            formData.append(`${key}[]`, f);
-          }
-        } else {
-          formData.append(key, file);
-        }
-      }
-    }
-
-    return formData;
-  },
-
-  /**
-   * JSON文字列に変換
-   */
-  json: (
-    vm: FormViewModel,
-    options?: SerializeOptions & { pretty?: boolean },
-  ): string => {
-    const data = Serialize.formData(vm, options);
-    return options?.pretty
-      ? JSON.stringify(data, null, 2)
-      : JSON.stringify(data);
-  },
-
-  /**
-   * リストフィルターをクエリパラメータに変換
-   */
-  listFilters: (filters: Record<string, unknown>): string => {
-    return Serialize.queryParams(filters, { arrayFormat: "bracket" });
-  },
-
-  /**
-   * ページネーションパラメータを生成
-   */
-  pagination: (
-    page: number,
-    pageSize: number,
-    options?: { pageKey?: string; sizeKey?: string },
-  ): Record<string, number> => {
-    return {
-      [options?.pageKey ?? "page"]: page,
-      [options?.sizeKey ?? "pageSize"]: pageSize,
-    };
-  },
-
-  /**
-   * ソートパラメータを生成
-   */
-  sort: (
-    field: string,
-    order: "asc" | "desc",
-    options?: { fieldKey?: string; orderKey?: string; combined?: boolean },
-  ): Record<string, string> => {
-    if (options?.combined) {
-      return { sort: `${field}:${order}` };
-    }
-    return {
-      [options?.fieldKey ?? "sortField"]: field,
-      [options?.orderKey ?? "sortOrder"]: order,
-    };
-  },
-};
-
-/**
- * 日付をシリアライズ
- */
-function serializeDate(
-  date: Date,
-  format?: "iso" | "timestamp" | "date-only",
-): string | number {
-  switch (format) {
-    case "timestamp":
-      return date.getTime();
-    case "date-only":
-      return date.toISOString().split("T")[0];
-    case "iso":
-    default:
-      return date.toISOString();
-  }
+export function serializeForm(
+  vm: FormViewModel,
+  options: SerializeOptions = {},
+): Record<string, unknown> {
+  return serializeFields(
+    vm.fields.filter((field) => !field.readonly && !field.disabled),
+    options,
+  );
 }
 
-/**
- * 配列をシリアライズ
- */
-function serializeArray(
-  params: URLSearchParams,
-  key: string,
-  value: unknown[],
-  format?: "bracket" | "index" | "comma",
-): void {
-  switch (format) {
-    case "index":
-      value.forEach((v, i) => {
-        params.append(`${key}[${i}]`, String(v));
-      });
-      break;
-    case "comma":
-      if (value.length > 0) {
-        params.append(key, value.join(","));
-      }
-      break;
-    case "bracket":
-    default:
-      for (const v of value) {
-        params.append(`${key}[]`, String(v));
-      }
-  }
+export function serializeResource(
+  resource: CompiledResource,
+  values: Record<string, unknown>,
+  options: SerializeOptions = {},
+): Record<string, unknown> {
+  const fields = toSerializableSchemaFields(
+    Object.values(resource.fields),
+    values,
+    true,
+  );
+
+  return serializeFields(fields, options);
 }
 
-/**
- * 深い等価性チェック
- */
-function deepEqual(a: unknown, b: unknown): boolean {
-  if (a === b) return true;
-  if (a == null || b == null) return a === b;
-  if (typeof a !== typeof b) return false;
+export function serializeInput(
+  input: CompiledInput,
+  values: Record<string, unknown>,
+  options: SerializeOptions = {},
+): Record<string, unknown> {
+  const fields = toSerializableSchemaFields(
+    Object.values(input.fields),
+    values,
+    false,
+  );
 
-  if (a instanceof Date && b instanceof Date) {
-    return a.getTime() === b.getTime();
-  }
+  return serializeFields(fields, options);
+}
 
-  if (Array.isArray(a) && Array.isArray(b)) {
-    if (a.length !== b.length) return false;
-    return a.every((item, i) => deepEqual(item, b[i]));
-  }
+function serializeFields(
+  fields: Array<Pick<FormFieldVM, "value" | "submit"> & { name: string }>,
+  options: SerializeOptions,
+): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
 
-  if (typeof a === "object" && typeof b === "object") {
-    const keysA = Object.keys(a as object);
-    const keysB = Object.keys(b as object);
-    if (keysA.length !== keysB.length) return false;
-    return keysA.every((key) =>
-      deepEqual(
-        (a as Record<string, unknown>)[key],
-        (b as Record<string, unknown>)[key],
-      ),
+  for (const field of fields) {
+    const value = serializeFieldValue(
+      field as FormFieldVM | (CompiledField & { value: unknown }),
     );
+    if (options.excludeUndefined && value === undefined) {
+      continue;
+    }
+    if (options.excludeNull && value === null) {
+      continue;
+    }
+    if (options.excludeEmptyString && value === "") {
+      continue;
+    }
+    result[field.submit.field] = value;
   }
 
-  return false;
+  return result;
+}
+
+function serializeFieldValue(
+  field: Pick<FormFieldVM, "value" | "submit">,
+): unknown {
+  switch (field.submit.shape) {
+    case "self":
+      return field.value;
+    case "scalar":
+      return extractScalar(field.value, field.submit.valueField);
+    case "scalar[]":
+      return Array.isArray(field.value)
+        ? field.value.map((value) =>
+            extractScalar(value, field.submit.valueField),
+          )
+        : [];
+    case "object":
+      return field.value;
+    case "object[]":
+      return Array.isArray(field.value) ? field.value : [];
+  }
+}
+
+function extractScalar(value: unknown, valueField?: string): unknown {
+  if (!valueField) {
+    return value;
+  }
+  if (typeof value !== "object" || value === null) {
+    return value;
+  }
+  return (value as Record<string, unknown>)[valueField];
+}
+
+function toSerializableSchemaFields(
+  fields: CompiledField[],
+  values: Record<string, unknown>,
+  applyFormVisibility: boolean,
+): Array<Pick<FormFieldVM, "value" | "submit"> & { name: string }> {
+  return fields
+    .filter((field) => {
+      if (field.computed) {
+        return false;
+      }
+
+      if (!applyFormVisibility) {
+        return true;
+      }
+
+      return field.ui.visibleIn.form && field.ui.readonly !== true;
+    })
+    .map((field) => ({
+      name: field.name,
+      submit: field.submit,
+      value: values[field.name],
+    }));
 }

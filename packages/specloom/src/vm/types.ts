@@ -1,27 +1,19 @@
-// ============================================================
-// ViewModel Types
-// ============================================================
-
 import type {
-  FieldType,
-  FieldKind,
-  FieldUI,
-  ActionUI,
-  ActionDialog,
-  ActionApi,
-  Option,
-  FieldValidation,
-  FilterExpression,
-  Relation,
-  Nested,
-} from "../spec/index.js";
+  CompiledAction,
+  CompiledColumn,
+  CompiledField,
+  CompiledFieldSubmit,
+  CompiledFieldType,
+  CompiledFieldUi,
+  CompiledFieldValidation,
+  CompiledNamedFilter,
+  CompiledNested,
+  CompiledOption,
+  CompiledOptionSource,
+  CompiledRelation,
+  CompiledSection,
+} from "@specloom/spec";
 
-// Re-export shared types
-export type { FieldUI, ActionUI, Option, FieldValidation, FilterExpression, Nested };
-
-/**
- * 評価コンテキスト
- */
 export interface Context {
   user?: Record<string, unknown>;
   role?: string;
@@ -29,111 +21,108 @@ export interface Context {
   custom?: Record<string, unknown>;
 }
 
-// ============================================================
-// ViewModel Union Type
-// ============================================================
+export interface ValidationErrors {
+  [fieldName: string]: string[];
+}
 
-export type ViewModel = ListViewModel | ShowViewModel | FormViewModel;
+export interface ActionVM {
+  id: string;
+  kind: CompiledAction["kind"];
+  view: CompiledAction["view"];
+  resource: string;
+  label: string;
+  visible: boolean;
+  disabled: boolean;
+  allowed: boolean;
+  selection: "none" | "selected" | "query";
+  placement?: string;
+  order?: number;
+  icon?: string;
+  prominence?: CompiledAction["prominence"];
+  confirmMessage?: string;
+  args?: Record<string, unknown>;
+  input?: string;
+  operation: CompiledAction["operation"];
+  client?: Record<string, unknown>;
+}
 
-// ============================================================
-// List ViewModel (Plain data, serializable)
-// ============================================================
+export interface ListColumnVM extends CompiledColumn {
+  fieldSpec: CompiledField;
+}
+
+export interface NamedFilterVM extends CompiledNamedFilter {
+  active: boolean;
+}
+
+export interface ListRowVM {
+  id: string;
+  record: Record<string, unknown>;
+  values: Record<string, unknown>;
+  actions: ActionVM[];
+}
 
 export interface ListViewModel {
   type: "list";
   resource: string;
   label: string;
-  fields: ListFieldVM[];
+  columns: ListColumnVM[];
+  rows: ListRowVM[];
+  namedFilters: NamedFilterVM[];
+  search: {
+    fields: string[];
+    query: string;
+  };
+  selection: {
+    mode: "none" | "single" | "multi";
+    selected: string[];
+  };
   pageActions: ActionVM[];
-  bulkActions: ActionVM[];
-  rows: RowVM[];
-  filters: Filters;
-  selection: Selection;
-  search: Search;
-  /** spec定義のデフォルトソート */
-  defaultSort?: SortVM;
-  /** ユーザーが適用中のソート（複数カラム対応） */
-  sorts?: SortVM[];
-  clickAction?: string;
-  pagination?: Pagination;
-  isLoading?: boolean;
-  error?: string;
-  /** 行ごとのローディング状態 */
-  rowsLoading?: string[];
-  /** 行ごとのエラー */
-  rowErrors?: Record<string, string[]>;
-  /** 実行中のバルクアクションID */
-  bulkActionInProgress?: string;
-  /** バルクアクションの進捗 */
-  bulkActionProgress?: BulkActionProgress;
+  selectionActions: ActionVM[];
+  defaultSort?: {
+    field: string;
+    direction: "asc" | "desc";
+  };
+  currentSort?: {
+    field: string;
+    direction: "asc" | "desc";
+  };
+  clickAction: "none" | "show" | "edit";
 }
 
-export interface BulkActionProgress {
-  total: number;
-  completed: number;
-  failed: number;
-  /** 行ごとのステータス */
-  rowStatus?: Record<string, "pending" | "success" | "failed" | "skipped">;
-  /** 行ごとのエラーメッセージ */
-  rowErrors?: Record<string, string>;
-}
-
-export interface Pagination {
-  page: number;
-  pageSize: number;
-  totalCount: number;
-}
-
-export interface SortVM {
-  field: string;
-  order: "asc" | "desc";
-}
-
-export interface ListFieldVM {
+interface BaseFieldVM {
   name: string;
   label: string;
-  kind: FieldKind;
-  sortable?: boolean;
-  ui?: FieldUI;
-  options?: Option[];
-  relation?: Relation;
+  type: CompiledFieldType;
+  value: unknown;
+  visible: boolean;
+  hidden: boolean;
+  ui: CompiledFieldUi;
+  validation?: CompiledFieldValidation;
+  options?: CompiledOption[];
+  optionsSource?: CompiledOptionSource;
+  relation?: CompiledRelation;
+  nested?: CompiledNested;
+  submit: CompiledFieldSubmit;
 }
 
-export interface RowVM {
-  id: string;
-  values: Record<string, unknown>;
-  actions: ActionVM[];
-  /** 行のローディング状態 */
-  isLoading?: boolean;
-  /** 行のエラー */
-  errors?: string[];
+export interface ShowFieldVM extends BaseFieldVM {}
+
+export interface FormFieldVM extends BaseFieldVM {
+  required: boolean;
+  readonly: boolean;
+  disabled: boolean;
+  errors: string[];
 }
 
-export interface Filters {
-  named: NamedFilterVM[];
-  custom?: FilterExpression;
-}
-
-export interface NamedFilterVM {
+export interface RecordSectionVM<TField> {
   id: string;
   label: string;
-  active: boolean;
-  filter?: FilterExpression;
+  placement?: string;
+  collapsible?: boolean;
+  defaultCollapsed?: boolean;
+  fields: TField[];
+  source: CompiledSection;
 }
-
-export interface Selection {
-  mode: "none" | "single" | "multi";
-  selected: string[];
-}
-
-export interface Search {
-  fields: string[];
-  query: string;
-}
-
-// ============================================================
-// Show ViewModel (Plain data, serializable)
-// ============================================================
 
 export interface ShowViewModel {
   type: "show";
@@ -141,29 +130,9 @@ export interface ShowViewModel {
   label: string;
   id: string;
   fields: ShowFieldVM[];
+  sections: RecordSectionVM<ShowFieldVM>[];
   actions: ActionVM[];
-  // 追加
-  groups?: FieldGroup[];
-  isLoading?: boolean;
-  error?: string;
 }
-
-export interface ShowFieldVM {
-  name: string;
-  type: FieldType;
-  label: string;
-  kind: FieldKind;
-  value: unknown;
-  visible?: boolean;
-  ui?: FieldUI;
-  options?: Option[];
-  relation?: Relation;
-  nested?: Nested;
-}
-
-// ============================================================
-// Form ViewModel (Plain data, serializable)
-// ============================================================
 
 export interface FormViewModel {
   type: "form";
@@ -172,53 +141,10 @@ export interface FormViewModel {
   mode: "create" | "edit";
   id?: string;
   fields: FormFieldVM[];
+  sections: RecordSectionVM<FormFieldVM>[];
   actions: ActionVM[];
   isValid: boolean;
   isDirty: boolean;
-  // 追加
-  groups?: FieldGroup[];
-  isLoading?: boolean;
-  isSubmitting?: boolean;
-  error?: string;
 }
 
-export interface FormFieldVM {
-  name: string;
-  type: FieldType;
-  label: string;
-  kind: FieldKind;
-  value: unknown;
-  required: boolean;
-  readonly: boolean;
-  createOnly?: boolean;
-  validation?: FieldValidation;
-  errors: string[];
-  ui?: FieldUI;
-  options?: Option[];
-  relation?: Relation;
-  nested?: Nested;
-  // 追加
-  visible?: boolean;
-  hint?: string;
-  placeholder?: string;
-}
-
-export interface FieldGroup {
-  id: string;
-  label: string;
-  fields: string[];
-}
-
-// ============================================================
-// Action ViewModel
-// ============================================================
-
-export interface ActionVM {
-  id: string;
-  label: string;
-  allowed: boolean;
-  confirm?: string;
-  ui?: ActionUI;
-  dialog?: ActionDialog;
-  api?: ActionApi;
-}
+export type ViewModel = ListViewModel | ShowViewModel | FormViewModel;

@@ -1,5 +1,0 @@
-emit:
-  - "@specloom/typespec"
-options:
-  "@specloom/typespec":
-    output-file: "spec.json"

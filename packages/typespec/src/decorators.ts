@@ -2,89 +2,166 @@ import type {
   DecoratorContext,
   Model,
   ModelProperty,
+  Operation,
   Type,
   Value,
 } from "@typespec/compiler";
 import { StateKeys } from "./lib.js";
 
-// ============================================================
-// View-level action definition (accumulated on Model)
-// ============================================================
-
-export interface ViewActionDef {
-  id: string;
+export interface EntityDef {
   label?: string;
-  allowedWhen?: string;
-  confirm?: string;
-  selection?: string;
-  ui?: { icon?: string; variant?: string };
-  dialog?: { title?: string; description?: string };
-  api?: {
-    path: string;
-    method?: string;
-    body?: string[];
-    params?: unknown;
-    query?: unknown;
+  pluralLabel?: string;
+  titleField?: string;
+  pageSize?: number;
+  defaultSort?: { field: string; direction: "asc" | "desc" };
+  views?: {
+    list?: { enabled?: boolean };
+    form?: { enabled?: boolean };
+    show?: { enabled?: boolean };
   };
-  dialogModel?: Model;
+  client?: Record<string, unknown>;
 }
 
-// ============================================================
-// TypeSpec Standard State Bridge
-// ============================================================
-// These well-known Symbols are used by the TypeSpec compiler internally
-// to store validation constraints. By writing to them directly, we ensure
-// that other emitters (e.g. @typespec/openapi3) can read constraints set
-// via @S.minLength, @S.maxLength, etc.
-
-const TypeSpecStateKeys = {
-  minLength: Symbol.for("TypeSpec.minLengthValues"),
-  maxLength: Symbol.for("TypeSpec.maxLengthValues"),
-  minItems: Symbol.for("TypeSpec.minItems"),
-  maxItems: Symbol.for("TypeSpec.maxItems"),
-  pattern: Symbol.for("TypeSpec.patternValues"),
-} as const;
-
-/**
- * Create a minimal Numeric-compatible object for TypeSpec state maps.
- * TypeSpec getters call .asNumber() on stored values.
- */
-function createNumericValue(n: number): {
-  asNumber(): number;
-  toString(): string;
-} {
-  return {
-    asNumber() {
-      return n;
-    },
-    toString() {
-      return String(n);
-    },
+export interface FieldDef {
+  label?: string;
+  widget?: string;
+  appearance?: string;
+  section?: string;
+  order?: number;
+  list?: boolean;
+  show?: boolean;
+  form?: boolean;
+  readonly?: boolean;
+  placeholder?: string;
+  help?: string;
+  defaultValue?: unknown;
+  format?: string;
+  emptyText?: string;
+  display?: {
+    list?: { field?: string; template?: string };
+    show?: { field?: string; template?: string };
   };
+  placement?: {
+    list?: string;
+    show?: string;
+    form?: string;
+  };
+  client?: Record<string, unknown>;
 }
 
-// ============================================================
-// Value Extraction Helpers
-// ============================================================
+export interface IndexDef {
+  columns?: unknown[];
+  searchable?: string[];
+  sortable?: string[];
+  defaultSort?: { field: string; direction: "asc" | "desc" };
+  selection?: "none" | "single" | "multi";
+  clickAction?: "none" | "show" | "edit";
+}
 
-/**
- * Extract primitive value from TypeSpec Value type
- */
+export interface FilterDef {
+  operators?: string[];
+  widget?: string;
+  order?: number;
+  placement?: "toolbar" | "advanced";
+  defaultValue?: unknown;
+}
+
+export interface NamedFilterDef {
+  id: string;
+  label: string;
+  order?: number;
+  where: unknown;
+}
+
+export interface RelationDef {
+  resource: string;
+  kind?: "belongsTo" | "hasOne" | "hasMany" | "manyToMany";
+  cardinality?: "one" | "many";
+  labelField?: string;
+  valueField?: string;
+  submitField?: string;
+  searchFields?: string[];
+  lookupResource?: string;
+  lookupOp?: string;
+  linkTo?: "show" | "edit" | "none";
+  creatable?: boolean;
+  client?: Record<string, unknown>;
+}
+
+export interface NestedDef {
+  resource: string;
+  cardinality?: "one" | "many";
+  minItems?: number;
+  maxItems?: number;
+  widget?: "inline-form" | "table" | "cards";
+}
+
+export interface SectionDef {
+  id: string;
+  label: string;
+  order?: number;
+  view?: "form" | "show";
+  placement?: string;
+  collapsible?: boolean;
+  defaultCollapsed?: boolean;
+}
+
+export interface OptionDef {
+  value: string | number | boolean;
+  label: string;
+}
+
+export interface OptionSourceDef {
+  resource?: string;
+  op?: string;
+  labelField: string;
+  valueField: string;
+  searchFields?: string[];
+}
+
+export interface ActionDef {
+  resource: string;
+  kind: "page" | "row";
+  id: string;
+  view: "list" | "show" | "form";
+  label?: string;
+  placement?: string;
+  order?: number;
+  icon?: string;
+  prominence?: "primary" | "secondary" | "subtle" | "danger";
+  confirmMessage?: string;
+  selection?: "none" | "selected" | "query";
+  args?: Record<string, unknown>;
+  when?: string;
+  disabledWhen?: string;
+  client?: Record<string, unknown>;
+  inputModel?: Model;
+}
+
+export interface RuleDef {
+  kind: string;
+  fields?: string[];
+  field?: string;
+  left?: string;
+  right?: string;
+  operator?: string;
+  when?: string;
+  message?: string;
+}
+
 function extractValue(val: Value | unknown): unknown {
   if (val === null || val === undefined) {
     return val;
   }
 
-  // Check if it's a TypeSpec Value type
   if (typeof val === "object" && val !== null && "valueKind" in val) {
     const v = val as { valueKind: string; value?: unknown; values?: unknown[] };
     switch (v.valueKind) {
       case "StringValue":
-        return v.value;
-      case "NumericValue":
-        return v.value;
       case "BooleanValue":
         return v.value;
+      case "NumericValue":
+        return extractNumericValue(v.value);
       case "ArrayValue":
         return (v.values ?? []).map(extractValue);
       case "ObjectValue":
@@ -94,23 +171,26 @@ function extractValue(val: Value | unknown): unknown {
     }
   }
 
-  // Check for legacy Type-based value format (entityKind: "Type")
-  if (typeof val === "object" && val !== null && "entityKind" in val) {
-    const t = val as { entityKind: string; kind: string; value?: unknown };
-    if (t.entityKind === "Type") {
-      if (t.kind === "String" || t.kind === "Number" || t.kind === "Boolean") {
-        return t.value;
-      }
-    }
-  }
-
-  // Already a primitive value
   return val;
 }
 
-/**
- * Extract object from TypeSpec ObjectValue
- */
+function extractNumericValue(value: unknown): unknown {
+  if (typeof value === "number") {
+    return value;
+  }
+
+  if (
+    value &&
+    typeof value === "object" &&
+    "asNumber" in value &&
+    typeof (value as { asNumber?: unknown }).asNumber === "function"
+  ) {
+    return (value as { asNumber(): number }).asNumber();
+  }
+
+  return value;
+}
+
 function extractObjectValue(
   obj:
     | { valueKind: string; properties?: Map<string, { value: Value }> }
@@ -130,533 +210,287 @@ function extractObjectValue(
   return result;
 }
 
-/**
- * Extract string value
- */
 function extractString(val: unknown): string | undefined {
   const extracted = extractValue(val);
   return typeof extracted === "string" ? extracted : undefined;
 }
 
-/**
- * Extract number value
- */
+function extractStringArray(val: unknown): string[] | undefined {
+  const extracted = extractValue(val);
+  if (!Array.isArray(extracted)) {
+    return undefined;
+  }
+  return extracted.filter((item): item is string => typeof item === "string");
+}
+
 function extractNumber(val: unknown): number | undefined {
   const extracted = extractValue(val);
   return typeof extracted === "number" ? extracted : undefined;
 }
 
-/**
- * Extract string array value
- */
-function extractStringArray(val: unknown): string[] | undefined {
+function extractRecord(val: unknown): Record<string, unknown> | undefined {
   const extracted = extractValue(val);
-  if (Array.isArray(extracted)) {
-    return extracted.filter((v): v is string => typeof v === "string");
-  }
-  return undefined;
+  return extracted && typeof extracted === "object" && !Array.isArray(extracted)
+    ? (extracted as Record<string, unknown>)
+    : undefined;
 }
 
-/**
- * Merge partial UI options into existing UI state
- */
-function mergeUI(
+function mergeState<T extends Model | ModelProperty | Operation>(
   context: DecoratorContext,
-  target: Model | ModelProperty,
+  key: symbol,
+  target: T,
   patch: Record<string, unknown>,
 ) {
   const current =
-    (context.program.stateMap(StateKeys.ui).get(target) as
+    (context.program.stateMap(key).get(target) as
       | Record<string, unknown>
       | undefined) ?? {};
-  context.program.stateMap(StateKeys.ui).set(target, { ...current, ...patch });
+  context.program.stateMap(key).set(target, { ...current, ...patch });
 }
 
-// ============================================================
-// Resource Decorators
-// ============================================================
+function prependStateArray<T extends Model | Operation, TValue>(
+  context: DecoratorContext,
+  key: symbol,
+  target: T,
+  value: TValue,
+) {
+  const existing =
+    (context.program.stateMap(key).get(target) as TValue[] | undefined) ?? [];
+  context.program.stateMap(key).set(target, [value, ...existing]);
+}
 
-/**
- * @resource - Mark a model as a resource
- */
-export function $resource(
+export function $entity(
   context: DecoratorContext,
   target: Model,
-  name?: unknown,
+  options?: unknown,
 ) {
-  const extractedName = extractString(name);
-  context.program
-    .stateMap(StateKeys.resource)
-    .set(target, extractedName ?? target.name);
+  const extracted = extractRecord(options) ?? {};
+  mergeState(context, StateKeys.entity, target, extracted);
 }
 
-/**
- * @requiredOneOf - Require at least one field in the group
- */
-export function $requiredOneOf(
+export function $field(
+  context: DecoratorContext,
+  target: ModelProperty,
+  options?: unknown,
+) {
+  const extracted = extractRecord(options) ?? {};
+  mergeState(context, StateKeys.field, target, extracted);
+}
+
+export function $index(
   context: DecoratorContext,
   target: Model,
-  fields: unknown,
+  options?: unknown,
 ) {
-  const extracted = extractStringArray(fields);
-  if (extracted && extracted.length > 0) {
-    const existing: string[][] =
-      context.program.stateMap(StateKeys.requiredOneOf).get(target) ?? [];
-    // TypeSpec processes decorators bottom-to-top, so prepend to keep source order.
-    context.program
-      .stateMap(StateKeys.requiredOneOf)
-      .set(target, [extracted, ...existing]);
-  }
+  const extracted = extractRecord(options) ?? {};
+  mergeState(context, StateKeys.index, target, extracted);
 }
 
-/**
- * @label - Set display label
- */
-export function $label(
-  context: DecoratorContext,
-  target: Model | ModelProperty,
-  label: unknown,
-) {
-  const extractedLabel = extractString(label);
-  if (extractedLabel) {
-    context.program.stateMap(StateKeys.label).set(target, extractedLabel);
-  }
-}
-
-/**
- * @kind - Set field kind (text, longText, enum, relation, etc.)
- */
-export function $kind(
+export function $filter(
   context: DecoratorContext,
   target: ModelProperty,
-  kind: unknown,
+  options?: unknown,
 ) {
-  const extractedKind = extractString(kind);
-  if (extractedKind) {
-    context.program.stateMap(StateKeys.kind).set(target, extractedKind);
+  const extractedArray = extractStringArray(options);
+  if (extractedArray) {
+    context.program.stateMap(StateKeys.filter).set(target, {
+      operators: extractedArray,
+    } satisfies FilterDef);
+    return;
   }
+
+  const extracted = extractRecord(options) ?? {};
+  context.program.stateMap(StateKeys.filter).set(target, extracted);
 }
 
-/**
- * @options - Set enum options
- */
-export function $options(
+export function $namedFilter(
   context: DecoratorContext,
-  target: ModelProperty,
+  target: Model,
+  id: unknown,
   options: unknown,
 ) {
-  // Extract values from TypeSpec Value types
-  const extracted = extractValue(options);
-  const cleanOptions: { value: string; label: string }[] = [];
-
-  if (Array.isArray(extracted)) {
-    for (const opt of extracted) {
-      if (opt && typeof opt === "object" && "value" in opt && "label" in opt) {
-        cleanOptions.push({
-          value: String(opt.value),
-          label: String(opt.label),
-        });
-      }
-    }
+  const extractedId = extractString(id);
+  const extracted = extractRecord(options);
+  if (!extractedId || !extracted) {
+    return;
   }
-  context.program.stateMap(StateKeys.options).set(target, cleanOptions);
+
+  const label = extractString(extracted.label);
+  if (!label) {
+    return;
+  }
+
+  prependStateArray<Model, NamedFilterDef>(
+    context,
+    StateKeys.namedFilter,
+    target,
+    {
+      id: extractedId,
+      label,
+      order: extractNumber(extracted.order),
+      where: extracted.where,
+    },
+  );
 }
 
-/**
- * @relation - Define relation to another resource
- */
 export function $relation(
   context: DecoratorContext,
   target: ModelProperty,
   resource: Model,
   options?: unknown,
 ) {
-  const extracted = extractValue(options) as
-    | { labelField?: string; valueField?: string; submitField?: string; searchable?: boolean }
-    | undefined;
-  const cardinality = extractString(
-    context.program.stateMap(StateKeys.cardinality).get(target),
-  );
+  const extracted = extractRecord(options) ?? {};
   context.program.stateMap(StateKeys.relation).set(target, {
+    ...extracted,
     resource: resource.name,
-    labelField: extracted?.labelField,
-    valueField: extracted?.valueField,
-    submitField: extracted?.submitField,
-    searchable: extracted?.searchable,
-    cardinality,
-  });
+  } satisfies RelationDef);
 }
 
-/**
- * @nested - Define nested (owned) child resource for inline editing
- */
 export function $nested(
   context: DecoratorContext,
   target: ModelProperty,
   resource: Model,
   options?: unknown,
 ) {
-  const extracted = extractValue(options) as
-    | { min?: number; max?: number }
-    | undefined;
+  const extracted = extractRecord(options) ?? {};
   context.program.stateMap(StateKeys.nested).set(target, {
+    ...extracted,
     resource: resource.name,
-    min: extracted?.min,
-    max: extracted?.max,
-  });
-  // Auto-set kind to "nested"
-  context.program.stateMap(StateKeys.kind).set(target, "nested");
+  } satisfies NestedDef);
 }
 
-/**
- * @cardinality - Legacy alias of @relation(..., #{ cardinality: ... }) intent
- */
-export function $cardinality(
+export function $section(
   context: DecoratorContext,
-  target: ModelProperty,
-  cardinality: unknown,
-) {
-  const extracted = extractString(cardinality);
-  if (extracted) {
-    context.program.stateMap(StateKeys.cardinality).set(target, extracted);
-    const relation = context.program
-      .stateMap(StateKeys.relation)
-      .get(target) as Record<string, unknown> | undefined;
-    if (relation) {
-      context.program
-        .stateMap(StateKeys.relation)
-        .set(target, { ...relation, cardinality: extracted });
-    }
-  }
-}
-
-/**
- * @ui - Set UI hints
- */
-export function $ui(
-  context: DecoratorContext,
-  target: ModelProperty | Model,
+  target: Model,
+  id: unknown,
   options: unknown,
 ) {
-  // Extract values from TypeSpec Value types
-  const extracted = extractValue(options) as Record<string, unknown> | null;
-  if (extracted && typeof extracted === "object") {
-    mergeUI(context, target, extracted);
+  const extractedId = extractString(id);
+  const extracted = extractRecord(options);
+  if (!extractedId || !extracted) {
+    return;
   }
-}
 
-/**
- * @hint - Legacy alias for @ui(#{ hint: ... })
- */
-export function $hint(
-  context: DecoratorContext,
-  target: ModelProperty,
-  hint: unknown,
-) {
-  const extracted = extractString(hint);
-  if (extracted) {
-    mergeUI(context, target, { hint: extracted });
+  const label = extractString(extracted.label);
+  if (!label) {
+    return;
   }
+
+  prependStateArray<Model, SectionDef>(context, StateKeys.section, target, {
+    id: extractedId,
+    label,
+    order: extractNumber(extracted.order),
+    view:
+      extracted.view === "form" || extracted.view === "show"
+        ? extracted.view
+        : undefined,
+    placement: extractString(extracted.placement),
+    collapsible:
+      typeof extracted.collapsible === "boolean"
+        ? extracted.collapsible
+        : undefined,
+    defaultCollapsed:
+      typeof extracted.defaultCollapsed === "boolean"
+        ? extracted.defaultCollapsed
+        : undefined,
+  });
 }
 
-/**
- * @inputHint - Legacy alias for @ui(#{ inputHint: ... })
- */
-export function $inputHint(
-  context: DecoratorContext,
-  target: ModelProperty,
-  inputHint: unknown,
-) {
-  const extracted = extractString(inputHint);
-  if (extracted) {
-    mergeUI(context, target, { inputHint: extracted });
-  }
+export function $hidden(context: DecoratorContext, target: ModelProperty) {
+  context.program.stateSet(StateKeys.hidden).add(target);
 }
 
-/**
- * @readonly - Mark field as readonly
- */
-export function $readonly(context: DecoratorContext, target: ModelProperty) {
-  context.program.stateSet(StateKeys.readonly).add(target);
-}
-
-/**
- * @computed - Mark field as computed (not in DB)
- */
 export function $computed(context: DecoratorContext, target: ModelProperty) {
   context.program.stateSet(StateKeys.computed).add(target);
 }
 
-/**
- * @createOnly - Mark field as create-only (only shown on create form)
- */
 export function $createOnly(context: DecoratorContext, target: ModelProperty) {
   context.program.stateSet(StateKeys.createOnly).add(target);
 }
 
-/**
- * @filter - Make field filterable
- */
-export function $filter(
+export function $options(
   context: DecoratorContext,
   target: ModelProperty,
-  operators?: unknown,
+  options: unknown,
 ) {
-  const extracted = extractStringArray(operators);
-  const normalized = extracted?.map((op) => {
-    switch (op) {
-      case "startsWith":
-        return "starts_with";
-      case "endsWith":
-        return "ends_with";
-      case "notIn":
-        return "not_in";
-      case "isNull":
-        return "is_null";
-      case "isEmpty":
-        return "is_empty";
-      case "hasAny":
-        return "has_any";
-      case "hasAll":
-        return "has_all";
-      case "hasNone":
-        return "has_none";
-      default:
-        return op;
-    }
-  });
-  context.program.stateMap(StateKeys.filter).set(target, normalized ?? true);
-}
-
-// ============================================================
-// View Decorators
-// ============================================================
-
-/**
- * @view - Define a view for a resource
- */
-export function $view(
-  context: DecoratorContext,
-  target: Model,
-  resource: Model,
-  viewType: unknown,
-) {
-  const extractedType = extractString(viewType);
-  context.program.stateMap(StateKeys.view).set(target, {
-    resource: resource.name,
-    type: extractedType ?? "list",
-  });
-}
-
-/**
- * @columns - Set list view columns
- */
-export function $columns(
-  context: DecoratorContext,
-  target: Model,
-  columns: unknown,
-) {
-  const extracted = extractStringArray(columns);
-  if (extracted) {
-    context.program.stateMap(StateKeys.columns).set(target, extracted);
-  }
-}
-
-/**
- * @fields - Set form/show view fields
- */
-export function $fields(
-  context: DecoratorContext,
-  target: Model,
-  fields: unknown,
-) {
-  const extracted = extractStringArray(fields);
-  if (extracted) {
-    context.program.stateMap(StateKeys.fields).set(target, extracted);
-  }
-}
-
-/**
- * @searchable - Set searchable fields
- */
-export function $searchable(
-  context: DecoratorContext,
-  target: Model,
-  fields: unknown,
-) {
-  const extracted = extractStringArray(fields);
-  if (extracted) {
-    context.program.stateMap(StateKeys.searchable).set(target, extracted);
-  }
-}
-
-/**
- * @sortable - Set sortable fields
- */
-export function $sortable(
-  context: DecoratorContext,
-  target: Model,
-  fields: unknown,
-) {
-  const extracted = extractStringArray(fields);
-  if (extracted) {
-    context.program.stateMap(StateKeys.sortable).set(target, extracted);
-  }
-}
-
-/**
- * @defaultSort - Set default sort
- */
-export function $defaultSort(
-  context: DecoratorContext,
-  target: Model,
-  field: unknown,
-  order: unknown,
-) {
-  const extractedField = extractString(field);
-  const extractedOrder = extractString(order);
-  if (extractedField && extractedOrder) {
-    context.program
-      .stateMap(StateKeys.defaultSort)
-      .set(target, { field: extractedField, order: extractedOrder });
-  }
-}
-
-/**
- * @clickAction - Set row click action
- */
-export function $clickAction(
-  context: DecoratorContext,
-  target: Model,
-  action: unknown,
-) {
-  const extracted = extractString(action);
-  if (extracted) {
-    context.program.stateMap(StateKeys.clickAction).set(target, extracted);
-  }
-}
-
-/**
- * @selection - Set selection mode
- */
-export function $selection(
-  context: DecoratorContext,
-  target: Model,
-  mode: unknown,
-) {
-  const extracted = extractString(mode);
-  if (extracted) {
-    context.program.stateMap(StateKeys.selection).set(target, extracted);
-  }
-}
-
-/**
- * @namedFilters - Set named filters
- */
-export function $namedFilters(
-  context: DecoratorContext,
-  target: Model,
-  filters: unknown,
-) {
-  const extracted = extractValue(filters);
+  const extracted = extractValue(options);
+  const clean: OptionDef[] = [];
   if (Array.isArray(extracted)) {
-    const cleanFilters = extracted.map((f) => ({
-      id: String((f as Record<string, unknown>).id ?? ""),
-      label: String((f as Record<string, unknown>).label ?? ""),
-      filter: (f as Record<string, unknown>).filter,
-    }));
-    context.program.stateMap(StateKeys.namedFilters).set(target, cleanFilters);
+    for (const item of extracted) {
+      if (
+        item &&
+        typeof item === "object" &&
+        "value" in item &&
+        "label" in item
+      ) {
+        const value = (item as Record<string, unknown>).value;
+        const label = (item as Record<string, unknown>).label;
+        if (
+          (typeof value === "string" ||
+            typeof value === "number" ||
+            typeof value === "boolean") &&
+          typeof label === "string"
+        ) {
+          clean.push({ value, label });
+        }
+      }
+    }
   }
+  context.program.stateMap(StateKeys.options).set(target, clean);
 }
 
-/**
- * @namedFilter - Add a named filter (singular form, accumulates)
- */
-export function $namedFilter(
+export function $optionSource(
   context: DecoratorContext,
-  target: Model,
-  id: unknown,
-  label: unknown,
-  filter: unknown,
+  target: ModelProperty,
+  options: unknown,
 ) {
-  const extractedId = extractString(id);
-  const extractedLabel = extractString(label);
-  const extractedFilter = extractValue(filter);
-
-  if (extractedId && extractedLabel) {
-    const existing: { id: string; label: string; filter: unknown }[] =
-      context.program.stateMap(StateKeys.namedFilters).get(target) ?? [];
-    const newFilter = {
-      id: extractedId,
-      label: extractedLabel,
-      filter: extractedFilter,
-    };
-    // TypeSpec processes decorators bottom-to-top, so prepend to maintain source order
-    context.program
-      .stateMap(StateKeys.namedFilters)
-      .set(target, [newFilter, ...existing]);
+  const extracted = extractRecord(options);
+  if (extracted) {
+    context.program.stateMap(StateKeys.optionSource).set(target, extracted);
   }
 }
 
-// ============================================================
-// Action Decorators
-// ============================================================
-
-/**
- * @action - Define a page-level action on a view (Model target)
- */
-export function $action(
+export function $pageAction(
   context: DecoratorContext,
-  target: Model,
-  id: unknown,
+  target: Operation,
+  resource: Model,
   options?: unknown,
-  dialogModel?: Model,
+  inputModel?: Model,
 ) {
-  const extractedId = extractString(id);
-  if (!extractedId) return;
-
-  const opts = (extractValue(options) as Record<string, unknown> | null) ?? {};
-  const existing: ViewActionDef[] =
-    context.program.stateMap(StateKeys.viewActions).get(target) ?? [];
-  const action: ViewActionDef = { id: extractedId, ...opts };
-  if (dialogModel) {
-    action.dialogModel = dialogModel;
-  }
-  // TypeSpec processes decorators bottom-to-top, so prepend to maintain source order
-  context.program
-    .stateMap(StateKeys.viewActions)
-    .set(target, [action, ...existing]);
+  const extracted = extractRecord(options) ?? {};
+  const id = extractString(extracted.id) ?? target.name;
+  context.program.stateMap(StateKeys.pageAction).set(target, {
+    ...extracted,
+    resource: resource.name,
+    kind: "page",
+    id,
+    view:
+      extracted.view === "show" || extracted.view === "form"
+        ? extracted.view
+        : "list",
+    inputModel,
+  } satisfies ActionDef);
 }
 
-/**
- * @rowAction - Define a row action on a list view (Model target)
- */
 export function $rowAction(
   context: DecoratorContext,
-  target: Model,
-  id: unknown,
+  target: Operation,
+  resource: Model,
   options?: unknown,
-  dialogModel?: Model,
+  inputModel?: Model,
 ) {
-  const extractedId = extractString(id);
-  if (!extractedId) return;
-
-  const opts = (extractValue(options) as Record<string, unknown> | null) ?? {};
-  const existing: ViewActionDef[] =
-    context.program.stateMap(StateKeys.viewRowActions).get(target) ?? [];
-  const action: ViewActionDef = { id: extractedId, ...opts };
-  if (dialogModel) {
-    action.dialogModel = dialogModel;
-  }
-  // TypeSpec processes decorators bottom-to-top, so prepend to maintain source order
-  context.program
-    .stateMap(StateKeys.viewRowActions)
-    .set(target, [action, ...existing]);
+  const extracted = extractRecord(options) ?? {};
+  const id = extractString(extracted.id) ?? target.name;
+  context.program.stateMap(StateKeys.rowAction).set(target, {
+    ...extracted,
+    resource: resource.name,
+    kind: "row",
+    id,
+    view: "list",
+    inputModel,
+  } satisfies ActionDef);
 }
 
-/**
- * @visibleWhen - Set conditional visibility expression
- */
 export function $visibleWhen(
   context: DecoratorContext,
   target: ModelProperty,
@@ -668,9 +502,6 @@ export function $visibleWhen(
   }
 }
 
-/**
- * @requiredWhen - Set conditional required expression
- */
 export function $requiredWhen(
   context: DecoratorContext,
   target: ModelProperty,
@@ -682,219 +513,127 @@ export function $requiredWhen(
   }
 }
 
+export function $readonlyWhen(
+  context: DecoratorContext,
+  target: ModelProperty,
+  expression: unknown,
+) {
+  const extracted = extractString(expression);
+  if (extracted) {
+    context.program.stateMap(StateKeys.readonlyWhen).set(target, extracted);
+  }
+}
 
-/**
- * @match - Set field match validation
- */
+export function $disabledWhen(
+  context: DecoratorContext,
+  target: ModelProperty | Operation,
+  expression: unknown,
+) {
+  const extracted = extractString(expression);
+  if (extracted) {
+    context.program.stateMap(StateKeys.disabledWhen).set(target, extracted);
+  }
+}
+
 export function $match(
   context: DecoratorContext,
   target: ModelProperty,
-  field: unknown,
+  fieldName: unknown,
 ) {
-  const extracted = extractString(field);
+  const extracted = extractString(fieldName);
   if (extracted) {
     context.program.stateMap(StateKeys.match).set(target, extracted);
   }
 }
 
-// ============================================================
-// Validation Decorators
-// ============================================================
-
-/**
- * @required - Mark field as required
- */
-export function $required(context: DecoratorContext, target: ModelProperty) {
-  context.program.stateSet(StateKeys.required).add(target);
-}
-
-/**
- * @min - Set minimum value
- */
-export function $min(
+export function $rule(
   context: DecoratorContext,
-  target: ModelProperty,
-  value: unknown,
+  target: Model,
+  options: unknown,
 ) {
-  const extracted = extractNumber(value);
-  if (extracted !== undefined) {
-    context.program.stateMap(StateKeys.min).set(target, extracted);
+  const extracted = extractRecord(options);
+  if (!extracted) {
+    return;
   }
+
+  const kind = extractString(extracted.kind);
+  if (!kind) {
+    return;
+  }
+
+  prependStateArray<Model, RuleDef>(context, StateKeys.rule, target, {
+    kind,
+    fields: extractStringArray(extracted.fields),
+    field: extractString(extracted.field),
+    left: extractString(extracted.left),
+    right: extractString(extracted.right),
+    operator: extractString(extracted.operator),
+    when: extractString(extracted.when),
+    message: extractString(extracted.message),
+  });
 }
 
-/**
- * @max - Set maximum value
- */
-export function $max(
-  context: DecoratorContext,
-  target: ModelProperty,
-  value: unknown,
-) {
-  const extracted = extractNumber(value);
-  if (extracted !== undefined) {
-    context.program.stateMap(StateKeys.max).set(target, extracted);
-  }
-}
-
-/**
- * @minLength - Set minimum string length (also sets TypeSpec standard state for OpenAPI)
- */
-export function $minLength(
-  context: DecoratorContext,
-  target: ModelProperty,
-  value: unknown,
-) {
-  const extracted = extractNumber(value);
-  if (extracted !== undefined) {
-    context.program.stateMap(StateKeys.minLength).set(target, extracted);
-    context.program
-      .stateMap(TypeSpecStateKeys.minLength)
-      .set(target, createNumericValue(extracted));
-  }
-}
-
-/**
- * @maxLength - Set maximum string length (also sets TypeSpec standard state for OpenAPI)
- */
-export function $maxLength(
-  context: DecoratorContext,
-  target: ModelProperty,
-  value: unknown,
-) {
-  const extracted = extractNumber(value);
-  if (extracted !== undefined) {
-    context.program.stateMap(StateKeys.maxLength).set(target, extracted);
-    context.program
-      .stateMap(TypeSpecStateKeys.maxLength)
-      .set(target, createNumericValue(extracted));
-  }
-}
-
-/**
- * @pattern - Set pattern constraint (also sets TypeSpec standard state for OpenAPI)
- */
-export function $pattern(
-  context: DecoratorContext,
-  target: ModelProperty,
-  pattern: unknown,
-) {
-  const extracted = extractString(pattern);
-  if (extracted) {
-    context.program.stateMap(StateKeys.pattern).set(target, extracted);
-    context.program
-      .stateMap(TypeSpecStateKeys.pattern)
-      .set(target, { pattern: extracted });
-  }
-}
-
-/**
- * @minItems - Set minimum array items (also sets TypeSpec standard state for OpenAPI)
- */
-export function $minItems(
-  context: DecoratorContext,
-  target: ModelProperty,
-  value: unknown,
-) {
-  const extracted = extractNumber(value);
-  if (extracted !== undefined) {
-    context.program.stateMap(StateKeys.minItems).set(target, extracted);
-    context.program
-      .stateMap(TypeSpecStateKeys.minItems)
-      .set(target, createNumericValue(extracted));
-  }
-}
-
-/**
- * @maxItems - Set maximum array items (also sets TypeSpec standard state for OpenAPI)
- */
-export function $maxItems(
-  context: DecoratorContext,
-  target: ModelProperty,
-  value: unknown,
-) {
-  const extracted = extractNumber(value);
-  if (extracted !== undefined) {
-    context.program.stateMap(StateKeys.maxItems).set(target, extracted);
-    context.program
-      .stateMap(TypeSpecStateKeys.maxItems)
-      .set(target, createNumericValue(extracted));
-  }
-}
-
-// ============================================================
-// Helper functions to get decorator data
-// ============================================================
-
-export function getResourceName(
+export function getEntity(
   program: DecoratorContext["program"],
   target: Model,
-): string | undefined {
-  return program.stateMap(StateKeys.resource).get(target);
+): EntityDef | undefined {
+  return program.stateMap(StateKeys.entity).get(target);
 }
 
-export function getRequiredOneOf(
+export function getField(
+  program: DecoratorContext["program"],
+  target: ModelProperty,
+): FieldDef | undefined {
+  return program.stateMap(StateKeys.field).get(target);
+}
+
+export function getIndex(
   program: DecoratorContext["program"],
   target: Model,
-): string[][] | undefined {
-  return program.stateMap(StateKeys.requiredOneOf).get(target);
+): IndexDef | undefined {
+  return program.stateMap(StateKeys.index).get(target);
 }
 
-export function getLabel(
-  program: DecoratorContext["program"],
-  target: Type,
-): string | undefined {
-  return program.stateMap(StateKeys.label).get(target);
-}
-
-export function getKind(
+export function getFilter(
   program: DecoratorContext["program"],
   target: ModelProperty,
-): string | undefined {
-  return program.stateMap(StateKeys.kind).get(target);
+): FilterDef | undefined {
+  return program.stateMap(StateKeys.filter).get(target);
 }
 
-export function getOptions(
+export function getNamedFilters(
   program: DecoratorContext["program"],
-  target: ModelProperty,
-): { value: string; label: string }[] | undefined {
-  return program.stateMap(StateKeys.options).get(target);
+  target: Model,
+): NamedFilterDef[] | undefined {
+  return program.stateMap(StateKeys.namedFilter).get(target);
 }
 
 export function getRelation(
   program: DecoratorContext["program"],
   target: ModelProperty,
-):
-  | {
-      resource: string;
-      labelField?: string;
-      valueField?: string;
-      submitField?: string;
-      searchable?: boolean;
-      cardinality?: string;
-    }
-  | undefined {
+): RelationDef | undefined {
   return program.stateMap(StateKeys.relation).get(target);
 }
 
-export function getCardinality(
+export function getNested(
   program: DecoratorContext["program"],
   target: ModelProperty,
-): string | undefined {
-  return program.stateMap(StateKeys.cardinality).get(target);
+): NestedDef | undefined {
+  return program.stateMap(StateKeys.nested).get(target);
 }
 
-export function getUI(
+export function getSections(
   program: DecoratorContext["program"],
-  target: Type,
-): Record<string, unknown> | undefined {
-  return program.stateMap(StateKeys.ui).get(target);
+  target: Model,
+): SectionDef[] | undefined {
+  return program.stateMap(StateKeys.section).get(target);
 }
 
-export function isReadonly(
+export function isHidden(
   program: DecoratorContext["program"],
   target: ModelProperty,
 ): boolean {
-  return program.stateSet(StateKeys.readonly).has(target);
+  return program.stateSet(StateKeys.hidden).has(target);
 }
 
 export function isComputed(
@@ -911,83 +650,33 @@ export function isCreateOnly(
   return program.stateSet(StateKeys.createOnly).has(target);
 }
 
-export function isRequired(
+export function getOptions(
   program: DecoratorContext["program"],
   target: ModelProperty,
-): boolean {
-  return program.stateSet(StateKeys.required).has(target);
+): OptionDef[] | undefined {
+  return program.stateMap(StateKeys.options).get(target);
 }
 
-export function getFilter(
+export function getOptionSource(
   program: DecoratorContext["program"],
   target: ModelProperty,
-): string[] | true | undefined {
-  return program.stateMap(StateKeys.filter).get(target);
+): OptionSourceDef | undefined {
+  return program.stateMap(StateKeys.optionSource).get(target);
 }
 
-export function getView(
+export function getPageAction(
   program: DecoratorContext["program"],
-  target: Model,
-): { resource: string; type: string } | undefined {
-  return program.stateMap(StateKeys.view).get(target);
+  target: Operation,
+): ActionDef | undefined {
+  return program.stateMap(StateKeys.pageAction).get(target);
 }
 
-export function getColumns(
+export function getRowAction(
   program: DecoratorContext["program"],
-  target: Model,
-): string[] | undefined {
-  return program.stateMap(StateKeys.columns).get(target);
+  target: Operation,
+): ActionDef | undefined {
+  return program.stateMap(StateKeys.rowAction).get(target);
 }
-
-export function getFields(
-  program: DecoratorContext["program"],
-  target: Model,
-): string[] | undefined {
-  return program.stateMap(StateKeys.fields).get(target);
-}
-
-export function getSearchable(
-  program: DecoratorContext["program"],
-  target: Model,
-): string[] | undefined {
-  return program.stateMap(StateKeys.searchable).get(target);
-}
-
-export function getSortable(
-  program: DecoratorContext["program"],
-  target: Model,
-): string[] | undefined {
-  return program.stateMap(StateKeys.sortable).get(target);
-}
-
-export function getDefaultSort(
-  program: DecoratorContext["program"],
-  target: Model,
-): { field: string; order: string } | undefined {
-  return program.stateMap(StateKeys.defaultSort).get(target);
-}
-
-export function getClickAction(
-  program: DecoratorContext["program"],
-  target: Model,
-): string | undefined {
-  return program.stateMap(StateKeys.clickAction).get(target);
-}
-
-export function getSelection(
-  program: DecoratorContext["program"],
-  target: Model,
-): string | undefined {
-  return program.stateMap(StateKeys.selection).get(target);
-}
-
-export function getNamedFilters(
-  program: DecoratorContext["program"],
-  target: Model,
-): { id: string; label: string; filter: unknown }[] | undefined {
-  return program.stateMap(StateKeys.namedFilters).get(target);
-}
-
 
 export function getVisibleWhen(
   program: DecoratorContext["program"],
@@ -1003,56 +692,19 @@ export function getRequiredWhen(
   return program.stateMap(StateKeys.requiredWhen).get(target);
 }
 
-
-export function getMinLength(
-  program: DecoratorContext["program"],
-  target: ModelProperty,
-): number | undefined {
-  return program.stateMap(StateKeys.minLength).get(target);
-}
-
-export function getMaxLength(
-  program: DecoratorContext["program"],
-  target: ModelProperty,
-): number | undefined {
-  return program.stateMap(StateKeys.maxLength).get(target);
-}
-
-export function getPattern(
+export function getReadonlyWhen(
   program: DecoratorContext["program"],
   target: ModelProperty,
 ): string | undefined {
-  return program.stateMap(StateKeys.pattern).get(target);
+  return program.stateMap(StateKeys.readonlyWhen).get(target);
 }
 
-export function getMinItems(
+export function getDisabledWhen(
   program: DecoratorContext["program"],
-  target: ModelProperty,
-): number | undefined {
-  return program.stateMap(StateKeys.minItems).get(target);
+  target: ModelProperty | Operation,
+): string | undefined {
+  return program.stateMap(StateKeys.disabledWhen).get(target);
 }
-
-export function getMaxItems(
-  program: DecoratorContext["program"],
-  target: ModelProperty,
-): number | undefined {
-  return program.stateMap(StateKeys.maxItems).get(target);
-}
-
-export function getMin(
-  program: DecoratorContext["program"],
-  target: ModelProperty,
-): number | undefined {
-  return program.stateMap(StateKeys.min).get(target);
-}
-
-export function getMax(
-  program: DecoratorContext["program"],
-  target: ModelProperty,
-): number | undefined {
-  return program.stateMap(StateKeys.max).get(target);
-}
-
 
 export function getMatch(
   program: DecoratorContext["program"],
@@ -1061,29 +713,58 @@ export function getMatch(
   return program.stateMap(StateKeys.match).get(target);
 }
 
-export function getNested(
+export function getRules(
+  program: DecoratorContext["program"],
+  target: Model,
+): RuleDef[] | undefined {
+  return program.stateMap(StateKeys.rule).get(target);
+}
+
+export function hasEntity(
+  program: DecoratorContext["program"],
+  target: Model,
+): boolean {
+  return program.stateMap(StateKeys.entity).has(target);
+}
+
+export function hasField(
   program: DecoratorContext["program"],
   target: ModelProperty,
-):
-  | { resource: string; min?: number; max?: number }
-  | undefined {
-  return program.stateMap(StateKeys.nested).get(target);
+): boolean {
+  return program.stateMap(StateKeys.field).has(target);
 }
 
-// ============================================================
-// View-level action getters
-// ============================================================
-
-export function getViewActions(
+export function hasAnySpecloomMetadata(
   program: DecoratorContext["program"],
-  target: Model,
-): ViewActionDef[] | undefined {
-  return program.stateMap(StateKeys.viewActions).get(target);
+  target: ModelProperty,
+): boolean {
+  return (
+    hasField(program, target) ||
+    program.stateMap(StateKeys.filter).has(target) ||
+    program.stateMap(StateKeys.relation).has(target) ||
+    program.stateMap(StateKeys.nested).has(target) ||
+    program.stateMap(StateKeys.options).has(target) ||
+    program.stateMap(StateKeys.optionSource).has(target) ||
+    program.stateMap(StateKeys.visibleWhen).has(target) ||
+    program.stateMap(StateKeys.requiredWhen).has(target) ||
+    program.stateMap(StateKeys.readonlyWhen).has(target) ||
+    program.stateMap(StateKeys.disabledWhen).has(target) ||
+    program.stateMap(StateKeys.match).has(target) ||
+    isHidden(program, target) ||
+    isComputed(program, target) ||
+    isCreateOnly(program, target)
+  );
 }
 
-export function getViewRowActions(
-  program: DecoratorContext["program"],
-  target: Model,
-): ViewActionDef[] | undefined {
-  return program.stateMap(StateKeys.viewRowActions).get(target);
+export function getLabel(
+  _program: DecoratorContext["program"],
+  target: Type,
+): string | undefined {
+  if ("kind" in target && target.kind === "ModelProperty") {
+    return getField(_program, target)?.label;
+  }
+  if ("kind" in target && target.kind === "Model") {
+    return getEntity(_program, target)?.label;
+  }
+  return undefined;
 }
