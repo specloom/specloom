@@ -19,7 +19,7 @@ resource 全体と一覧/詳細/フォームの骨格を定義します。
   titleField: "name",
   pageSize: 50,
   defaultSort: #{ field: "name", direction: "asc" },
-  views: {
+  views: #{
     list: #{ enabled: true },
     form: #{ enabled: true },
     show: #{ enabled: true }
@@ -90,7 +90,7 @@ list 用の preset filter です。
 ```typespec
 @namedFilter("active", #{
   label: "Active",
-  where: {
+  where: #{
     field: "status",
     operator: "eq",
     value: "active"

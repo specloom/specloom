@@ -4,7 +4,7 @@ validation は TypeSpec built-in と specloom 独自 rule の組み合わせで�
 
 ## Field-Level Validation
 
-TypeSpec built-in を使います。
+TypeSpec built-in を使います。`@pattern` は alias ではなく正規表現文字列です。
 
 ```typespec
 @field(#{ label: "Age", form: true })
@@ -18,7 +18,7 @@ age?: int32;
 name: string;
 
 @field(#{ label: "Email", form: true })
-@pattern("email")
+@pattern("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")
 email?: string;
 ```
 

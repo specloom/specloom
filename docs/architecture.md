@@ -44,3 +44,12 @@ TypeSpec -> compiled spec JSON -> specloom -> state / validation / VM / UI metad
 - `Admin` facade や class-based VM helper は持たない
 - bundled UI library は持たない
 - backend 側でも validation / filter / action request helper を再利用できる
+
+## Guides
+
+- runtime:
+  [docs/runtime/README.md](/Volumes/SSD/projects/specloom/docs/runtime/README.md)
+- typespec:
+  [docs/typespec/README.md](/Volumes/SSD/projects/specloom/docs/typespec/README.md)
+- compiled spec:
+  [docs/spec/v1-compiled.md](/Volumes/SSD/projects/specloom/docs/spec/v1-compiled.md)

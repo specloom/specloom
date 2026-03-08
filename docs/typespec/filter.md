@@ -27,18 +27,18 @@ resource model に preset filter を定義します。
 ```typespec
 @namedFilter("mine", #{
   label: "Mine",
-  where: {
+  where: #{
     field: "authorId",
     operator: "eq",
-    value: { context: "user.id" }
+    value: #{ context: "user.id" }
   }
 })
 @namedFilter("recent", #{
   label: "Recent",
-  where: {
+  where: #{
     field: "createdAt",
     operator: "gte",
-    value: { relative: "-7d" }
+    value: #{ relative: "-7d" }
   }
 })
 model Post {}
@@ -49,10 +49,10 @@ model Post {}
 ```typespec
 @namedFilter("publishedNews", #{
   label: "Published News",
-  where: {
-    and: [
-      { field: "status", operator: "eq", value: "published" },
-      { field: "category", operator: "eq", value: "news" }
+  where: #{
+    and: #[
+      #{ field: "status", operator: "eq", value: "published" },
+      #{ field: "category", operator: "eq", value: "news" }
     ]
   }
 })

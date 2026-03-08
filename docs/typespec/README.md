@@ -19,6 +19,7 @@ TypeSpec 側の現行入口は [`packages/typespec/README.md`](/Volumes/SSD/proj
 
 - [Entity](/Volumes/SSD/projects/specloom/docs/typespec/entity.md)
 - [Field](/Volumes/SSD/projects/specloom/docs/typespec/field.md)
+- [Input](/Volumes/SSD/projects/specloom/docs/typespec/input.md)
 - [Relation](/Volumes/SSD/projects/specloom/docs/typespec/relation.md)
 - [Validation](/Volumes/SSD/projects/specloom/docs/typespec/validation.md)
 - [Action](/Volumes/SSD/projects/specloom/docs/typespec/action.md)
