@@ -1,17 +1,17 @@
 import { Router } from "@solidjs/router";
 import { FileRoutes } from "@solidjs/start/router";
 import { Suspense } from "solid-js";
-import Nav from "~/components/Nav";
+import { AdminLayout } from "~/components/AdminLayout";
+import "@fontsource/inter";
 import "./app.css";
 
 export default function App() {
   return (
     <Router
-      root={props => (
-        <>
-          <Nav />
+      root={(props) => (
+        <AdminLayout>
           <Suspense>{props.children}</Suspense>
-        </>
+        </AdminLayout>
       )}
     >
       <FileRoutes />
