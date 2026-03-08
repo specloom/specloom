@@ -1,0 +1,43 @@
+{
+  "name": "@specloom/solidjs",
+  "version": "1.0.0",
+  "description": "SolidJS bindings for the specloom spec runtime",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "keywords": [
+    "specloom",
+    "solidjs",
+    "admin",
+    "runtime"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@specloom/auth-provider": "workspace:*",
+    "@specloom/data-provider": "workspace:*",
+    "@specloom/spec": "workspace:*",
+    "specloom": "workspace:*"
+  },
+  "peerDependencies": {
+    "solid-js": "^1.9.0"
+  },
+  "devDependencies": {
+    "solid-js": "^1.9.5",
+    "typescript": "^5.7.0"
+  }
+}

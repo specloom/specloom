@@ -1,6 +1,6 @@
 ---
 name: specloom-spec
-description: Use this skill when creating or modifying admin UI specifications with @specloom/typespec. Covers the current v1 DSL, decorator surface, runtime connections, and safe authoring patterns.
+description: Use this skill when creating or modifying admin UI specifications with @specloom/typespec. Covers the current v1 DSL, decorator surface, runtime connections, and safe authoring patterns. @specloom/typespec で管理画面 UI spec を新規作成・更新するときに使う。
 ---
 
 # specloom Spec Writing Skill

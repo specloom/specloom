@@ -27,7 +27,12 @@
     "solid-sonner": "^0.3.1",
     "tailwind-merge": "^3.5.0",
     "tailwindcss-animate": "^1.0.7",
-    "vite": "^7.0.0"
+    "vite": "^7.0.0",
+    "specloom": "link:../../packages/specloom",
+    "@specloom/spec": "link:../../packages/spec",
+    "@specloom/solidjs": "link:../../packages/solidjs",
+    "@specloom/auth-provider": "link:../../packages/auth-provider",
+    "@specloom/data-provider": "link:../../packages/data-provider"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.0.7",

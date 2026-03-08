@@ -1,6 +1,8 @@
-import { useLocation } from "@solidjs/router"
+import { A, useLocation } from "@solidjs/router"
 import { For } from "solid-js"
 
+import { useSpecloom } from "@specloom/solidjs"
+import { specCategories } from "~/admin/runtime"
 import {
   Sidebar,
   SidebarContent,
@@ -15,31 +17,48 @@ import {
   SidebarRail,
 } from "~/components/ui/sidebar"
 
-const mainNavItems = [
-  { title: "Dashboard", href: "/", icon: LayoutDashboardIcon },
-  { title: "Users", href: "/users", icon: UsersIcon },
-  { title: "Settings", href: "/settings", icon: SettingsIcon },
-]
+// Deduplicate shared resources (Department, Tag, Member etc.) across categories
+function buildNavGroups() {
+  const seen = new Set<string>()
+  const groups: Array<{ category: string; resources: string[] }> = []
+
+  // Dashboard first
+  groups.push({ category: "Dashboard", resources: [] })
+
+  for (const [category, resources] of Object.entries(specCategories)) {
+    const unique = resources.filter((r) => !seen.has(r))
+    unique.forEach((r) => seen.add(r))
+    if (unique.length > 0) {
+      groups.push({ category, resources: unique })
+    }
+  }
+
+  return groups
+}
+
+const navGroups = buildNavGroups()
 
 export function AppSidebar() {
   const location = useLocation()
+  const client = useSpecloom()
+
+  const resourceLabel = (name: string) => {
+    const meta = client.spec.resources[name]?.meta
+    return meta?.pluralLabel ?? meta?.label ?? name
+  }
 
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" as="a" href="/">
+            <SidebarMenuButton size="lg" as={A} href="/">
               <div class="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-4">
-                  <rect width="18" height="18" x="3" y="3" rx="2" />
-                  <path d="M3 9h18" />
-                  <path d="M9 21V9" />
-                </svg>
+                <SpecloomIcon />
               </div>
               <div class="grid flex-1 text-left text-sm leading-tight">
                 <span class="truncate font-semibold">Specloom</span>
-                <span class="truncate text-xs text-muted-foreground">Admin</span>
+                <span class="truncate text-xs text-muted-foreground">Spec Catalog</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -47,28 +66,49 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <For each={mainNavItems}>
-                {(item) => (
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      as="a"
-                      href={item.href}
-                      isActive={location.pathname === item.href}
-                      tooltip={item.title}
-                    >
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )}
-              </For>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <For each={navGroups}>
+          {(group) => (
+            <SidebarGroup>
+              <SidebarGroupLabel>{group.category}</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {group.category === "Dashboard" ? (
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        as={A}
+                        href="/"
+                        isActive={location.pathname === "/"}
+                        tooltip="Dashboard"
+                      >
+                        <LayoutDashboardIcon />
+                        <span>Dashboard</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ) : (
+                    <For each={group.resources}>
+                      {(resource) => {
+                        const href = `/resources/${resource}`
+                        return (
+                          <SidebarMenuItem>
+                            <SidebarMenuButton
+                              as={A}
+                              href={href}
+                              isActive={location.pathname.startsWith(href)}
+                              tooltip={resourceLabel(resource)}
+                            >
+                              <ResourceIcon />
+                              <span>{resourceLabel(resource)}</span>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        )
+                      }}
+                    </For>
+                  )}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )}
+        </For>
       </SidebarContent>
 
       <SidebarFooter>
@@ -89,7 +129,16 @@ export function AppSidebar() {
   )
 }
 
-// Inline SVG icon components
+function SpecloomIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-4">
+      <rect width="18" height="18" x="3" y="3" rx="2" />
+      <path d="M3 9h18" />
+      <path d="M9 21V9" />
+    </svg>
+  )
+}
+
 function LayoutDashboardIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
@@ -101,22 +150,14 @@ function LayoutDashboardIcon() {
   )
 }
 
-function UsersIcon() {
+function ResourceIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  )
-}
-
-function SettingsIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
-      <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-      <circle cx="12" cy="12" r="3" />
+      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" x2="8" y1="13" y2="13" />
+      <line x1="16" x2="8" y1="17" y2="17" />
+      <line x1="10" x2="8" y1="9" y2="9" />
     </svg>
   )
 }
