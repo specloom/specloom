@@ -143,3 +143,16 @@ pnpm build
 pnpm test
 pnpm typecheck
 ```
+
+## Examples
+
+examples は workspace に入れず、独立したサンプルとして管理しています。
+
+SolidJS example はルートから次で実行できます。
+
+```bash
+pnpm example:solidjs:install
+pnpm example:solidjs:dev
+```
+
+直接 example 配下で実行しても構いません。

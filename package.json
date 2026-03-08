@@ -7,7 +7,10 @@
     "dev": "turbo dev",
     "test": "turbo test",
     "lint": "turbo lint",
-    "typecheck": "turbo typecheck"
+    "typecheck": "turbo typecheck",
+    "example:solidjs:install": "pnpm --dir examples/solid-project install",
+    "example:solidjs:dev": "pnpm --dir examples/solid-project dev",
+    "example:solidjs:build": "pnpm --dir examples/solid-project build"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "4.0.17",
