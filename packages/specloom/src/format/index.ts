@@ -18,7 +18,7 @@ export function formatTemplate(
 }
 
 export function formatValue(
-  field: Pick<CompiledField, "type" | "ui" | "relation">,
+  field: Pick<CompiledField, "type" | "ui" | "relation" | "options">,
   value: unknown,
   options: FormatValueOptions = {},
 ): string {
@@ -31,6 +31,13 @@ export function formatValue(
       .map((item) => formatValue(field, item, options))
       .filter(Boolean)
       .join(", ");
+  }
+
+  if (field.options && field.options.length > 0) {
+    const matched = field.options.find((o) => o.value === value);
+    if (matched) {
+      return matched.label;
+    }
   }
 
   if (field.relation && typeof value === "object" && value !== null) {

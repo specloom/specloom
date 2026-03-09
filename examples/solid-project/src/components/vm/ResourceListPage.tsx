@@ -1,7 +1,7 @@
 import type { CompiledResource } from "@specloom/spec";
 import { A } from "@solidjs/router";
 import { type SolidListStore, useI18n } from "@specloom/solidjs";
-import { For, Show } from "solid-js";
+import { createSignal, For, Show } from "solid-js";
 import { formatColumnValue, type ListColumnVM } from "specloom";
 import {
   Table,
@@ -22,6 +22,7 @@ export function ResourceListPage(props: {
   const store = props.store;
   const vm = () => store.view();
   const { t } = useI18n();
+  const [searchQuery, setSearchQuery] = createSignal(vm().search.query);
 
   return (
     <div>
@@ -42,12 +43,16 @@ export function ResourceListPage(props: {
           {/* Search */}
           <Show when={vm().search.fields.length > 0}>
             <div class="mb-4 max-w-sm">
-              <TextField
-                value={vm().search.query}
-                onChange={(v: string) => store.setSearch(v)}
-              >
-                <TextFieldInput placeholder={t("list.searchPlaceholder")} />
-              </TextField>
+              <input
+                value={searchQuery()}
+                onInput={(e) => {
+                  const v = e.currentTarget.value;
+                  setSearchQuery(v);
+                  store.setSearch(v);
+                }}
+                placeholder={t("list.searchPlaceholder")}
+                class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              />
             </div>
           </Show>
 

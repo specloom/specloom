@@ -9,24 +9,58 @@ using Specloom;
   defaultSort: #{ field: "id", direction: "desc" }
 })
 @index(#{
-  columns: #["id", "title", "done", "createdAt"],
-  searchable: #["title"],
-  sortable: #["title", "createdAt"],
+  columns: #["id", "title", "priority", "done", "dueDate", "createdAt"],
+  searchable: #["title", "description"],
+  sortable: #["id", "title", "priority", "dueDate", "createdAt"],
   clickAction: "show"
 })
-@section("main", #{ label: "Task", view: "form", order: 10 })
+@section("main", #{ label: "基本情報", view: "form", order: 10 })
+@section("detail", #{ label: "詳細", view: "form", order: 20 })
 model Task {
   @key
   @field(#{ label: "ID", list: true, show: true, form: false, readonly: true })
   id: string;
 
-  @field(#{ label: "Title", list: true, show: true, form: true, section: "main", order: 10 })
+  @field(#{ label: "タイトル", list: true, show: true, form: true, section: "main", order: 10 })
   @minLength(1)
+  @maxLength(200)
   title: string;
 
-  @field(#{ label: "Done", list: true, show: true, form: true, section: "main", order: 20, widget: "switch" })
+  @field(#{ label: "説明", list: false, show: true, form: true, section: "detail", order: 10, widget: "textarea" })
+  @maxLength(2000)
+  description?: string;
+
+  @field(#{ label: "優先度", list: true, show: true, form: true, section: "main", order: 20, widget: "select" })
+  @options(#[
+    #{ value: "low", label: "低" },
+    #{ value: "medium", label: "中" },
+    #{ value: "high", label: "高" }
+  ])
+  priority: string;
+
+  @field(#{ label: "完了", list: true, show: true, form: true, section: "main", order: 30, widget: "switch" })
   done: boolean;
 
-  @field(#{ label: "Created At", list: true, show: true, form: false, readonly: true, order: 30, format: "relative" })
+  @field(#{ label: "見積り時間 (h)", list: false, show: true, form: true, section: "detail", order: 20, widget: "number-input" })
+  @minValue(0)
+  @maxValue(999)
+  estimatedHours?: float32;
+
+  @field(#{ label: "期限日", list: true, show: true, form: true, section: "main", order: 40, widget: "date" })
+  dueDate?: plainDate;
+
+  @field(#{ label: "タグ", list: false, show: true, form: true, section: "detail", order: 30 })
+  @minItems(0)
+  @maxItems(10)
+  tags: string[];
+
+  @field(#{ label: "メモ", list: false, show: false, form: true, section: "detail", order: 40, widget: "textarea" })
+  @pattern("^[^<>]*$")
+  memo?: string;
+
+  @field(#{ label: "作成日時", list: true, show: true, form: false, readonly: true, order: 90, format: "relative" })
   createdAt: utcDateTime;
+
+  @field(#{ label: "更新日時", list: false, show: true, form: false, readonly: true, order: 91, format: "relative" })
+  updatedAt: utcDateTime;
 }

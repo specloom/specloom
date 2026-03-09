@@ -55,4 +55,23 @@ describe("format helpers", () => {
       ),
     ).toBe("￥1,200");
   });
+
+  it("resolves option labels for select fields", () => {
+    const field: CompiledField = {
+      name: "priority",
+      type: { kind: "scalar", name: "string", nullable: false, array: false },
+      ui: { label: "Priority", widget: "select", visibleIn: { list: true, show: true, form: true } },
+      options: [
+        { value: "low", label: "低" },
+        { value: "medium", label: "中" },
+        { value: "high", label: "高" },
+      ],
+      submit: { field: "priority", shape: "self" },
+    };
+
+    expect(formatValue(field, "low")).toBe("低");
+    expect(formatValue(field, "medium")).toBe("中");
+    expect(formatValue(field, "high")).toBe("高");
+    expect(formatValue(field, "unknown")).toBe("unknown");
+  });
 });

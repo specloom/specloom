@@ -1,7 +1,7 @@
 import { useParams, useSearchParams } from "@solidjs/router";
 import { useSpecloom, useDataProvider } from "@specloom/solidjs";
 import { createListStore, type SolidListStore } from "@specloom/solidjs";
-import { createResource, createMemo, Show } from "solid-js";
+import { createResource, createEffect, on, Show } from "solid-js";
 import { ResourceListPage } from "~/components/vm/ResourceListPage";
 
 export default function ResourceList() {
@@ -55,25 +55,48 @@ export default function ResourceList() {
       ),
   );
 
-  const store = createMemo(() => {
+  // Store is created once per resource, wrapped once with URL sync
+  let wrappedStore: SolidListStore | undefined;
+  let currentResource: string | undefined;
+
+  const getStore = () => {
     const r = resource();
     if (!r) return undefined;
-    const base = createListStore({
-      resource: r,
-      runtime,
-      data: data()?.data ?? [],
-      sort: searchParams.sort
-        ? { field: sortField(), direction: sortOrder() }
-        : undefined,
-      searchQuery: String(searchParams.q || ""),
-      activeFilter: searchParams.nf ? String(searchParams.nf) : null,
-    });
-    return urlSyncedStore(base, setSearchParams);
-  });
+
+    if (!wrappedStore || currentResource !== r.name) {
+      currentResource = r.name;
+      const base = createListStore({
+        resource: r,
+        runtime,
+        data: data()?.data ?? [],
+        sort: searchParams.sort
+          ? { field: sortField(), direction: sortOrder() }
+          : undefined,
+        searchQuery: String(searchParams.q || ""),
+        activeFilter: searchParams.nf ? String(searchParams.nf) : null,
+      });
+      wrappedStore = urlSyncedStore(base, setSearchParams);
+    }
+
+    return wrappedStore;
+  };
+
+  // Sync data from server into store
+  createEffect(
+    on(
+      () => data()?.data,
+      (records) => {
+        if (records && wrappedStore) {
+          wrappedStore.setData(records);
+        }
+      },
+      { defer: true },
+    ),
+  );
 
   return (
     <Show
-      when={!resource.loading && !data.loading && store() && resource()}
+      when={!resource.loading && !data.loading && getStore() && resource()}
       fallback={
         <div class="text-sm text-muted-foreground">
           {resource.error ?? data.error
@@ -82,7 +105,10 @@ export default function ResourceList() {
         </div>
       }
     >
-      <ResourceListPage store={store()!} resource={resource()!} />
+      <ResourceListPage
+        store={getStore()!}
+        resource={resource()!}
+      />
     </Show>
   );
 }
@@ -93,15 +119,23 @@ function urlSyncedStore(
   base: SolidListStore,
   setSearchParams: SetSearchParams,
 ): SolidListStore {
+  let searchDebounce: ReturnType<typeof setTimeout> | undefined;
+
   return {
     ...base,
     setSort(field, direction) {
+      base.setSort(field, direction);
       setSearchParams({ sort: field, order: direction });
     },
     setSearch(query) {
-      setSearchParams({ q: query || undefined });
+      base.setSearch(query);
+      clearTimeout(searchDebounce);
+      searchDebounce = setTimeout(() => {
+        setSearchParams({ q: query || undefined });
+      }, 300);
     },
     setNamedFilter(id) {
+      base.setNamedFilter(id);
       setSearchParams({ nf: id || undefined });
     },
   };
