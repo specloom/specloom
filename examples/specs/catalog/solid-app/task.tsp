@@ -47,6 +47,7 @@ model Task {
   id: string;
 
   @field(#{ label: "タイトル", list: true, show: true, form: true, section: "main", order: 10 })
+  @filter(#["contains"])
   @minLength(1)
   @maxLength(200)
   title: string;
@@ -56,6 +57,7 @@ model Task {
   description?: string;
 
   @field(#{ label: "優先度", list: true, show: true, form: true, section: "main", order: 20, widget: "select" })
+  @filter(#{ operators: #["eq"], widget: "select" })
   @options(#[
     #{ value: "low", label: "低" },
     #{ value: "medium", label: "中" },
@@ -64,6 +66,7 @@ model Task {
   priority: string;
 
   @field(#{ label: "完了", list: true, show: true, form: true, section: "main", order: 30, widget: "switch" })
+  @filter(#["eq"])
   done: boolean;
 
   @field(#{ label: "見積り時間 (h)", list: false, show: true, form: true, section: "detail", order: 20, widget: "number-input" })
@@ -72,6 +75,7 @@ model Task {
   estimatedHours?: float32;
 
   @field(#{ label: "期限日", list: true, show: true, form: true, section: "main", order: 40, widget: "date" })
+  @filter(#["gte", "lte"])
   dueDate?: plainDate;
 
   @field(#{ label: "タグ", list: false, show: true, form: true, section: "detail", order: 30 })
@@ -84,6 +88,7 @@ model Task {
   memo?: string;
 
   @field(#{ label: "作成日時", list: true, show: true, form: false, readonly: true, order: 90, format: "datetime" })
+  @filter(#["gte", "lte"])
   createdAt: utcDateTime;
 
   @field(#{ label: "更新日時", list: false, show: true, form: false, readonly: true, order: 91, format: "relative" })
