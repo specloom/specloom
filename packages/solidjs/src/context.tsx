@@ -5,40 +5,32 @@ import {
   type JSX,
   type ParentProps,
 } from "solid-js";
-import type { SpecloomClient } from "./client.js";
+import type { SpecloomRuntime } from "./client.js";
 
-const SpecloomContext = createContext<SpecloomClient | undefined>(undefined);
+const SpecloomContext = createContext<SpecloomRuntime | undefined>(undefined);
 
 export interface SpecloomProviderProps<
   TTenant extends TenantType = TenantType,
 > extends ParentProps {
-  client: SpecloomClient<TTenant>;
+  runtime: SpecloomRuntime<TTenant>;
 }
 
 export function SpecloomProvider<TTenant extends TenantType = TenantType>(
   props: SpecloomProviderProps<TTenant>,
 ): JSX.Element {
   return (
-    <SpecloomContext.Provider value={props.client}>
+    <SpecloomContext.Provider value={props.runtime}>
       {props.children}
     </SpecloomContext.Provider>
   );
 }
 
-export function useSpecloom<TTenant extends TenantType = TenantType>(): SpecloomClient<TTenant> {
-  const client = useContext(SpecloomContext);
-  if (!client) {
+export function useSpecloom<TTenant extends TenantType = TenantType>(): SpecloomRuntime<TTenant> {
+  const runtime = useContext(SpecloomContext);
+  if (!runtime) {
     throw new Error("useSpecloom must be used within SpecloomProvider");
   }
-  return client as SpecloomClient<TTenant>;
-}
-
-export function useSpec() {
-  return useSpecloom().spec;
-}
-
-export function useOptionsResolver() {
-  return useSpecloom().optionsResolver;
+  return runtime as SpecloomRuntime<TTenant>;
 }
 
 export function useAuthProvider<TTenant extends TenantType = TenantType>() {

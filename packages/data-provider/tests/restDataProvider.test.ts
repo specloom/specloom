@@ -17,7 +17,12 @@ describe("createRestDataProvider", () => {
     const http = createHttpStub();
     vi.mocked(http.get).mockResolvedValue({
       data: [{ id: 1, display_name: "Alice" }],
-      total: 1,
+      pagination: {
+        page: 2,
+        per_page: 25,
+        total: 1,
+        total_pages: 1,
+      },
     });
 
     const provider = createRestDataProvider(http, {
@@ -49,8 +54,28 @@ describe("createRestDataProvider", () => {
     );
     expect(result).toEqual({
       data: [{ id: 1, name: "Alice" }],
+      page: 2,
+      perPage: 25,
       total: 1,
     });
+  });
+
+  it("throws when list pagination metadata is missing", async () => {
+    const http = createHttpStub();
+    vi.mocked(http.get).mockResolvedValue({
+      data: [{ id: 1, name: "Alice" }],
+      total: 1,
+    });
+
+    const provider = createRestDataProvider(http);
+
+    await expect(
+      provider.getList("users", {
+        pagination: { page: 1, perPage: 20 },
+        sort: { field: "id", order: "asc" },
+        filter: {},
+      }),
+    ).rejects.toThrow("List response is missing pagination.page");
   });
 
   it("executes custom actions with request and response transforms", async () => {

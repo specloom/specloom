@@ -1,4 +1,3 @@
-import type { CompiledSpec } from "@specloom/spec";
 import {
   createFormState,
   createInputState,
@@ -13,7 +12,7 @@ import {
   type ValidationResult,
 } from "specloom";
 import { createMemo, createSignal, type Accessor } from "solid-js";
-import type { SpecloomClient } from "./client.js";
+import type { SpecloomRuntime } from "./client.js";
 import { useSpecloom } from "./context.js";
 
 export interface SolidFormStore {
@@ -32,26 +31,24 @@ export interface SolidFormStore {
 }
 
 export interface CreateSolidFormStoreArgs
-  extends Omit<CreateFormStateArgs, "spec" | "context"> {
-  client?: SpecloomClient;
-  spec?: CompiledSpec;
+  extends Omit<CreateFormStateArgs, "context"> {
+  runtime?: SpecloomRuntime;
   context?: Context;
 }
 
 export interface CreateSolidInputStoreArgs
-  extends Omit<CreateInputStateArgs, "spec" | "context"> {
-  client?: SpecloomClient;
-  spec?: CompiledSpec;
+  extends Omit<CreateInputStateArgs, "context"> {
+  runtime?: SpecloomRuntime;
   context?: Context;
 }
 
 export function createFormStore(args: CreateSolidFormStoreArgs): SolidFormStore {
   return createSolidFormStore(
     createFormState({
-      spec: resolveSpec(args),
+      spec: args.spec,
       resource: args.resource,
       mode: args.mode,
-      context: resolveContext(args.client, args.context),
+      context: resolveContext(args.runtime, args.context),
       values: args.values,
       errors: args.errors,
     }),
@@ -59,11 +56,11 @@ export function createFormStore(args: CreateSolidFormStoreArgs): SolidFormStore 
 }
 
 export function useFormStore(
-  args: Omit<CreateSolidFormStoreArgs, "client">,
+  args: Omit<CreateSolidFormStoreArgs, "runtime">,
 ): SolidFormStore {
   return createFormStore({
     ...args,
-    client: useSpecloom(),
+    runtime: useSpecloom(),
   });
 }
 
@@ -72,9 +69,9 @@ export function createInputStore(
 ): SolidFormStore {
   return createSolidFormStore(
     createInputState({
-      spec: resolveSpec(args),
+      spec: args.spec,
       input: args.input,
-      context: resolveContext(args.client, args.context),
+      context: resolveContext(args.runtime, args.context),
       values: args.values,
       errors: args.errors,
     }),
@@ -82,11 +79,11 @@ export function createInputStore(
 }
 
 export function useInputStore(
-  args: Omit<CreateSolidInputStoreArgs, "client">,
+  args: Omit<CreateSolidInputStoreArgs, "runtime">,
 ): SolidFormStore {
   return createInputStore({
     ...args,
-    client: useSpecloom(),
+    runtime: useSpecloom(),
   });
 }
 
@@ -135,22 +132,9 @@ function createSolidFormStore(initialState: FormState): SolidFormStore {
   };
 }
 
-function resolveSpec(args: {
-  client?: SpecloomClient;
-  spec?: CompiledSpec;
-}): CompiledSpec {
-  if (args.spec) {
-    return args.spec;
-  }
-  if (args.client) {
-    return args.client.spec;
-  }
-  throw new Error("spec or client is required");
-}
-
-function resolveContext(client?: SpecloomClient, context?: Context): Context {
-  if (!client) {
+function resolveContext(runtime?: SpecloomRuntime, context?: Context): Context {
+  if (!runtime) {
     return context ?? {};
   }
-  return client.resolveContext(context);
+  return runtime.resolveContext(context);
 }

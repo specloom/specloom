@@ -21,26 +21,26 @@ export interface CreateDataProviderOptionsFetcherArgs {
   mapParams?: (args: OptionsFetchArgs) => ListParams;
 }
 
-export interface CreateSpecloomClientArgs<
+export interface CreateSpecloomRuntimeArgs<
   TTenant extends TenantType = TenantType,
 > {
-  spec: CompiledSpec | unknown;
   authProvider?: AuthProvider<TTenant>;
   dataProvider?: DataProvider;
   context?: Context;
-  optionsFetcher?: OptionsFetcher;
 }
 
-export interface SpecloomClient<TTenant extends TenantType = TenantType> {
-  spec: CompiledSpec;
+export interface CreateSpecloomOptionsResolverArgs {
+  spec: CompiledSpec | unknown;
+  dataProvider?: DataProvider;
+  optionsFetcher?: OptionsFetcher;
+  mapParams?: (args: OptionsFetchArgs) => ListParams;
+}
+
+export interface SpecloomRuntime<TTenant extends TenantType = TenantType> {
   authProvider?: AuthProvider<TTenant>;
   dataProvider?: DataProvider;
   context: Context;
-  optionsResolver: OptionsResolver;
   resolveContext(context?: Context): Context;
-  resolveOptions(
-    args: Omit<ResolveOptionsArgs, "context"> & { context?: Context },
-  ): Promise<ResolvedOptions>;
 }
 
 export function createDataProviderOptionsFetcher(
@@ -55,38 +55,47 @@ export function createDataProviderOptionsFetcher(
   };
 }
 
-export function createSpecloomClient<
-  TTenant extends TenantType = TenantType,
->(args: CreateSpecloomClientArgs<TTenant>): SpecloomClient<TTenant> {
+export function createSpecloomOptionsResolver(
+  args: CreateSpecloomOptionsResolverArgs,
+): OptionsResolver {
   const spec = validateSpec(args.spec);
-  const baseContext = cloneContext(args.context);
-  const optionsFetcher =
+  const fetcher =
     args.optionsFetcher ??
     (args.dataProvider
       ? createDataProviderOptionsFetcher({
           dataProvider: args.dataProvider,
+          mapParams: args.mapParams,
         })
       : undefined);
-  const optionsResolver = createOptionsResolver({
+
+  return createOptionsResolver({
     spec,
-    fetcher: optionsFetcher,
+    fetcher,
   });
+}
+
+export async function resolveSpecloomOptions(
+  args: CreateSpecloomOptionsResolverArgs &
+    Omit<ResolveOptionsArgs, "context"> & { context?: Context },
+): Promise<ResolvedOptions> {
+  return createSpecloomOptionsResolver(args).resolve({
+    field: args.field,
+    context: args.context,
+    query: args.query,
+  });
+}
+
+export function createSpecloomRuntime<
+  TTenant extends TenantType = TenantType,
+>(args: CreateSpecloomRuntimeArgs<TTenant>): SpecloomRuntime<TTenant> {
+  const baseContext = cloneContext(args.context);
 
   return {
-    spec,
     authProvider: args.authProvider,
     dataProvider: args.dataProvider,
     context: baseContext,
-    optionsResolver,
     resolveContext(context) {
       return mergeContext(baseContext, context);
-    },
-    resolveOptions({ field, context, query }) {
-      return optionsResolver.resolve({
-        field,
-        context: mergeContext(baseContext, context),
-        query,
-      });
     },
   };
 }

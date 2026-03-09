@@ -1,4 +1,3 @@
-import type { CompiledSpec } from "@specloom/spec";
 import {
   createListState,
   type Context,
@@ -8,7 +7,7 @@ import {
   type ListViewModel,
 } from "specloom";
 import { createMemo, createSignal, type Accessor } from "solid-js";
-import type { SpecloomClient } from "./client.js";
+import type { SpecloomRuntime } from "./client.js";
 import { useSpecloom } from "./context.js";
 
 export interface SolidListStore {
@@ -25,18 +24,17 @@ export interface SolidListStore {
 }
 
 export interface CreateSolidListStoreArgs
-  extends Omit<CreateListStateArgs, "spec" | "context"> {
-  client?: SpecloomClient;
-  spec?: CompiledSpec;
+  extends Omit<CreateListStateArgs, "context"> {
+  runtime?: SpecloomRuntime;
   context?: Context;
 }
 
 export function createListStore(args: CreateSolidListStoreArgs): SolidListStore {
   const [state, setState] = createSignal(
     createListState({
-      spec: resolveSpec(args),
+      spec: args.spec,
       resource: args.resource,
-      context: resolveContext(args.client, args.context),
+      context: resolveContext(args.runtime, args.context),
       data: args.data,
       searchQuery: args.searchQuery,
       activeFilter: args.activeFilter,
@@ -80,30 +78,17 @@ export function createListStore(args: CreateSolidListStoreArgs): SolidListStore 
 }
 
 export function useListStore(
-  args: Omit<CreateSolidListStoreArgs, "client">,
+  args: Omit<CreateSolidListStoreArgs, "runtime">,
 ): SolidListStore {
   return createListStore({
     ...args,
-    client: useSpecloom(),
+    runtime: useSpecloom(),
   });
 }
 
-function resolveSpec(args: {
-  client?: SpecloomClient;
-  spec?: CompiledSpec;
-}): CompiledSpec {
-  if (args.spec) {
-    return args.spec;
-  }
-  if (args.client) {
-    return args.client.spec;
-  }
-  throw new Error("spec or client is required");
-}
-
-function resolveContext(client?: SpecloomClient, context?: Context): Context {
-  if (!client) {
+function resolveContext(runtime?: SpecloomRuntime, context?: Context): Context {
+  if (!runtime) {
     return context ?? {};
   }
-  return client.resolveContext(context);
+  return runtime.resolveContext(context);
 }

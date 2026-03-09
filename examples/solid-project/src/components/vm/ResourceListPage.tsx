@@ -1,8 +1,9 @@
-import { A } from "@solidjs/router"
-import { createMemo, For, Show } from "solid-js"
-import { useSpecloom, createListStore, type SolidListStore } from "@specloom/solidjs"
-import { formatColumnValue, type ListColumnVM } from "specloom"
-import { generateMockData } from "~/admin/mock-data"
+import type { ListResult } from "@specloom/data-provider";
+import type { CompiledSpec } from "@specloom/spec";
+import { A } from "@solidjs/router";
+import { createListStore, type SolidListStore } from "@specloom/solidjs";
+import { createMemo, For, Show } from "solid-js";
+import { formatColumnValue, type Context, type ListColumnVM } from "specloom";
 import {
   Table,
   TableBody,
@@ -10,180 +11,209 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "~/components/ui/table"
-import { TextField, TextFieldInput } from "~/components/ui/text-field"
-import { Button } from "~/components/ui/button"
-import { presentTextValue } from "~/components/vm/SpecValue"
+} from "~/components/ui/table";
+import { TextField, TextFieldInput } from "~/components/ui/text-field";
+import { Button } from "~/components/ui/button";
+import { presentTextValue } from "~/components/vm/SpecValue";
 
-export function ResourceListPage(props: { resource: string }) {
-  const client = useSpecloom()
-  const spec = client.spec
-
-  const resource = createMemo(() => spec.resources[props.resource])
-  const mockData = createMemo(() => generateMockData(spec, props.resource))
-
-  if (!resource()) {
-    return <div class="text-sm text-muted-foreground">Unknown resource: {props.resource}</div>
-  }
+export function ResourceListPage(props: {
+  spec: CompiledSpec;
+  context?: Context;
+  resource: string;
+  data: ListResult<Record<string, unknown>>;
+}) {
+  const resource = createMemo(() => props.spec.resources[props.resource]);
 
   // Store is recreated when resource changes
   const store = createMemo<SolidListStore>(() =>
-    createListStore({ client, resource: props.resource, data: mockData() }),
-  )
+    createListStore({
+      spec: props.spec,
+      context: props.context,
+      resource: props.resource,
+      data: props.data.data,
+    }),
+  );
 
-  const vm = createMemo(() => store().view())
+  const vm = createMemo(() => store().view());
 
   return (
-    <div>
-      <div class="flex items-center justify-between mb-6">
+    <Show
+      when={resource()}
+      fallback={
+        <div class="text-sm text-muted-foreground">
+          Unknown resource: {props.resource}
+        </div>
+      }
+    >
+      {(resolvedResource) => (
         <div>
-          <h1 class="text-2xl font-bold">
-            {resource().meta.pluralLabel ?? resource().meta.label}
-          </h1>
-          <p class="text-sm text-muted-foreground mt-1">
-            {mockData().length} records
-          </p>
-        </div>
-        <A href={`/resources/${props.resource}/new`}>
-          <Button>New {resource().meta.label}</Button>
-        </A>
-      </div>
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h1 class="text-2xl font-bold">
+                {resolvedResource().meta.pluralLabel ??
+                  resolvedResource().meta.label}
+              </h1>
+              <p class="text-sm text-muted-foreground mt-1">
+                {props.data.total} records
+              </p>
+            </div>
+            <A href={`/resources/${props.resource}/new`}>
+              <Button>New {resolvedResource().meta.label}</Button>
+            </A>
+          </div>
 
-      {/* Search */}
-      <Show when={vm().search.fields.length > 0}>
-        <div class="mb-4 max-w-sm">
-          <TextField
-            value={vm().search.query}
-            onChange={(v: string) => store().setSearch(v)}
-          >
-            <TextFieldInput placeholder="Search..." />
-          </TextField>
-        </div>
-      </Show>
-
-      {/* Named Filters */}
-      <Show when={vm().namedFilters.length > 0}>
-        <div class="mb-4 flex gap-2">
-          <Button
-            variant={vm().namedFilters.every((f) => !f.active) ? "default" : "outline"}
-            size="sm"
-            onClick={() => store().setNamedFilter(null)}
-          >
-            All
-          </Button>
-          <For each={vm().namedFilters}>
-            {(filter) => (
-              <Button
-                variant={filter.active ? "default" : "outline"}
-                size="sm"
-                onClick={() => store().setNamedFilter(filter.active ? null : filter.id)}
+          {/* Search */}
+          <Show when={vm().search.fields.length > 0}>
+            <div class="mb-4 max-w-sm">
+              <TextField
+                value={vm().search.query}
+                onChange={(v: string) => store().setSearch(v)}
               >
-                {filter.label}
-              </Button>
-            )}
-          </For>
-        </div>
-      </Show>
+                <TextFieldInput placeholder="Search..." />
+              </TextField>
+            </div>
+          </Show>
 
-      {/* Table */}
-      <div class="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <For each={vm().columns}>
-                {(col) => (
-                  <TableHead
-                    class={col.sortable ? "cursor-pointer select-none" : ""}
-                    onClick={() => {
-                      if (!col.sortable) return
-                      const current = vm().currentSort
-                      const dir =
-                        current?.field === col.field && current.direction === "asc"
-                          ? "desc"
-                          : "asc"
-                      store().setSort(col.field, dir)
-                    }}
+          {/* Named Filters */}
+          <Show when={vm().namedFilters.length > 0}>
+            <div class="mb-4 flex gap-2">
+              <Button
+                variant={
+                  vm().namedFilters.every((f) => !f.active)
+                    ? "default"
+                    : "outline"
+                }
+                size="sm"
+                onClick={() => store().setNamedFilter(null)}
+              >
+                All
+              </Button>
+              <For each={vm().namedFilters}>
+                {(filter) => (
+                  <Button
+                    variant={filter.active ? "default" : "outline"}
+                    size="sm"
+                    onClick={() =>
+                      store().setNamedFilter(filter.active ? null : filter.id)
+                    }
                   >
-                    <span class="flex items-center gap-1">
-                      {col.label}
-                      <Show when={vm().currentSort?.field === col.field}>
-                        <span class="text-xs">
-                          {vm().currentSort?.direction === "asc" ? "↑" : "↓"}
-                        </span>
-                      </Show>
-                    </span>
-                  </TableHead>
+                    {filter.label}
+                  </Button>
                 )}
               </For>
-              <Show when={vm().clickAction !== "none"}>
-                <TableHead class="w-16">Open</TableHead>
-              </Show>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <For each={vm().rows}>
-              {(row) => (
-                <TableRow
-                  class={
-                    vm().selection.selected.includes(row.id)
-                      ? "bg-muted/50"
-                      : ""
-                  }
-                >
+            </div>
+          </Show>
+
+          {/* Table */}
+          <div class="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
                   <For each={vm().columns}>
                     {(col) => (
-                      <TableCell>{renderColumnCell(col, row.record)}</TableCell>
+                      <TableHead
+                        class={col.sortable ? "cursor-pointer select-none" : ""}
+                        onClick={() => {
+                          if (!col.sortable) return;
+                          const current = vm().currentSort;
+                          const dir =
+                            current?.field === col.field &&
+                            current.direction === "asc"
+                              ? "desc"
+                              : "asc";
+                          store().setSort(col.field, dir);
+                        }}
+                      >
+                        <span class="flex items-center gap-1">
+                          {col.label}
+                          <Show when={vm().currentSort?.field === col.field}>
+                            <span class="text-xs">
+                              {vm().currentSort?.direction === "asc"
+                                ? "↑"
+                                : "↓"}
+                            </span>
+                          </Show>
+                        </span>
+                      </TableHead>
                     )}
                   </For>
-                  <Show when={rowHref(props.resource, vm().clickAction, row.id)}>
-                    {(href) => (
-                      <TableCell>
-                        <A
-                          href={href()}
-                          class="text-sm text-primary hover:underline"
-                        >
-                          {linkLabel(vm().clickAction)}
-                        </A>
-                      </TableCell>
-                    )}
+                  <Show when={vm().clickAction !== "none"}>
+                    <TableHead class="w-16">Open</TableHead>
                   </Show>
                 </TableRow>
-              )}
-            </For>
-          </TableBody>
-        </Table>
-      </div>
+              </TableHeader>
+              <TableBody>
+                <For each={vm().rows}>
+                  {(row) => (
+                    <TableRow
+                      class={
+                        vm().selection.selected.includes(row.id)
+                          ? "bg-muted/50"
+                          : ""
+                      }
+                    >
+                      <For each={vm().columns}>
+                        {(col) => (
+                          <TableCell>
+                            {renderColumnCell(col, row.record)}
+                          </TableCell>
+                        )}
+                      </For>
+                      <Show
+                        when={rowHref(props.resource, vm().clickAction, row.id)}
+                      >
+                        {(href) => (
+                          <TableCell>
+                            <A
+                              href={href()}
+                              class="text-sm text-primary hover:underline"
+                            >
+                              {linkLabel(vm().clickAction)}
+                            </A>
+                          </TableCell>
+                        )}
+                      </Show>
+                    </TableRow>
+                  )}
+                </For>
+              </TableBody>
+            </Table>
+          </div>
 
-      {/* Selection info */}
-      <Show when={vm().selection.mode !== "none"}>
-        <div class="mt-2 text-sm text-muted-foreground">
-          Selection mode: {vm().selection.mode}
-          {vm().selection.selected.length > 0 &&
-            ` (${vm().selection.selected.length} selected)`}
-        </div>
-      </Show>
+          {/* Selection info */}
+          <Show when={vm().selection.mode !== "none"}>
+            <div class="mt-2 text-sm text-muted-foreground">
+              Selection mode: {vm().selection.mode}
+              {vm().selection.selected.length > 0 &&
+                ` (${vm().selection.selected.length} selected)`}
+            </div>
+          </Show>
 
-      {/* Page Actions */}
-      <Show when={vm().pageActions.length > 0}>
-        <div class="mt-4 flex gap-2">
-          <For each={vm().pageActions}>
-            {(action) => (
-              <Show when={action.visible}>
-                <Button
-                  variant={action.prominence === "primary" ? "default" : "outline"}
-                  size="sm"
-                  disabled={action.disabled}
-                  onClick={() => alert(`Action: ${action.label}`)}
-                >
-                  {action.label}
-                </Button>
-              </Show>
-            )}
-          </For>
+          {/* Page Actions */}
+          <Show when={vm().pageActions.length > 0}>
+            <div class="mt-4 flex gap-2">
+              <For each={vm().pageActions}>
+                {(action) => (
+                  <Show when={action.visible}>
+                    <Button
+                      variant={
+                        action.prominence === "primary" ? "default" : "outline"
+                      }
+                      size="sm"
+                      disabled={action.disabled}
+                      onClick={() => alert(`Action: ${action.label}`)}
+                    >
+                      {action.label}
+                    </Button>
+                  </Show>
+                )}
+              </For>
+            </div>
+          </Show>
         </div>
-      </Show>
-    </div>
-  )
+      )}
+    </Show>
+  );
 }
 
 function renderColumnCell(
@@ -194,7 +224,7 @@ function renderColumnCell(
     formatColumnValue(column, record),
     column.fieldSpec.ui.appearance,
     record[column.field],
-  )
+  );
 }
 
 function rowHref(
@@ -203,14 +233,14 @@ function rowHref(
   id: string,
 ) {
   if (!id || clickAction === "none") {
-    return undefined
+    return undefined;
   }
 
   return clickAction === "edit"
     ? `/resources/${resource}/${id}/edit`
-    : `/resources/${resource}/${id}`
+    : `/resources/${resource}/${id}`;
 }
 
 function linkLabel(clickAction: "none" | "show" | "edit") {
-  return clickAction === "edit" ? "Edit" : "View"
+  return clickAction === "edit" ? "Edit" : "View";
 }

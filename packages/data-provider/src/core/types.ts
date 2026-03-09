@@ -6,6 +6,8 @@ export interface ListParams {
 
 export interface ListResult<T = unknown> {
   data: T[];
+  page: number;
+  perPage: number;
   total: number;
 }
 

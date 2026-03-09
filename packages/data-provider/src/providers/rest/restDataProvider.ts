@@ -31,8 +31,7 @@ export function createRestDataProvider(
   }
 
   function resolveEndpoint(resource: string, config: ResourceConfig): string {
-    if (typeof config.endpoint === "function")
-      return config.endpoint(resource);
+    if (typeof config.endpoint === "function") return config.endpoint(resource);
     if (typeof config.endpoint === "string") return config.endpoint;
     return `${apiPrefix}/${resource}`;
   }
@@ -74,7 +73,10 @@ export function createRestDataProvider(
       : (raw as T);
   }
 
-  function transformList<T>(raw: unknown, config: ResourceConfig): ListResult<T> {
+  function transformList<T>(
+    raw: unknown,
+    config: ResourceConfig,
+  ): ListResult<T> {
     if (config.transformListResponse)
       return config.transformListResponse(raw) as ListResult<T>;
     const obj = raw as Record<string, unknown>;
@@ -82,8 +84,35 @@ export function createRestDataProvider(
     const data = Array.isArray(list)
       ? list.map((item: unknown) => transformOne<T>(item, config))
       : [];
-    const total = (obj.total as number) ?? data.length;
-    return { data, total };
+    const pagination = readPagination(obj);
+    return {
+      data,
+      page: pagination.page,
+      perPage: pagination.perPage,
+      total: pagination.total,
+    };
+  }
+
+  function readPagination(raw: Record<string, unknown>) {
+    const source = isRecord(raw.pagination) ? raw.pagination : raw;
+
+    return {
+      page: readNumber(source.page, "page"),
+      perPage: readNumber(source.perPage ?? source.per_page, "perPage"),
+      total: readNumber(source.total, "total"),
+    };
+  }
+
+  function readNumber(value: unknown, field: string): number {
+    if (typeof value === "number" && Number.isFinite(value)) {
+      return value;
+    }
+
+    throw new Error(`List response is missing pagination.${field}`);
+  }
+
+  function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === "object" && value !== null;
   }
 
   function transformReq(
@@ -101,7 +130,8 @@ export function createRestDataProvider(
       const config = getConfig(resource);
       const effectiveParams: ListParams = {
         ...params,
-        sort: params.sort ?? config.defaultSort ?? { field: "id", order: "asc" },
+        sort: params.sort ??
+          config.defaultSort ?? { field: "id", order: "asc" },
       };
       const endpoint = resolveEndpoint(resource, config);
       const query = buildQuery(effectiveParams, config);
