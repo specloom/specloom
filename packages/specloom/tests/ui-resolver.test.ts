@@ -4,6 +4,7 @@ import {
   createFormVM,
   createListVM,
   createUiResolver,
+  getResource,
   resolveFieldPresentation,
   validateSpec,
   type CompiledSpec,
@@ -232,7 +233,7 @@ describe("ui resolver", () => {
       },
     });
 
-    const listVm = createListVM(spec, "User", {
+    const listVm = createListVM(getResource(spec, "User"), {
       context: {},
       data: [
         {
@@ -244,7 +245,7 @@ describe("ui resolver", () => {
         },
       ],
     });
-    const formVm = createFormVM(spec, "User", {
+    const formVm = createFormVM(getResource(spec, "User"), {
       context: {},
       mode: "create",
     });
@@ -285,7 +286,7 @@ function createSpec(): CompiledSpec {
 }
 
 function getFormField(spec: CompiledSpec, fieldName: string): FormFieldVM {
-  const vm = createFormVM(spec, "User", {
+  const vm = createFormVM(getResource(spec, "User"), {
     context: {},
     mode: "create",
   });

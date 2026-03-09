@@ -32,3 +32,5 @@ tsp-output/
 .env
 .env.local
 *.timestamp_*.js
+
+*.db

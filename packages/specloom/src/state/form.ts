@@ -1,7 +1,6 @@
 import type {
   CompiledInput,
   CompiledResource,
-  CompiledSpec,
 } from "@specloom/spec";
 import { evaluateFormView, evaluateInputForm } from "../evaluator/index.js";
 import { updateFieldValue } from "../normalize/index.js";
@@ -10,7 +9,6 @@ import {
   serializeResource,
   type SerializeOptions,
 } from "../serialize/index.js";
-import { getInput, getResource } from "../resolver/index.js";
 import {
   validateForm,
   type ValidationMode,
@@ -22,9 +20,8 @@ type RecordTarget = CompiledResource | CompiledInput;
 type RecordTargetKind = "resource" | "input";
 
 export interface FormStateSnapshot {
-  spec: CompiledSpec;
+  target: RecordTarget;
   targetKind: RecordTargetKind;
-  targetName: string;
   mode: ValidationMode;
   context: Context;
   values: Record<string, unknown>;
@@ -36,8 +33,7 @@ export interface FormStateSnapshot {
 }
 
 export interface CreateFormStateArgs {
-  spec: CompiledSpec;
-  resource: string;
+  resource: CompiledResource;
   mode: ValidationMode;
   context?: Context;
   values?: Record<string, unknown>;
@@ -45,8 +41,7 @@ export interface CreateFormStateArgs {
 }
 
 export interface CreateInputStateArgs {
-  spec: CompiledSpec;
-  input: string;
+  input: CompiledInput;
   context?: Context;
   values?: Record<string, unknown>;
   errors?: ValidationErrors;
@@ -67,13 +62,11 @@ export interface FormState {
 }
 
 export function createFormState(args: CreateFormStateArgs): FormState {
-  const target = getResource(args.spec, args.resource);
   const values = args.values ?? {};
 
   return createRecordState({
-    spec: args.spec,
     targetKind: "resource",
-    target,
+    target: args.resource,
     mode: args.mode,
     context: args.context ?? {},
     values,
@@ -86,13 +79,11 @@ export function createFormState(args: CreateFormStateArgs): FormState {
 }
 
 export function createInputState(args: CreateInputStateArgs): FormState {
-  const target = getInput(args.spec, args.input);
   const values = args.values ?? {};
 
   return createRecordState({
-    spec: args.spec,
     targetKind: "input",
-    target,
+    target: args.input,
     mode: "create",
     context: args.context ?? {},
     values,
@@ -104,44 +95,13 @@ export function createInputState(args: CreateInputStateArgs): FormState {
   });
 }
 
-interface CreateRecordStateArgs extends Omit<FormStateSnapshot, "targetName"> {
-  targetKind: RecordTargetKind;
-  target: RecordTarget;
-}
-
-function createRecordState(args: CreateRecordStateArgs): FormState {
-  const snapshot: FormStateSnapshot = {
-    spec: args.spec,
-    targetKind: args.targetKind,
-    targetName: args.target.name,
-    mode: args.mode,
-    context: args.context,
-    values: args.values,
-    errors: args.errors,
-    formErrors: args.formErrors,
-    touched: args.touched,
-    dirty: args.dirty,
-    initialValues: args.initialValues,
-  };
+function createRecordState(args: FormStateSnapshot): FormState {
+  const snapshot: FormStateSnapshot = { ...args };
 
   function next(patch: Partial<FormStateSnapshot>): FormState {
-    const target = getTarget(
-      snapshot.spec,
-      snapshot.targetKind,
-      snapshot.targetName,
-    );
     return createRecordState({
-      spec: patch.spec ?? snapshot.spec,
-      targetKind: snapshot.targetKind,
-      target,
-      mode: patch.mode ?? snapshot.mode,
-      context: patch.context ?? snapshot.context,
-      values: patch.values ?? snapshot.values,
-      errors: patch.errors ?? snapshot.errors,
-      formErrors: patch.formErrors ?? snapshot.formErrors,
-      touched: patch.touched ?? snapshot.touched,
-      dirty: patch.dirty ?? snapshot.dirty,
-      initialValues: patch.initialValues ?? snapshot.initialValues,
+      ...snapshot,
+      ...patch,
     });
   }
 
@@ -151,9 +111,8 @@ function createRecordState(args: CreateRecordStateArgs): FormState {
     },
     view() {
       if (snapshot.targetKind === "resource") {
-        const target = getResource(snapshot.spec, snapshot.targetName);
         return evaluateFormView({
-          resource: target,
+          resource: snapshot.target as CompiledResource,
           context: snapshot.context,
           mode: snapshot.mode,
           record: snapshot.values,
@@ -162,9 +121,8 @@ function createRecordState(args: CreateRecordStateArgs): FormState {
         });
       }
 
-      const target = getInput(snapshot.spec, snapshot.targetName);
       return evaluateInputForm({
-        input: target,
+        input: snapshot.target as CompiledInput,
         context: snapshot.context,
         record: snapshot.values,
         errors: snapshot.errors,
@@ -175,13 +133,8 @@ function createRecordState(args: CreateRecordStateArgs): FormState {
       return snapshot.values[name];
     },
     setValue(name, rawValue) {
-      const target = getTarget(
-        snapshot.spec,
-        snapshot.targetKind,
-        snapshot.targetName,
-      );
       const nextValues = updateFieldValue({
-        resource: target,
+        resource: snapshot.target,
         values: snapshot.values,
         fieldName: name,
         rawValue,
@@ -241,13 +194,8 @@ function createRecordState(args: CreateRecordStateArgs): FormState {
       });
     },
     validate() {
-      const target = getTarget(
-        snapshot.spec,
-        snapshot.targetKind,
-        snapshot.targetName,
-      );
       const result = validateForm({
-        resource: target,
+        resource: snapshot.target,
         values: snapshot.values,
         context: snapshot.context,
         mode: snapshot.mode,
@@ -263,25 +211,17 @@ function createRecordState(args: CreateRecordStateArgs): FormState {
     serialize(options) {
       return snapshot.targetKind === "resource"
         ? serializeResource(
-            getResource(snapshot.spec, snapshot.targetName),
+            snapshot.target as CompiledResource,
             snapshot.values,
             options,
           )
         : serializeInput(
-            getInput(snapshot.spec, snapshot.targetName),
+            snapshot.target as CompiledInput,
             snapshot.values,
             options,
           );
     },
   };
-}
-
-function getTarget(
-  spec: CompiledSpec,
-  kind: RecordTargetKind,
-  name: string,
-): RecordTarget {
-  return kind === "resource" ? getResource(spec, name) : getInput(spec, name);
 }
 
 function clearFieldError(

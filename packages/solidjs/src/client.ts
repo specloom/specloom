@@ -4,9 +4,10 @@ import type {
   ListParams,
   ListResult,
 } from "@specloom/data-provider";
-import type { CompiledSpec } from "@specloom/spec";
+import type { CompiledResource, CompiledSpec } from "@specloom/spec";
 import {
   createOptionsResolver,
+  getResource,
   validateSpec,
   type Context,
   type OptionsFetchArgs,
@@ -21,9 +22,15 @@ export interface CreateDataProviderOptionsFetcherArgs {
   mapParams?: (args: OptionsFetchArgs) => ListParams;
 }
 
+export type ResourceResolver = (
+  name: string,
+) => CompiledResource | Promise<CompiledResource>;
+
 export interface CreateSpecloomRuntimeArgs<
   TTenant extends TenantType = TenantType,
 > {
+  resolveResource?: ResourceResolver;
+  spec?: CompiledSpec | unknown;
   authProvider?: AuthProvider<TTenant>;
   dataProvider?: DataProvider;
   context?: Context;
@@ -37,6 +44,8 @@ export interface CreateSpecloomOptionsResolverArgs {
 }
 
 export interface SpecloomRuntime<TTenant extends TenantType = TenantType> {
+  resolveResource: ResourceResolver;
+  spec?: CompiledSpec;
   authProvider?: AuthProvider<TTenant>;
   dataProvider?: DataProvider;
   context: Context;
@@ -88,9 +97,22 @@ export async function resolveSpecloomOptions(
 export function createSpecloomRuntime<
   TTenant extends TenantType = TenantType,
 >(args: CreateSpecloomRuntimeArgs<TTenant>): SpecloomRuntime<TTenant> {
+  const spec = args.spec ? validateSpec(args.spec) : undefined;
   const baseContext = cloneContext(args.context);
 
+  const resolver: ResourceResolver =
+    args.resolveResource ??
+    (spec
+      ? (name) => getResource(spec, name)
+      : () => {
+          throw new Error(
+            "No resolveResource or spec provided to runtime",
+          );
+        });
+
   return {
+    resolveResource: resolver,
+    spec,
     authProvider: args.authProvider,
     dataProvider: args.dataProvider,
     context: baseContext,
@@ -130,6 +152,21 @@ function cloneContext(context?: Context): Context {
     ...(context.permissions ? { permissions: [...context.permissions] } : {}),
     ...(context.custom ? { custom: { ...context.custom } } : {}),
   };
+}
+
+export function resolveResource(
+  resource: CompiledResource | string,
+  spec?: CompiledSpec,
+  runtime?: SpecloomRuntime,
+): CompiledResource {
+  if (typeof resource !== "string") return resource;
+  const resolvedSpec = spec ?? runtime?.spec;
+  if (!resolvedSpec) {
+    throw new Error(
+      `Cannot resolve resource "${resource}": no spec provided`,
+    );
+  }
+  return getResource(resolvedSpec, resource);
 }
 
 function mergeContext(base: Context, override?: Context): Context {

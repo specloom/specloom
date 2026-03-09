@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import userSpec from "./fixtures/user-spec.json";
-import { createListState, validateSpec } from "../src/index.js";
+import { createListState, getResource, validateSpec } from "../src/index.js";
 
 describe("list state", () => {
   it("tracks search, named filter, sort, and selection", () => {
@@ -16,8 +16,7 @@ describe("list state", () => {
     });
 
     let list = createListState({
-      spec,
-      resource: "User",
+      resource: getResource(spec, "User"),
       data: [
         { id: "1", name: "Alice", email: "alice@example.com", status: "active" },
         { id: "2", name: "Bob", email: "bob@example.com", status: "inactive" },

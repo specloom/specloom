@@ -1,9 +1,8 @@
-import type { ListResult } from "@specloom/data-provider";
-import type { CompiledSpec } from "@specloom/spec";
+import type { CompiledResource } from "@specloom/spec";
 import { A } from "@solidjs/router";
-import { createListStore, type SolidListStore } from "@specloom/solidjs";
-import { createMemo, For, Show } from "solid-js";
-import { formatColumnValue, type Context, type ListColumnVM } from "specloom";
+import type { SolidListStore } from "@specloom/solidjs";
+import { For, Show } from "solid-js";
+import { formatColumnValue, type ListColumnVM } from "specloom";
 import {
   Table,
   TableBody,
@@ -17,57 +16,34 @@ import { Button } from "~/components/ui/button";
 import { presentTextValue } from "~/components/vm/SpecValue";
 
 export function ResourceListPage(props: {
-  spec: CompiledSpec;
-  context?: Context;
-  resource: string;
-  data: ListResult<Record<string, unknown>>;
+  store: SolidListStore;
+  resource: CompiledResource;
 }) {
-  const resource = createMemo(() => props.spec.resources[props.resource]);
-
-  // Store is recreated when resource changes
-  const store = createMemo<SolidListStore>(() =>
-    createListStore({
-      spec: props.spec,
-      context: props.context,
-      resource: props.resource,
-      data: props.data.data,
-    }),
-  );
-
-  const vm = createMemo(() => store().view());
+  const store = props.store;
+  const vm = () => store.view();
 
   return (
-    <Show
-      when={resource()}
-      fallback={
-        <div class="text-sm text-muted-foreground">
-          Unknown resource: {props.resource}
-        </div>
-      }
-    >
-      {(resolvedResource) => (
+    <div>
+      <div class="flex items-center justify-between mb-6">
         <div>
-          <div class="flex items-center justify-between mb-6">
-            <div>
-              <h1 class="text-2xl font-bold">
-                {resolvedResource().meta.pluralLabel ??
-                  resolvedResource().meta.label}
-              </h1>
-              <p class="text-sm text-muted-foreground mt-1">
-                {props.data.total} records
-              </p>
-            </div>
-            <A href={`/resources/${props.resource}/new`}>
-              <Button>New {resolvedResource().meta.label}</Button>
-            </A>
-          </div>
+          <h1 class="text-2xl font-bold">
+            {props.resource.meta.pluralLabel ?? props.resource.meta.label}
+          </h1>
+          <p class="text-sm text-muted-foreground mt-1">
+            {vm().rows.length} records
+          </p>
+        </div>
+        <A href={`/resources/${props.resource.name}/new`}>
+          <Button>New {props.resource.meta.label}</Button>
+        </A>
+      </div>
 
           {/* Search */}
           <Show when={vm().search.fields.length > 0}>
             <div class="mb-4 max-w-sm">
               <TextField
                 value={vm().search.query}
-                onChange={(v: string) => store().setSearch(v)}
+                onChange={(v: string) => store.setSearch(v)}
               >
                 <TextFieldInput placeholder="Search..." />
               </TextField>
@@ -84,7 +60,7 @@ export function ResourceListPage(props: {
                     : "outline"
                 }
                 size="sm"
-                onClick={() => store().setNamedFilter(null)}
+                onClick={() => store.setNamedFilter(null)}
               >
                 All
               </Button>
@@ -94,7 +70,7 @@ export function ResourceListPage(props: {
                     variant={filter.active ? "default" : "outline"}
                     size="sm"
                     onClick={() =>
-                      store().setNamedFilter(filter.active ? null : filter.id)
+                      store.setNamedFilter(filter.active ? null : filter.id)
                     }
                   >
                     {filter.label}
@@ -121,7 +97,7 @@ export function ResourceListPage(props: {
                             current.direction === "asc"
                               ? "desc"
                               : "asc";
-                          store().setSort(col.field, dir);
+                          store.setSort(col.field, dir);
                         }}
                       >
                         <span class="flex items-center gap-1">
@@ -160,7 +136,7 @@ export function ResourceListPage(props: {
                         )}
                       </For>
                       <Show
-                        when={rowHref(props.resource, vm().clickAction, row.id)}
+                        when={rowHref(props.resource.name, vm().clickAction, row.id)}
                       >
                         {(href) => (
                           <TableCell>
@@ -211,8 +187,6 @@ export function ResourceListPage(props: {
             </div>
           </Show>
         </div>
-      )}
-    </Show>
   );
 }
 

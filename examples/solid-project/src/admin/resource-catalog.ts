@@ -1,5 +1,5 @@
-import type { CompiledSpec } from "@specloom/spec"
-import { validateSpec } from "specloom"
+import type { CompiledResource, CompiledSpec } from "@specloom/spec"
+import { getResource, validateSpec } from "specloom"
 
 type ResourceSpecModule = Record<string, unknown>
 
@@ -287,27 +287,15 @@ export const resourceCatalogGroups = Array.from(
   resources: resourceCatalog.filter((resource) => resource.category === category),
 }))
 
-export async function loadResourceSpec(resourceName: string): Promise<CompiledSpec> {
+export async function loadResource(resourceName: string): Promise<CompiledResource | undefined> {
   const entry = resourceCatalogByName[resourceName]
-  if (!entry) {
-    return { version: "1", resources: {} }
-  }
+  if (!entry) return undefined
 
   const loader = specModules[entry.specPath]
   if (!loader) {
     throw new Error(`Spec module not found: ${entry.specPath}`)
   }
 
-  const source = validateSpec((await loader()) as ResourceSpecModule)
-  return scopeSpecToResource(source, resourceName)
-}
-
-function scopeSpecToResource(spec: CompiledSpec, resourceName: string): CompiledSpec {
-  const resource = spec.resources[resourceName]
-
-  return {
-    version: spec.version,
-    resources: resource ? { [resourceName]: resource } : {},
-    ...(spec.inputs ? { inputs: spec.inputs } : {}),
-  }
+  const spec = validateSpec((await loader()) as ResourceSpecModule)
+  return getResource(spec, resourceName)
 }

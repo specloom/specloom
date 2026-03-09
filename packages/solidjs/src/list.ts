@@ -1,3 +1,4 @@
+import type { CompiledResource, CompiledSpec } from "@specloom/spec";
 import {
   createListState,
   type Context,
@@ -7,7 +8,7 @@ import {
   type ListViewModel,
 } from "specloom";
 import { createMemo, createSignal, type Accessor } from "solid-js";
-import type { SpecloomRuntime } from "./client.js";
+import { resolveResource, type SpecloomRuntime } from "./client.js";
 import { useSpecloom } from "./context.js";
 
 export interface SolidListStore {
@@ -24,16 +25,18 @@ export interface SolidListStore {
 }
 
 export interface CreateSolidListStoreArgs
-  extends Omit<CreateListStateArgs, "context"> {
+  extends Omit<CreateListStateArgs, "context" | "resource"> {
+  resource: CompiledResource | string;
+  spec?: CompiledSpec;
   runtime?: SpecloomRuntime;
   context?: Context;
 }
 
 export function createListStore(args: CreateSolidListStoreArgs): SolidListStore {
+  const resource = resolveResource(args.resource, args.spec, args.runtime);
   const [state, setState] = createSignal(
     createListState({
-      spec: args.spec,
-      resource: args.resource,
+      resource,
       context: resolveContext(args.runtime, args.context),
       data: args.data,
       searchQuery: args.searchQuery,

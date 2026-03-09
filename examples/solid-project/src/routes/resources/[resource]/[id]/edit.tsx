@@ -1,33 +1,22 @@
 import { useParams } from "@solidjs/router";
-import { useSpecloom } from "@specloom/solidjs";
-import { createMemo, createResource, Show } from "solid-js";
-import { loadResourceSpec } from "~/admin/resource-catalog";
+import { createResource, Show } from "solid-js";
+import { loadResource } from "~/admin/resource-catalog";
 import { ResourceEditPage } from "~/components/vm/ResourceFormPage";
 
 export default function ResourceEdit() {
-  const runtime = useSpecloom();
   const params = useParams();
-  const [spec] = createResource(() => params.resource!, loadResourceSpec);
-  const context = createMemo(() => runtime.resolveContext());
-  const currentSpec = createMemo(() => {
-    const value = spec();
-    return value?.resources[params.resource!] ? value : undefined;
-  });
+  const [resource] = createResource(() => params.resource!, loadResource);
 
   return (
     <Show
-      when={currentSpec()}
+      when={resource()}
       fallback={
         <div class="text-sm text-muted-foreground">Loading resource...</div>
       }
+      keyed
     >
-      {(resolvedSpec) => (
-        <ResourceEditPage
-          spec={resolvedSpec()}
-          context={context()}
-          resource={params.resource!}
-          id={params.id!}
-        />
+      {(resolvedResource) => (
+        <ResourceEditPage resource={resolvedResource} id={params.id!} />
       )}
     </Show>
   );

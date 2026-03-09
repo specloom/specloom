@@ -1,4 +1,4 @@
-import type { CompiledSpec, CompiledField } from "@specloom/spec";
+import type { CompiledResource, CompiledField } from "@specloom/spec";
 
 function generateValue(field: CompiledField, index: number): unknown {
   if (field.key || field.name === "id") return `${field.name}-${index + 1}`;
@@ -97,13 +97,9 @@ function capitalize(s: string): string {
 }
 
 export function generateMockData(
-  spec: CompiledSpec,
-  resourceName: string,
+  resource: CompiledResource,
   count = 8,
 ): Record<string, unknown>[] {
-  const resource = spec.resources[resourceName];
-  if (!resource) return [];
-
   const fields = Object.values(resource.fields);
 
   return Array.from({ length: count }, (_, i) => {

@@ -1,7 +1,6 @@
-import type { CompiledSpec } from "@specloom/spec";
+import type { CompiledResource } from "@specloom/spec";
 import { applyNamedFilter } from "../filter/index.js";
 import { evaluateListView } from "../evaluator/index.js";
-import { getResource } from "../resolver/index.js";
 import type { Context, ListViewModel } from "../vm/types.js";
 
 export interface ListSort {
@@ -10,8 +9,7 @@ export interface ListSort {
 }
 
 export interface ListStateSnapshot {
-  spec: CompiledSpec;
-  resource: string;
+  resource: CompiledResource;
   context: Context;
   data: Record<string, unknown>[];
   searchQuery: string;
@@ -21,8 +19,7 @@ export interface ListStateSnapshot {
 }
 
 export interface CreateListStateArgs {
-  spec: CompiledSpec;
-  resource: string;
+  resource: CompiledResource;
   context?: Context;
   data: Record<string, unknown>[];
   searchQuery?: string;
@@ -45,7 +42,6 @@ export interface ListState {
 
 export function createListState(args: CreateListStateArgs): ListState {
   const snapshot: ListStateSnapshot = {
-    spec: args.spec,
     resource: args.resource,
     context: args.context ?? {},
     data: args.data,
@@ -67,16 +63,15 @@ export function createListState(args: CreateListStateArgs): ListState {
       return structuredClone(snapshot);
     },
     view() {
-      const resource = getResource(snapshot.spec, snapshot.resource);
       const filtered = filterBySearch(
-        applyActiveFilter(resource, snapshot),
-        resource.views.list.search?.fields ?? [],
+        applyActiveFilter(snapshot.resource, snapshot),
+        snapshot.resource.views.list.search?.fields ?? [],
         snapshot.searchQuery,
       );
       const data = sortRecords(filtered, snapshot.sort);
 
       return evaluateListView({
-        resource,
+        resource: snapshot.resource,
         context: snapshot.context,
         data,
         activeFilter: snapshot.activeFilter ?? undefined,
@@ -113,7 +108,7 @@ export function createListState(args: CreateListStateArgs): ListState {
 }
 
 function applyActiveFilter(
-  resource: ReturnType<typeof getResource>,
+  resource: CompiledResource,
   snapshot: ListStateSnapshot,
 ): Record<string, unknown>[] {
   if (!snapshot.activeFilter) {

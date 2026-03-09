@@ -1,4 +1,4 @@
-import type { CompiledSpec } from "@specloom/spec";
+import type { CompiledInput, CompiledResource } from "@specloom/spec";
 import {
   evaluateFormView,
   evaluateInputForm,
@@ -9,48 +9,43 @@ import {
   type EvaluateListOptions,
   type EvaluateShowOptions,
 } from "../evaluator/index.js";
-import { getInput, getResource } from "../resolver/index.js";
 
 export function createListVM(
-  spec: CompiledSpec,
-  resourceName: string,
+  resource: CompiledResource,
   options: Omit<EvaluateListOptions, "resource">,
 ) {
   return evaluateListView({
-    resource: getResource(spec, resourceName),
+    resource,
     ...options,
   });
 }
 
 export function createShowVM(
-  spec: CompiledSpec,
-  resourceName: string,
+  resource: CompiledResource,
   options: Omit<EvaluateShowOptions, "resource">,
 ) {
   return evaluateShowView({
-    resource: getResource(spec, resourceName),
+    resource,
     ...options,
   });
 }
 
 export function createFormVM(
-  spec: CompiledSpec,
-  resourceName: string,
+  resource: CompiledResource,
   options: Omit<EvaluateFormOptions, "resource">,
 ) {
   return evaluateFormView({
-    resource: getResource(spec, resourceName),
+    resource,
     ...options,
   });
 }
 
 export function createInputVM(
-  spec: CompiledSpec,
-  inputName: string,
+  input: CompiledInput,
   options: Omit<EvaluateInputOptions, "input">,
 ) {
   return evaluateInputForm({
-    input: getInput(spec, inputName),
+    input,
     ...options,
   });
 }

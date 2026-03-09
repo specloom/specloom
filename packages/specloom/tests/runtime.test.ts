@@ -4,15 +4,17 @@ import {
   createFormState,
   createFormVM,
   createListVM,
+  getResource,
   serializeForm,
   validateSpec,
 } from "../src/index.js";
 
 const spec = validateSpec(userSpec);
+const user = getResource(spec, "User");
 
 describe("specloom runtime", () => {
   it("creates a list VM from a compiled spec", () => {
-    const vm = createListVM(spec, "User", {
+    const vm = createListVM(user, {
       context: { role: "admin" },
       data: [
         {
@@ -33,7 +35,7 @@ describe("specloom runtime", () => {
   });
 
   it("creates a form VM and serializes submit values", () => {
-    const vm = createFormVM(spec, "User", {
+    const vm = createFormVM(user, {
       context: {},
       mode: "create",
     });
@@ -52,8 +54,7 @@ describe("specloom runtime", () => {
 
   it("creates form state from a compiled spec", () => {
     const form = createFormState({
-      spec,
-      resource: "User",
+      resource: getResource(spec, "User"),
       mode: "create",
       values: {
         name: "Alice",

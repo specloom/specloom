@@ -1,13 +1,12 @@
 import { describe, expect, it } from "vitest";
 import userSpec from "./fixtures/user-spec.json";
-import { createFormState, validateSpec } from "../src/index.js";
+import { createFormState, getResource, validateSpec } from "../src/index.js";
 
 describe("form state", () => {
   it("supports setValue, validate, view, serialize, and reset", () => {
     const spec = validateSpec(structuredClone(userSpec));
     let form = createFormState({
-      spec,
-      resource: "User",
+      resource: getResource(spec, "User"),
       mode: "create",
       values: {
         email: "alice@example.com",

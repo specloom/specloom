@@ -1,6 +1,8 @@
+import type { CompiledInput, CompiledResource, CompiledSpec } from "@specloom/spec";
 import {
   createFormState,
   createInputState,
+  getInput,
   type Context,
   type CreateFormStateArgs,
   type CreateInputStateArgs,
@@ -12,7 +14,7 @@ import {
   type ValidationResult,
 } from "specloom";
 import { createMemo, createSignal, type Accessor } from "solid-js";
-import type { SpecloomRuntime } from "./client.js";
+import { resolveResource, type SpecloomRuntime } from "./client.js";
 import { useSpecloom } from "./context.js";
 
 export interface SolidFormStore {
@@ -31,22 +33,26 @@ export interface SolidFormStore {
 }
 
 export interface CreateSolidFormStoreArgs
-  extends Omit<CreateFormStateArgs, "context"> {
+  extends Omit<CreateFormStateArgs, "context" | "resource"> {
+  resource: CompiledResource | string;
+  spec?: CompiledSpec;
   runtime?: SpecloomRuntime;
   context?: Context;
 }
 
 export interface CreateSolidInputStoreArgs
-  extends Omit<CreateInputStateArgs, "context"> {
+  extends Omit<CreateInputStateArgs, "context" | "input"> {
+  input: CompiledInput | string;
+  spec?: CompiledSpec;
   runtime?: SpecloomRuntime;
   context?: Context;
 }
 
 export function createFormStore(args: CreateSolidFormStoreArgs): SolidFormStore {
+  const resource = resolveResource(args.resource, args.spec, args.runtime);
   return createSolidFormStore(
     createFormState({
-      spec: args.spec,
-      resource: args.resource,
+      resource,
       mode: args.mode,
       context: resolveContext(args.runtime, args.context),
       values: args.values,
@@ -67,10 +73,10 @@ export function useFormStore(
 export function createInputStore(
   args: CreateSolidInputStoreArgs,
 ): SolidFormStore {
+  const input = resolveInput(args.input, args.spec, args.runtime);
   return createSolidFormStore(
     createInputState({
-      spec: args.spec,
-      input: args.input,
+      input,
       context: resolveContext(args.runtime, args.context),
       values: args.values,
       errors: args.errors,
@@ -130,6 +136,19 @@ function createSolidFormStore(initialState: FormState): SolidFormStore {
       return state().serialize(options);
     },
   };
+}
+
+function resolveInput(
+  input: CompiledInput | string,
+  spec?: CompiledSpec,
+  runtime?: SpecloomRuntime,
+): CompiledInput {
+  if (typeof input !== "string") return input;
+  const resolvedSpec = spec ?? runtime?.spec;
+  if (!resolvedSpec) {
+    throw new Error(`Cannot resolve input "${input}": no spec provided`);
+  }
+  return getInput(resolvedSpec, input);
 }
 
 function resolveContext(runtime?: SpecloomRuntime, context?: Context): Context {
