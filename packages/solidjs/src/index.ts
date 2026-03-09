@@ -25,4 +25,5 @@ export * from "./action.js";
 export * from "./client.js";
 export * from "./context.js";
 export * from "./form.js";
+export * from "./i18n/index.js";
 export * from "./list.js";

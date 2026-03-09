@@ -1,6 +1,6 @@
 import type { CompiledResource } from "@specloom/spec";
 import { A } from "@solidjs/router";
-import type { SolidListStore } from "@specloom/solidjs";
+import { type SolidListStore, useI18n } from "@specloom/solidjs";
 import { For, Show } from "solid-js";
 import { formatColumnValue, type ListColumnVM } from "specloom";
 import {
@@ -21,6 +21,7 @@ export function ResourceListPage(props: {
 }) {
   const store = props.store;
   const vm = () => store.view();
+  const { t } = useI18n();
 
   return (
     <div>
@@ -30,11 +31,11 @@ export function ResourceListPage(props: {
             {props.resource.meta.pluralLabel ?? props.resource.meta.label}
           </h1>
           <p class="text-sm text-muted-foreground mt-1">
-            {vm().rows.length} records
+            {t("list.recordCount", { count: vm().rows.length })}
           </p>
         </div>
         <A href={`/resources/${props.resource.name}/new`}>
-          <Button>New {props.resource.meta.label}</Button>
+          <Button>{t("list.newButton", { label: props.resource.meta.label })}</Button>
         </A>
       </div>
 
@@ -45,7 +46,7 @@ export function ResourceListPage(props: {
                 value={vm().search.query}
                 onChange={(v: string) => store.setSearch(v)}
               >
-                <TextFieldInput placeholder="Search..." />
+                <TextFieldInput placeholder={t("list.searchPlaceholder")} />
               </TextField>
             </div>
           </Show>
@@ -62,7 +63,7 @@ export function ResourceListPage(props: {
                 size="sm"
                 onClick={() => store.setNamedFilter(null)}
               >
-                All
+                {t("list.filterAll")}
               </Button>
               <For each={vm().namedFilters}>
                 {(filter) => (
@@ -114,7 +115,7 @@ export function ResourceListPage(props: {
                     )}
                   </For>
                   <Show when={vm().clickAction !== "none"}>
-                    <TableHead class="w-16">Open</TableHead>
+                    <TableHead class="w-16">{t("list.openColumn")}</TableHead>
                   </Show>
                 </TableRow>
               </TableHeader>
@@ -144,7 +145,7 @@ export function ResourceListPage(props: {
                               href={href()}
                               class="text-sm text-primary hover:underline"
                             >
-                              {linkLabel(vm().clickAction)}
+                              {vm().clickAction === "edit" ? t("list.action.edit") : t("list.action.view")}
                             </A>
                           </TableCell>
                         )}
@@ -159,9 +160,9 @@ export function ResourceListPage(props: {
           {/* Selection info */}
           <Show when={vm().selection.mode !== "none"}>
             <div class="mt-2 text-sm text-muted-foreground">
-              Selection mode: {vm().selection.mode}
+              {t("list.selectionMode", { mode: vm().selection.mode })}
               {vm().selection.selected.length > 0 &&
-                ` (${vm().selection.selected.length} selected)`}
+                ` ${t("list.selectedCount", { count: vm().selection.selected.length })}`}
             </div>
           </Show>
 
@@ -215,6 +216,3 @@ function rowHref(
     : `/resources/${resource}/${id}`;
 }
 
-function linkLabel(clickAction: "none" | "show" | "edit") {
-  return clickAction === "edit" ? "Edit" : "View";
-}

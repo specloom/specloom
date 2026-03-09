@@ -1,6 +1,6 @@
 import type { JSX } from "solid-js";
 
-import { SpecloomProvider } from "@specloom/solidjs";
+import { I18nProvider, SpecloomProvider } from "@specloom/solidjs";
 import { createRuntime } from "~/admin/runtime";
 import {
   SidebarInset,
@@ -18,6 +18,7 @@ const runtime = createRuntime();
 
 export function AdminLayout(props: AdminLayoutProps) {
   return (
+    <I18nProvider>
     <SpecloomProvider runtime={runtime}>
       <SidebarProvider>
         <AppSidebar />
@@ -33,5 +34,6 @@ export function AdminLayout(props: AdminLayoutProps) {
         </SidebarInset>
       </SidebarProvider>
     </SpecloomProvider>
+    </I18nProvider>
   );
 }

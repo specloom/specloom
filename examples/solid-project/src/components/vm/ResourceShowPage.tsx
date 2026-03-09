@@ -1,6 +1,7 @@
 import type { CompiledResource } from "@specloom/spec";
 import { A } from "@solidjs/router";
 import { createMemo, For, Show } from "solid-js";
+import { useI18n } from "@specloom/solidjs";
 import { createShowVM, type ShowFieldVM } from "specloom";
 import { generateMockData } from "~/admin/mock-data";
 import { Separator } from "~/components/ui/separator";
@@ -32,6 +33,8 @@ export function ResourceShowPage(props: {
     });
   });
 
+  const { t } = useI18n();
+
   return record() && vm() ? (
     <div>
       <div class="flex items-center gap-4 mb-6">
@@ -39,16 +42,16 @@ export function ResourceShowPage(props: {
           href={`/resources/${props.resource.name}`}
           class="text-sm text-muted-foreground hover:text-foreground"
         >
-          ← {props.resource.meta.pluralLabel ?? props.resource.meta.label}
+          {t("common.backPrefix")} {props.resource.meta.pluralLabel ?? props.resource.meta.label}
         </A>
       </div>
 
       <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-bold">
-          {props.resource.meta.label}: {props.id}
+          {t("show.title", { label: props.resource.meta.label, id: props.id })}
         </h1>
         <A href={`/resources/${props.resource.name}/${props.id}/edit`}>
-          <Button variant="outline">Edit</Button>
+          <Button variant="outline">{t("show.editButton")}</Button>
         </A>
       </div>
 
@@ -71,7 +74,7 @@ export function ResourceShowPage(props: {
     </div>
   ) : (
     <div class="text-sm text-muted-foreground">
-      Record not found: {props.id}
+      {t("show.recordNotFound", { id: props.id })}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import type { CompiledResource } from "@specloom/spec";
 import { A } from "@solidjs/router";
 import { createSignal, For, Show } from "solid-js";
-import { useFormStore } from "@specloom/solidjs";
+import { useFormStore, useI18n } from "@specloom/solidjs";
 import { generateMockData } from "~/admin/mock-data";
 import { FieldRenderer } from "~/admin/field-registry";
 import { Button } from "~/components/ui/button";
@@ -38,6 +38,8 @@ function ResourceFormInner(props: {
     const data = generateMockData(props.resource);
     return data.find((r) => r[keyField()] === props.id);
   };
+
+  const { t } = useI18n();
 
   // Context is auto-injected from SpecloomProvider via useFormStore
   const store = useFormStore({
@@ -79,20 +81,21 @@ function ResourceFormInner(props: {
           href={`/resources/${props.resource.name}`}
           class="text-sm text-muted-foreground hover:text-foreground"
         >
-          ←{" "}
+          {t("common.backPrefix")}{" "}
           {props.resource.meta.pluralLabel ?? props.resource.meta.label}
         </A>
       </div>
 
       <h1 class="text-2xl font-bold mb-6">
-        {props.mode === "create" ? "New" : "Edit"}{" "}
-        {props.resource.meta.label}
+        {props.mode === "create"
+          ? t("form.title.create", { label: props.resource.meta.label })
+          : t("form.title.edit", { label: props.resource.meta.label })}
       </h1>
 
       <form onSubmit={handleSubmit} class="space-y-8 max-w-2xl">
         <Show when={snapshot().formErrors.length}>
           <Alert variant="destructive">
-            <AlertTitle>Validation failed</AlertTitle>
+            <AlertTitle>{t("form.validationFailed")}</AlertTitle>
             <AlertDescription>
               <ul class="list-disc pl-5">
                 <For each={snapshot().formErrors ?? []}>
@@ -179,16 +182,16 @@ function ResourceFormInner(props: {
             type="submit"
             disabled={!vm().isValid && Boolean(vm().isDirty)}
           >
-            {props.mode === "create" ? "Create" : "Save"}
+            {props.mode === "create" ? t("form.submit.create") : t("form.submit.edit")}
           </Button>
           <A href={`/resources/${props.resource.name}`}>
             <Button variant="outline" type="button">
-              Cancel
+              {t("form.cancel")}
             </Button>
           </A>
           <Show when={vm().isDirty}>
             <span class="text-sm text-muted-foreground">
-              Unsaved changes
+              {t("form.unsavedChanges")}
             </span>
           </Show>
         </div>
@@ -220,7 +223,7 @@ function ResourceFormInner(props: {
     </div>
   ) : (
     <div class="text-sm text-muted-foreground">
-      Record not found: {props.id}
+      {t("form.recordNotFound", { id: props.id ?? "" })}
     </div>
   );
 }
