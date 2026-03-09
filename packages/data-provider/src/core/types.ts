@@ -1,7 +1,25 @@
+export type FilterValue =
+  | string
+  | number
+  | boolean
+  | null
+  | string[]
+  | number[]
+  | boolean[]
+  | { context: string }
+  | { relative: string };
+
+export type FilterExpression =
+  | Record<string, never>
+  | { field: string; operator: string; value: FilterValue }
+  | { and: FilterExpression[] }
+  | { or: FilterExpression[] }
+  | { not: FilterExpression };
+
 export interface ListParams {
   pagination: { page: number; perPage: number };
   sort: { field: string; order: "asc" | "desc" };
-  filter: Record<string, unknown>;
+  filter: FilterExpression;
 }
 
 export interface ListResult<T = unknown> {
@@ -42,11 +60,9 @@ export interface ResourceConfig<
   transformResponse?: (raw: TApiResponse) => TData;
   transformListResponse?: (raw: unknown) => ListResult<TData>;
   transformRequest?: (data: Record<string, unknown>) => TApiRequest;
-  transformFilter?: (
-    filter: Record<string, unknown>,
-  ) => Record<string, unknown>;
+  transformFilter?: (filter: FilterExpression) => Record<string, unknown>;
   transformSort?: (field: string) => string;
-  defaultFilter?: Record<string, unknown>;
+  defaultFilter?: FilterExpression;
   defaultSort?: { field: string; order: "asc" | "desc" };
   actions?: Record<string, CustomAction>;
 }

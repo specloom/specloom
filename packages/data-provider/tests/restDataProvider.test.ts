@@ -29,11 +29,22 @@ describe("createRestDataProvider", () => {
       resources: {
         users: {
           endpoint: "/v1/users",
-          defaultFilter: { active: true },
-          transformFilter: (filter) => ({
-            active: filter.active,
-            role: String(filter.role).toUpperCase(),
-          }),
+          defaultFilter: { field: "active", operator: "eq", value: true },
+          transformFilter: (filter) => {
+            // Flatten FilterExpression to query params for this API
+            const params: Record<string, unknown> = {};
+            if ("and" in filter) {
+              for (const child of filter.and) {
+                if ("field" in child) {
+                  params[child.field] =
+                    child.field === "role"
+                      ? String(child.value).toUpperCase()
+                      : child.value;
+                }
+              }
+            }
+            return params;
+          },
           transformSort: (field) => `api_${field}`,
           transformResponse: (raw) => {
             const item = raw as { id: number; display_name: string };
@@ -46,7 +57,7 @@ describe("createRestDataProvider", () => {
     const result = await provider.getList("users", {
       pagination: { page: 2, perPage: 25 },
       sort: { field: "name", order: "desc" },
-      filter: { role: "admin" },
+      filter: { field: "role", operator: "eq", value: "admin" },
     });
 
     expect(http.get).toHaveBeenCalledWith(

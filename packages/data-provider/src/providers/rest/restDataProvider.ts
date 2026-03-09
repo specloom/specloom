@@ -1,5 +1,6 @@
 import type { DataProvider } from "../../core/dataProvider.js";
 import type {
+  FilterExpression,
   ResourceConfig,
   ResourceConfigMap,
   ListParams,
@@ -50,21 +51,43 @@ export function createRestDataProvider(
     const sortField = config.transformSort
       ? config.transformSort(params.sort.field)
       : params.sort.field;
-    const rawFilter = { ...config.defaultFilter, ...params.filter };
-    const filter = config.transformFilter
-      ? config.transformFilter(rawFilter)
-      : rawFilter;
+    const mergedFilter = mergeFilter(config.defaultFilter, params.filter);
 
     const query = new URLSearchParams({
       _page: String(page),
       _limit: String(perPage),
       _sort: sortField,
       _order: params.sort.order,
-      ...Object.fromEntries(
-        Object.entries(filter).map(([k, v]) => [k, String(v)]),
-      ),
     });
+
+    if (config.transformFilter) {
+      const flat = config.transformFilter(mergedFilter);
+      for (const [k, v] of Object.entries(flat)) {
+        query.set(k, String(v));
+      }
+    } else if (!isEmptyFilter(mergedFilter)) {
+      query.set("_filter", JSON.stringify(mergedFilter));
+    }
+
     return query.toString();
+  }
+
+  function isEmptyFilter(filter: FilterExpression): boolean {
+    return !(
+      "field" in filter ||
+      "and" in filter ||
+      "or" in filter ||
+      "not" in filter
+    );
+  }
+
+  function mergeFilter(
+    base: FilterExpression | undefined,
+    override: FilterExpression,
+  ): FilterExpression {
+    if (!base || isEmptyFilter(base)) return override;
+    if (isEmptyFilter(override)) return base;
+    return { and: [base, override] };
   }
 
   function transformOne<T>(raw: unknown, config: ResourceConfig): T {

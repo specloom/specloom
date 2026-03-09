@@ -204,6 +204,7 @@ export interface CompiledListView {
     field: string;
     direction: "asc" | "desc";
   };
+  pageSizeOptions?: number[];
   selection: "none" | "single" | "multi";
   clickAction: "none" | "show" | "edit";
   namedFilters: CompiledNamedFilter[];
@@ -866,6 +867,10 @@ function validateListView(value: unknown, path: string): CompiledListView {
     sortable:
       expectOptionalStringArray(record.sortable, `${path}.sortable`) ?? [],
     defaultSort: validateDefaultSort(record.defaultSort, `${path}.defaultSort`),
+    pageSizeOptions: expectOptionalNumberArray(
+      record.pageSizeOptions,
+      `${path}.pageSizeOptions`,
+    ),
     selection:
       expectOptionalOneOf(
         record.selection,
@@ -1342,6 +1347,19 @@ function expectOptionalNumber(
     return undefined;
   }
   return expectNumber(value, path);
+}
+
+function expectOptionalNumberArray(
+  value: unknown,
+  path: string,
+): number[] | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (!Array.isArray(value)) {
+    throw new SpecError("Expected array", path);
+  }
+  return value.map((item, index) => expectNumber(item, `${path}[${index}]`));
 }
 
 function expectBoolean(value: unknown, path: string): boolean {

@@ -12,22 +12,22 @@ export function createMockDataProvider(
       const { page, perPage } = params.pagination;
       const start = (page - 1) * perPage;
       const data = all.slice(start, start + perPage);
-      return { data, page, perPage, total: all.length };
+      return { data, page, perPage, total: all.length } as never;
     },
     async getOne(resource, params) {
       const compiled = await resolveResource(resource);
       const all = generateMockData(compiled);
       const keyField = findKeyField(compiled);
-      return all.find((r) => r[keyField] === params.id) ?? {};
+      return (all.find((r) => r[keyField] === params.id) ?? {}) as never;
     },
     async create(_resource, params) {
-      return params.data;
+      return params.data as never;
     },
     async update(_resource, params) {
-      return { id: params.id, ...params.data };
+      return { id: params.id, ...params.data } as never;
     },
     async delete(_resource, params) {
-      return { id: params.id };
+      return { id: params.id } as never;
     },
   };
 }

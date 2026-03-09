@@ -123,15 +123,20 @@ export function createSpecloomRuntime<
 }
 
 function defaultListParams(args: OptionsFetchArgs): ListParams {
+  const fields = args.searchFields ?? [];
   return {
     pagination: { page: 1, perPage: 50 },
     sort: { field: "id", order: "asc" },
-    filter: args.query
-      ? {
-          q: args.query,
-          searchFields: args.searchFields ?? [],
-        }
-      : {},
+    filter:
+      args.query && fields.length > 0
+        ? {
+            or: fields.map((f) => ({
+              field: f,
+              operator: "contains",
+              value: args.query!,
+            })),
+          }
+        : {},
   };
 }
 
