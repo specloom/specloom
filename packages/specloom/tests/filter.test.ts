@@ -34,7 +34,7 @@ describe("filter helpers", () => {
       namedFilter: {
         id: "mine",
         label: "Mine",
-        where: {
+        conditions: {
           field: "ownerId",
           operator: "eq",
           value: { context: "user.id" },

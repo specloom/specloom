@@ -17,7 +17,7 @@ using Specloom;
 @index(#{ columns: #["title", "status"] })
 @namedFilter("published", #{
   label: "Published",
-  where: #{
+  conditions: #{
     field: "status",
     operator: "eq",
     value: "published"
@@ -45,7 +45,7 @@ resource model に preset filter を定義します。
 ```typespec
 @namedFilter("mine", #{
   label: "My Posts",
-  where: #{
+  conditions: #{
     field: "authorId",
     operator: "eq",
     value: #{ context: "user.id" }
@@ -53,7 +53,7 @@ resource model に preset filter を定義します。
 })
 @namedFilter("recent", #{
   label: "Recent",
-  where: #{
+  conditions: #{
     field: "createdAt",
     operator: "gte",
     value: #{ relative: "-7d" }

@@ -27,7 +27,7 @@ resource model に preset filter を定義します。
 ```typespec
 @namedFilter("mine", #{
   label: "Mine",
-  where: #{
+  conditions: #{
     field: "authorId",
     operator: "eq",
     value: #{ context: "user.id" }
@@ -35,7 +35,7 @@ resource model に preset filter を定義します。
 })
 @namedFilter("recent", #{
   label: "Recent",
-  where: #{
+  conditions: #{
     field: "createdAt",
     operator: "gte",
     value: #{ relative: "-7d" }
@@ -49,7 +49,7 @@ model Post {}
 ```typespec
 @namedFilter("publishedNews", #{
   label: "Published News",
-  where: #{
+  conditions: #{
     and: #[
       #{ field: "status", operator: "eq", value: "published" },
       #{ field: "category", operator: "eq", value: "news" }

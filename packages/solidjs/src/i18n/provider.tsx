@@ -8,7 +8,7 @@ import type { I18n, SpecloomTranslations, TranslationParams } from "./types.js";
 import { jaTranslations } from "./ja.js";
 import { enTranslations } from "./en.js";
 
-function createI18nInstance(translations: SpecloomTranslations): I18n {
+function createI18nInstance(translations: SpecloomTranslations, locale: string): I18n {
   return {
     t(key: keyof SpecloomTranslations, params?: TranslationParams) {
       let result = translations[key];
@@ -20,10 +20,11 @@ function createI18nInstance(translations: SpecloomTranslations): I18n {
       return result;
     },
     translations,
+    locale,
   };
 }
 
-const defaultI18n = createI18nInstance(jaTranslations);
+const defaultI18n = createI18nInstance(jaTranslations, "ja-JP");
 
 const I18nContext = createContext<I18n>(defaultI18n);
 
@@ -42,7 +43,8 @@ export function I18nProvider(props: I18nProviderProps): JSX.Element {
   const merged = props.translations
     ? { ...base, ...props.translations }
     : base;
-  const i18n = createI18nInstance(merged);
+  const bcp47 = props.locale === "en" ? "en-US" : "ja-JP";
+  const i18n = createI18nInstance(merged, bcp47);
 
   return (
     <I18nContext.Provider value={i18n}>{props.children}</I18nContext.Provider>

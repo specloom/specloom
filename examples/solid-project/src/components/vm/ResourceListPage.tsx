@@ -2,7 +2,7 @@ import type { CompiledResource } from "@specloom/spec";
 import { A } from "@solidjs/router";
 import { type SolidListStore, useI18n } from "@specloom/solidjs";
 import { createSignal, For, Show } from "solid-js";
-import { formatColumnValue, type ListColumnVM } from "specloom";
+import { formatColumnValue } from "specloom";
 import {
   Table,
   TableBody,
@@ -21,7 +21,7 @@ export function ResourceListPage(props: {
 }) {
   const store = props.store;
   const vm = () => store.view();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [searchQuery, setSearchQuery] = createSignal(vm().search.query);
 
   return (
@@ -137,7 +137,11 @@ export function ResourceListPage(props: {
                       <For each={vm().columns}>
                         {(col) => (
                           <TableCell>
-                            {renderColumnCell(col, row.record)}
+                            {presentTextValue(
+                              formatColumnValue(col, row.record, { locale }),
+                              col.fieldSpec.ui.appearance,
+                              row.record[col.field],
+                            )}
                           </TableCell>
                         )}
                       </For>
@@ -193,17 +197,6 @@ export function ResourceListPage(props: {
             </div>
           </Show>
         </div>
-  );
-}
-
-function renderColumnCell(
-  column: ListColumnVM,
-  record: Record<string, unknown>,
-) {
-  return presentTextValue(
-    formatColumnValue(column, record),
-    column.fieldSpec.ui.appearance,
-    record[column.field],
   );
 }
 

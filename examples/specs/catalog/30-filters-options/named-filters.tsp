@@ -6,7 +6,7 @@ using Specloom;
 @index(#{ columns: #["title", "ownerId", "status", "createdAt"], searchable: #["title"], sortable: #["title", "createdAt"] })
 @namedFilter("mine", #{
   label: "Mine",
-  where: #{
+  conditions: #{
     field: "ownerId",
     operator: "eq",
     value: #{ context: "user.id" }
@@ -14,7 +14,7 @@ using Specloom;
 })
 @namedFilter("recent", #{
   label: "Recent",
-  where: #{
+  conditions: #{
     field: "createdAt",
     operator: "gte",
     value: #{ relative: "-7d" }
@@ -22,7 +22,7 @@ using Specloom;
 })
 @namedFilter("publishedNews", #{
   label: "Published News",
-  where: #{
+  conditions: #{
     and: #[
       #{ field: "status", operator: "eq", value: "published" },
       #{ field: "category", operator: "eq", value: "news" }

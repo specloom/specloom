@@ -8,7 +8,7 @@ describe("list state", () => {
     spec.resources.User.views.list.namedFilters.push({
       id: "active",
       label: "Active",
-      where: {
+      conditions: {
         field: "status",
         operator: "eq",
         value: "active",

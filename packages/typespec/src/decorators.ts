@@ -72,7 +72,7 @@ export interface NamedFilterDef {
   id: string;
   label: string;
   order?: number;
-  where: unknown;
+  conditions: unknown;
 }
 
 export interface RelationDef {
@@ -330,7 +330,7 @@ export function $namedFilter(
       id: extractedId,
       label,
       order: extractNumber(extracted.order),
-      where: extracted.where,
+      conditions: extracted.conditions,
     },
   );
 }

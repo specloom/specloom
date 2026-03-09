@@ -94,7 +94,7 @@ export function applyNamedFilter(args: ApplyNamedFilterArgs): Record<string, unk
   const { data, namedFilter, context, now } = args;
   return filterRecords({
     data,
-    filter: namedFilter.where,
+    filter: namedFilter.conditions,
     context,
     now,
   });

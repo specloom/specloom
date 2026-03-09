@@ -90,7 +90,7 @@ list 用の preset filter です。
 ```typespec
 @namedFilter("active", #{
   label: "Active",
-  where: #{
+  conditions: #{
     field: "status",
     operator: "eq",
     value: "active"

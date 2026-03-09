@@ -14,6 +14,31 @@ using Specloom;
   sortable: #["id", "title", "priority", "dueDate", "createdAt"],
   clickAction: "show"
 })
+@namedFilter("incomplete", #{
+  label: "未完了",
+  conditions: #{
+    field: "done",
+    operator: "eq",
+    value: false
+  }
+})
+@namedFilter("highPriority", #{
+  label: "高優先",
+  conditions: #{
+    field: "priority",
+    operator: "eq",
+    value: "high"
+  }
+})
+@namedFilter("overdue", #{
+  label: "期限切れ",
+  conditions: #{
+    and: #[
+      #{ field: "done", operator: "eq", value: false },
+      #{ field: "dueDate", operator: "lt", value: #{ relative: "0d" } }
+    ]
+  }
+})
 @section("main", #{ label: "基本情報", view: "form", order: 10 })
 @section("detail", #{ label: "詳細", view: "form", order: 20 })
 model Task {
@@ -58,7 +83,7 @@ model Task {
   @pattern("^[^<>]*$")
   memo?: string;
 
-  @field(#{ label: "作成日時", list: true, show: true, form: false, readonly: true, order: 90, format: "relative" })
+  @field(#{ label: "作成日時", list: true, show: true, form: false, readonly: true, order: 90, format: "datetime" })
   createdAt: utcDateTime;
 
   @field(#{ label: "更新日時", list: false, show: true, form: false, readonly: true, order: 91, format: "relative" })

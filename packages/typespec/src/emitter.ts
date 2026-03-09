@@ -372,7 +372,7 @@ function buildListView(
         id: item.id,
         label: item.label,
         ...(item.order !== undefined ? { order: item.order } : {}),
-        where: normalizeFilterExpression(item.where),
+        conditions: normalizeFilterExpression(item.conditions),
       })) as CompiledNamedFilter[] | undefined) ?? [],
     pageActions: [],
     rowActions: [],

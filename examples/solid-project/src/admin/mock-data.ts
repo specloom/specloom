@@ -58,8 +58,18 @@ function generateScalar(
       return (index + 1) * 10;
     case "boolean":
       return index % 2 === 0;
-    case "utcDateTime":
-      return new Date(2025, 0, index + 1).toISOString();
+    case "date": {
+      const d = new Date();
+      d.setDate(d.getDate() - index * 3);
+      return d.toISOString().slice(0, 10);
+    }
+    case "datetime":
+    case "utcDateTime": {
+      const dt = new Date();
+      dt.setDate(dt.getDate() - index);
+      dt.setHours(dt.getHours() - index * 2);
+      return dt.toISOString();
+    }
     default:
       return `${fieldName}-${index + 1}`;
   }

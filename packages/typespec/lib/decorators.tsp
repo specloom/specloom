@@ -71,7 +71,7 @@ extern dec filter(target: ModelProperty, options?: valueof unknown);
 extern dec namedFilter(target: Model, id: valueof string, options: valueof {
   label: string,
   order?: int32,
-  where: unknown
+  conditions: unknown
 });
 
 extern dec relation(target: ModelProperty, resource: Model, options?: valueof {

@@ -117,7 +117,7 @@ decorator option や filter / namedFilter の object / array literal は TypeSpe
 
 @namedFilter("mine", #{
   label: "Mine",
-  where: #{
+  conditions: #{
     field: "authorId",
     operator: "eq",
     value: #{ context: "user.id" }
@@ -174,7 +174,7 @@ model User {
 })
 @namedFilter("active", #{
   label: "Active",
-  where: #{
+  conditions: #{
     field: "status",
     operator: "eq",
     value: "active"
@@ -439,7 +439,7 @@ named filter:
 ```typespec
 @namedFilter("mine", #{
   label: "Mine",
-  where: #{
+  conditions: #{
     field: "authorId",
     operator: "eq",
     value: #{

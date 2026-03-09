@@ -62,6 +62,24 @@ describe("Task spec", () => {
       const vm = createListVM(task, { context: {}, data: [] });
       expect(vm.clickAction).toBe("show");
     });
+
+    it("has 3 named filters", () => {
+      const vm = createListVM(task, { context: {}, data: [] });
+      expect(vm.namedFilters.map((f) => f.id)).toEqual([
+        "incomplete",
+        "highPriority",
+        "overdue",
+      ]);
+    });
+
+    it("named filters have Japanese labels", () => {
+      const vm = createListVM(task, { context: {}, data: [] });
+      expect(vm.namedFilters.map((f) => f.label)).toEqual([
+        "未完了",
+        "高優先",
+        "期限切れ",
+      ]);
+    });
   });
 
   describe("form view (create)", () => {
@@ -190,7 +208,7 @@ describe("Task spec", () => {
         },
       });
 
-      expect(vm.fields.find((f) => f.name === "createdAt")?.ui.format).toBe("relative");
+      expect(vm.fields.find((f) => f.name === "createdAt")?.ui.format).toBe("datetime");
       expect(vm.fields.find((f) => f.name === "updatedAt")?.ui.format).toBe("relative");
     });
   });

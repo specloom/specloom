@@ -233,7 +233,7 @@ export interface CompiledNamedFilter {
   id: string;
   label: string;
   order?: number;
-  where: FilterExpression;
+  conditions: FilterExpression;
 }
 
 export interface CompiledRecordView {
@@ -987,9 +987,9 @@ function validateNamedFilters(
       id: expectString(record.id, `${path}[${index}].id`),
       label: expectString(record.label, `${path}[${index}].label`),
       order: expectOptionalNumber(record.order, `${path}[${index}].order`),
-      where: validateFilterExpression(
-        record.where ?? {},
-        `${path}[${index}].where`,
+      conditions: validateFilterExpression(
+        record.conditions ?? {},
+        `${path}[${index}].conditions`,
       ),
     };
   });

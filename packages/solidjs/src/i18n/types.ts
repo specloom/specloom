@@ -58,4 +58,6 @@ export interface I18n {
   t(key: keyof SpecloomTranslations, params?: TranslationParams): string;
   /** The raw translations object. */
   translations: SpecloomTranslations;
+  /** BCP 47 locale string (e.g. "ja-JP", "en-US"). */
+  locale: string;
 }
