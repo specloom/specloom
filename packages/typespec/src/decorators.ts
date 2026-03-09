@@ -58,6 +58,7 @@ export interface IndexDef {
   defaultSort?: { field: string; direction: "asc" | "desc" };
   selection?: "none" | "single" | "multi";
   clickAction?: "none" | "show" | "edit";
+  namedFilters?: NamedFilterDef[];
 }
 
 export interface FilterDef {
@@ -285,6 +286,28 @@ export function $index(
   options?: unknown,
 ) {
   const extracted = extractRecord(options) ?? {};
+
+  // Extract namedFilters from index options
+  if (Array.isArray(extracted.namedFilters)) {
+    const namedFilters: NamedFilterDef[] = [];
+    for (const item of extracted.namedFilters) {
+      if (item && typeof item === "object") {
+        const rec = item as Record<string, unknown>;
+        const id = typeof rec.id === "string" ? rec.id : undefined;
+        const label = typeof rec.label === "string" ? rec.label : undefined;
+        if (id && label) {
+          namedFilters.push({
+            id,
+            label,
+            order: typeof rec.order === "number" ? rec.order : undefined,
+            conditions: rec.conditions,
+          });
+        }
+      }
+    }
+    extracted.namedFilters = namedFilters;
+  }
+
   mergeState(context, StateKeys.index, target, extracted);
 }
 
@@ -305,35 +328,6 @@ export function $filter(
   context.program.stateMap(StateKeys.filter).set(target, extracted);
 }
 
-export function $namedFilter(
-  context: DecoratorContext,
-  target: Model,
-  id: unknown,
-  options: unknown,
-) {
-  const extractedId = extractString(id);
-  const extracted = extractRecord(options);
-  if (!extractedId || !extracted) {
-    return;
-  }
-
-  const label = extractString(extracted.label);
-  if (!label) {
-    return;
-  }
-
-  prependStateArray<Model, NamedFilterDef>(
-    context,
-    StateKeys.namedFilter,
-    target,
-    {
-      id: extractedId,
-      label,
-      order: extractNumber(extracted.order),
-      conditions: extracted.conditions,
-    },
-  );
-}
 
 export function $relation(
   context: DecoratorContext,
@@ -607,7 +601,7 @@ export function getNamedFilters(
   program: DecoratorContext["program"],
   target: Model,
 ): NamedFilterDef[] | undefined {
-  return program.stateMap(StateKeys.namedFilter).get(target);
+  return getIndex(program, target)?.namedFilters;
 }
 
 export function getRelation(

@@ -94,7 +94,7 @@ Three main elements define an admin UI:
 
 The `@specloom/typespec` package provides decorators:
 - `@entity`, `@field`, `@index`, `@section`
-- `@filter`, `@namedFilter`, `@options`, `@optionSource`
+- `@filter`, `@options`, `@optionSource`
 - `@relation`, `@nested`
 - `@pageAction`, `@rowAction`, `@rule`
 - `@visibleWhen`, `@requiredWhen`, `@readonlyWhen`, `@disabledWhen`, `@match`

@@ -7,7 +7,6 @@ resource 全体と一覧/詳細/フォームの骨格を定義します。
 - `@entity`
 - `@index`
 - `@section`
-- `@namedFilter`
 - `@rule`
 
 ## `@entity`
@@ -58,7 +57,12 @@ list view の設定です。
   sortable: #["name", "email"],
   defaultSort: #{ field: "name", direction: "asc" },
   selection: "multi",
-  clickAction: "show"
+  clickAction: "show",
+  namedFilters: #[
+    #{ id: "active", label: "Active", conditions: #{
+      field: "status", operator: "eq", value: "active"
+    }}
+  ]
 })
 model User {}
 ```
@@ -79,22 +83,6 @@ form/show の grouping を定義します。
   view: "show",
   collapsible: true,
   defaultCollapsed: true
-})
-model User {}
-```
-
-## `@namedFilter`
-
-list 用の preset filter です。
-
-```typespec
-@namedFilter("active", #{
-  label: "Active",
-  conditions: #{
-    field: "status",
-    operator: "eq",
-    value: "active"
-  }
 })
 model User {}
 ```

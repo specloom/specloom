@@ -63,16 +63,11 @@ extern dec index(target: Model, options?: valueof {
     direction: "asc" | "desc"
   },
   selection?: "none" | "single" | "multi",
-  clickAction?: "none" | "show" | "edit"
+  clickAction?: "none" | "show" | "edit",
+  namedFilters?: unknown[]
 });
 
 extern dec filter(target: ModelProperty, options?: valueof unknown);
-
-extern dec namedFilter(target: Model, id: valueof string, options: valueof {
-  label: string,
-  order?: int32,
-  conditions: unknown
-});
 
 extern dec relation(target: ModelProperty, resource: Model, options?: valueof {
   kind?: "belongsTo" | "hasOne" | "hasMany" | "manyToMany",

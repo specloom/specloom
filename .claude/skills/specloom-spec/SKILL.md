@@ -105,7 +105,7 @@ using Specloom;
 
 ## TypeSpec Value Literals
 
-decorator option や filter / namedFilter の object / array literal は TypeSpec の value literal を使います。
+decorator option や filter の object / array literal は TypeSpec の value literal を使います。
 
 ```typespec
 @entity(#{
@@ -115,13 +115,13 @@ decorator option や filter / namedFilter の object / array literal は TypeSpe
   }
 })
 
-@namedFilter("mine", #{
-  label: "Mine",
-  conditions: #{
-    field: "authorId",
-    operator: "eq",
-    value: #{ context: "user.id" }
-  }
+@index(#{
+  columns: #["name", "email"],
+  namedFilters: #[
+    #{ id: "mine", label: "Mine", conditions: #{
+      field: "authorId", operator: "eq", value: #{ context: "user.id" }
+    }}
+  ]
 })
 ```
 
@@ -170,15 +170,12 @@ model User {
   searchable: #["name", "email"],
   sortable: #["name", "email", "status"],
   selection: "multi",
-  clickAction: "show"
-})
-@namedFilter("active", #{
-  label: "Active",
-  conditions: #{
-    field: "status",
-    operator: "eq",
-    value: "active"
-  }
+  clickAction: "show",
+  namedFilters: #[
+    #{ id: "active", label: "Active", conditions: #{
+      field: "status", operator: "eq", value: "active"
+    }}
+  ]
 })
 model User {}
 ```
@@ -354,7 +351,6 @@ model User {}
 | `@entity(#{ ... })` | Model | resource metadata |
 | `@index(#{ ... })` | Model | list config |
 | `@section(id, #{ ... })` | Model | form/show section |
-| `@namedFilter(id, #{ ... })` | Model | preset list filter |
 | `@rule(#{ ... })` | Model | cross-field validation |
 
 ### Field
@@ -434,18 +430,16 @@ title: string;
 createdAt: utcDateTime;
 ```
 
-named filter:
+named filter (`@index` の `namedFilters`):
 
 ```typespec
-@namedFilter("mine", #{
-  label: "Mine",
-  conditions: #{
-    field: "authorId",
-    operator: "eq",
-    value: #{
-      context: "user.id"
-    }
-  }
+@index(#{
+  columns: #["title", "status"],
+  namedFilters: #[
+    #{ id: "mine", label: "Mine", conditions: #{
+      field: "authorId", operator: "eq", value: #{ context: "user.id" }
+    }}
+  ]
 })
 model Post {}
 ```
@@ -536,7 +530,7 @@ const ui = createUiResolver();
 - resource には `@entity`
 - 描画する field には `@field`
 - list 設定は `@index`
-- named filter は `@namedFilter`
+- named filter は `@index` の `namedFilters`
 - relation は `@relation`
 - nested child は `@nested`
 - static options は `@options`

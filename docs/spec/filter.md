@@ -14,14 +14,13 @@ import "@specloom/typespec";
 using Specloom;
 
 @entity(#{ label: "Post" })
-@index(#{ columns: #["title", "status"] })
-@namedFilter("published", #{
-  label: "Published",
-  conditions: #{
-    field: "status",
-    operator: "eq",
-    value: "published"
-  }
+@index(#{
+  columns: #["title", "status"],
+  namedFilters: #[
+    #{ id: "published", label: "Published", conditions: #{
+      field: "status", operator: "eq", value: "published"
+    }}
+  ]
 })
 model Post {
   @key
@@ -38,26 +37,21 @@ model Post {
 }
 ```
 
-### `@namedFilter`
+### Named Filters (`@index` の `namedFilters`)
 
-resource model に preset filter を定義します。
+`@index` の `namedFilters` で preset filter を定義します。
 
 ```typespec
-@namedFilter("mine", #{
-  label: "My Posts",
-  conditions: #{
-    field: "authorId",
-    operator: "eq",
-    value: #{ context: "user.id" }
-  }
-})
-@namedFilter("recent", #{
-  label: "Recent",
-  conditions: #{
-    field: "createdAt",
-    operator: "gte",
-    value: #{ relative: "-7d" }
-  }
+@index(#{
+  columns: #["title", "status"],
+  namedFilters: #[
+    #{ id: "mine", label: "My Posts", conditions: #{
+      field: "authorId", operator: "eq", value: #{ context: "user.id" }
+    }},
+    #{ id: "recent", label: "Recent", conditions: #{
+      field: "createdAt", operator: "gte", value: #{ relative: "-7d" }
+    }}
+  ]
 })
 model Post { /* ... */ }
 ```

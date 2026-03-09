@@ -20,26 +20,21 @@ title: string;
 createdAt: utcDateTime;
 ```
 
-## `@namedFilter`
+## Named Filters
 
-resource model に preset filter を定義します。
+`@index` の `namedFilters` で preset filter を定義します。
 
 ```typespec
-@namedFilter("mine", #{
-  label: "Mine",
-  conditions: #{
-    field: "authorId",
-    operator: "eq",
-    value: #{ context: "user.id" }
-  }
-})
-@namedFilter("recent", #{
-  label: "Recent",
-  conditions: #{
-    field: "createdAt",
-    operator: "gte",
-    value: #{ relative: "-7d" }
-  }
+@index(#{
+  columns: #["title", "status", "createdAt"],
+  namedFilters: #[
+    #{ id: "mine", label: "Mine", conditions: #{
+      field: "authorId", operator: "eq", value: #{ context: "user.id" }
+    }},
+    #{ id: "recent", label: "Recent", conditions: #{
+      field: "createdAt", operator: "gte", value: #{ relative: "-7d" }
+    }}
+  ]
 })
 model Post {}
 ```
@@ -47,14 +42,16 @@ model Post {}
 ## Filter Expression
 
 ```typespec
-@namedFilter("publishedNews", #{
-  label: "Published News",
-  conditions: #{
-    and: #[
-      #{ field: "status", operator: "eq", value: "published" },
-      #{ field: "category", operator: "eq", value: "news" }
-    ]
-  }
+@index(#{
+  columns: #["title", "status"],
+  namedFilters: #[
+    #{ id: "publishedNews", label: "Published News", conditions: #{
+      and: #[
+        #{ field: "status", operator: "eq", value: "published" },
+        #{ field: "category", operator: "eq", value: "news" }
+      ]
+    }}
+  ]
 })
 model Post {}
 ```

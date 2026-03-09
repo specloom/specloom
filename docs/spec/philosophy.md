@@ -37,7 +37,6 @@ TypeSpec 側で定義するもの:
 - `@field`
 - `@index`
 - `@filter`
-- `@namedFilter`
 - `@relation`
 - `@nested`
 - `@section`

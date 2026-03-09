@@ -7,7 +7,7 @@ TypeSpec 側の現行入口は [`packages/typespec/README.md`](/Volumes/SSD/proj
 - package: `@specloom/typespec`
 - namespace: `using Specloom;`
 - core decorators:
-  `@entity`, `@field`, `@index`, `@section`, `@namedFilter`, `@rule`
+  `@entity`, `@field`, `@index`, `@section`, `@rule`
 - relation and options:
   `@relation`, `@nested`, `@options`, `@optionSource`
 - conditional UI/runtime rules:
