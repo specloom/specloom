@@ -11,10 +11,12 @@ extern dec entity(target: Model, options?: valueof {
     field: string,
     direction: "asc" | "desc"
   },
-  views?: {
-    list?: { enabled?: boolean },
-    form?: { enabled?: boolean },
-    show?: { enabled?: boolean }
+  operations?: {
+    list?: boolean,
+    show?: boolean,
+    create?: boolean,
+    edit?: boolean,
+    delete?: boolean
   },
   client?: unknown
 });

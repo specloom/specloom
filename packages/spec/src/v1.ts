@@ -28,9 +28,18 @@ export interface CompiledSpec {
   inputs?: Record<string, CompiledInput>;
 }
 
+export interface CompiledOperations {
+  list: boolean;
+  show: boolean;
+  create: boolean;
+  edit: boolean;
+  delete: boolean;
+}
+
 export interface CompiledResource {
   name: string;
   meta: CompiledResourceMeta;
+  operations: CompiledOperations;
   fields: Record<string, CompiledField>;
   views: CompiledViews;
   rules: CompiledRule[];
@@ -194,7 +203,6 @@ export interface CompiledViews {
 }
 
 export interface CompiledListView {
-  enabled: boolean;
   columns: CompiledColumn[];
   search?: {
     fields: string[];
@@ -229,7 +237,6 @@ export interface CompiledNamedFilter {
 }
 
 export interface CompiledRecordView {
-  enabled: boolean;
   sections: CompiledSection[];
   pageActions: CompiledAction[];
 }
@@ -288,6 +295,7 @@ export interface CompiledRule {
 }
 
 export type SpecloomSpec = CompiledSpec;
+export type SpecloomOperations = CompiledOperations;
 export type SpecloomResource = CompiledResource;
 export type SpecloomInput = CompiledInput;
 export type SpecloomField = CompiledField;
@@ -438,6 +446,10 @@ function validateResource(
 ): CompiledResource {
   const record = expectRecord(value, path);
   const fields = validateFieldMap(record.fields, `${path}.fields`);
+  const operations = validateOperations(
+    record.operations,
+    `${path}.operations`,
+  );
   const views = validateViews(record.views, `${path}.views`);
   const rules = validateRules(record.rules ?? [], `${path}.rules`);
   const meta = validateResourceMeta(record.meta, `${path}.meta`, fallbackName);
@@ -445,6 +457,7 @@ function validateResource(
   return {
     name: expectOptionalString(record.name, `${path}.name`) ?? fallbackName,
     meta,
+    operations,
     fields,
     views,
     rules,
@@ -849,6 +862,23 @@ function validateFieldSubmit(
   };
 }
 
+function validateOperations(
+  value: unknown,
+  path: string,
+): CompiledOperations {
+  if (value === undefined) {
+    return { list: true, show: true, create: true, edit: true, delete: true };
+  }
+  const record = expectRecord(value, path);
+  return {
+    list: expectOptionalBoolean(record.list, `${path}.list`) ?? true,
+    show: expectOptionalBoolean(record.show, `${path}.show`) ?? true,
+    create: expectOptionalBoolean(record.create, `${path}.create`) ?? true,
+    edit: expectOptionalBoolean(record.edit, `${path}.edit`) ?? true,
+    delete: expectOptionalBoolean(record.delete, `${path}.delete`) ?? true,
+  };
+}
+
 function validateViews(value: unknown, path: string): CompiledViews {
   const record = expectRecord(value, path);
   return {
@@ -861,7 +891,6 @@ function validateViews(value: unknown, path: string): CompiledViews {
 function validateListView(value: unknown, path: string): CompiledListView {
   const record = expectRecord(value, path);
   return {
-    enabled: expectOptionalBoolean(record.enabled, `${path}.enabled`) ?? true,
     columns: validateColumns(record.columns ?? [], `${path}.columns`),
     search: validateSearch(record.search, `${path}.search`),
     sortable:
@@ -1046,7 +1075,6 @@ function validateRecordView(
 ): CompiledRecordView {
   const record = expectRecord(value, path);
   return {
-    enabled: expectOptionalBoolean(record.enabled, `${path}.enabled`) ?? true,
     sections: validateSections(record.sections ?? [], `${path}.sections`, view),
     pageActions: validateActions(
       record.pageActions ?? [],

@@ -193,6 +193,7 @@ function buildResource(program: Program, model: Model): CompiledResource {
   const listMeta = getIndex(program, model);
   const rules = buildRules(program, model);
 
+  const ops = meta?.operations;
   return {
     name: model.name,
     meta: {
@@ -201,6 +202,13 @@ function buildResource(program: Program, model: Model): CompiledResource {
       ...(meta?.titleField ? { titleField: meta.titleField } : {}),
       ...(meta?.pageSize !== undefined ? { pageSize: meta.pageSize } : {}),
       ...(isRecord(meta?.client) ? { client: meta?.client } : {}),
+    },
+    operations: {
+      list: ops?.list ?? true,
+      show: ops?.show ?? true,
+      create: ops?.create ?? true,
+      edit: ops?.edit ?? true,
+      delete: ops?.delete ?? true,
     },
     fields,
     views: {
@@ -351,7 +359,6 @@ function buildListView(
 ): CompiledListView {
   const entity = getEntity(program, model);
   return {
-    enabled: entity?.views?.list?.enabled ?? true,
     columns: buildColumns(fields, listMeta),
     ...(listMeta?.searchable && listMeta.searchable.length > 0
       ? { search: { fields: listMeta.searchable } }
@@ -378,9 +385,7 @@ function buildRecordView(
   fields: Record<string, CompiledField>,
   view: "form" | "show",
 ): CompiledRecordView {
-  const entity = getEntity(program, model);
   return {
-    enabled: entity?.views?.[view]?.enabled ?? true,
     sections: buildSections(program, model, fields, view),
     pageActions: [],
   };
@@ -1046,10 +1051,16 @@ function createEmptyResource(name: string): CompiledResource {
     meta: {
       label: name,
     },
+    operations: {
+      list: true,
+      show: true,
+      create: true,
+      edit: true,
+      delete: true,
+    },
     fields: {},
     views: {
       list: {
-        enabled: true,
         columns: [],
         sortable: [],
         selection: "none",
@@ -1059,12 +1070,10 @@ function createEmptyResource(name: string): CompiledResource {
         rowActions: [],
       },
       form: {
-        enabled: true,
         sections: [],
         pageActions: [],
       },
       show: {
-        enabled: true,
         sections: [],
         pageActions: [],
       },

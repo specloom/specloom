@@ -8,6 +8,13 @@
         "pluralLabel": "Users",
         "titleField": "name"
       },
+      "operations": {
+        "list": true,
+        "show": true,
+        "create": true,
+        "edit": true,
+        "delete": true
+      },
       "fields": {
         "id": {
           "name": "id",
@@ -141,7 +148,6 @@
       },
       "views": {
         "list": {
-          "enabled": true,
           "columns": [
             {
               "field": "id",
@@ -209,7 +215,6 @@
           ]
         },
         "form": {
-          "enabled": true,
           "sections": [
             {
               "id": "basic",
@@ -227,7 +232,6 @@
           "pageActions": []
         },
         "show": {
-          "enabled": true,
           "sections": [
             {
               "id": "main",

@@ -9,7 +9,8 @@
     "compile:filters-options": "tsp compile ./entries/30-filters-options.tsp --emit @specloom/typespec --option @specloom/typespec.output-file=./generated/30-filters-options/spec.json",
     "compile:relations": "tsp compile ./entries/40-relations.tsp --emit @specloom/typespec --option @specloom/typespec.output-file=./generated/40-relations/spec.json",
     "compile:nested": "tsp compile ./entries/50-nested.tsp --emit @specloom/typespec --option @specloom/typespec.output-file=./generated/50-nested/spec.json",
-    "compile:actions": "tsp compile ./entries/60-actions.tsp --emit @specloom/typespec --option @specloom/typespec.output-file=./generated/60-actions/spec.json"
+    "compile:actions": "tsp compile ./entries/60-actions.tsp --emit @specloom/typespec --option @specloom/typespec.output-file=./generated/60-actions/spec.json",
+    "compile:solid-app": "tsp compile ./entries/solid-app.tsp --emit @specloom/typespec --option @specloom/typespec.output-file=./generated/solid-app/spec.json"
   },
   "dependencies": {
     "@specloom/spec": "link:../../packages/spec",

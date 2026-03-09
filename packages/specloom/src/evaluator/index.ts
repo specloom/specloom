@@ -61,9 +61,9 @@ export function evaluateListView(options: EvaluateListOptions): ListViewModel {
     options;
   const view = resource.views.list;
 
-  if (!view.enabled) {
+  if (!resource.operations.list) {
     throw new EvaluatorError(
-      `List view is disabled for resource: ${resource.name}`,
+      `List operation is disabled for resource: ${resource.name}`,
     );
   }
 
@@ -114,9 +114,9 @@ export function evaluateShowView(options: EvaluateShowOptions): ShowViewModel {
   const { resource, context, record } = options;
   const view = resource.views.show;
 
-  if (!view.enabled) {
+  if (!resource.operations.show) {
     throw new EvaluatorError(
-      `Show view is disabled for resource: ${resource.name}`,
+      `Show operation is disabled for resource: ${resource.name}`,
     );
   }
 
@@ -140,9 +140,11 @@ export function evaluateFormView(options: EvaluateFormOptions): FormViewModel {
   const { resource, context, mode, record, errors, isDirty } = options;
   const view = resource.views.form;
 
-  if (!view.enabled) {
+  const operationAllowed =
+    mode === "create" ? resource.operations.create : resource.operations.edit;
+  if (!operationAllowed) {
     throw new EvaluatorError(
-      `Form view is disabled for resource: ${resource.name}`,
+      `${mode === "create" ? "Create" : "Edit"} operation is disabled for resource: ${resource.name}`,
     );
   }
 
