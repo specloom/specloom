@@ -5,6 +5,7 @@ import {
   type CompiledField,
   type CompiledFieldType,
   type CompiledInput,
+  type CompiledListFilter,
   type CompiledListView,
   type CompiledNamedFilter,
   type CompiledRecordView,
@@ -37,21 +38,21 @@ import {
 import type { SpecloomEmitterOptions } from "./lib.js";
 import {
   getDisabledWhen,
+  getAction,
   getEntity,
   getField,
-  getFilter,
-  getIndex,
+  getFormView,
+  getListView,
   getMatch,
   getNamedFilters,
   getNested,
   getOptionSource,
   getOptions,
-  getPageAction,
   getReadonlyWhen,
   getRelation,
-  getRowAction,
   getRules,
   getSections,
+  getShowView,
   getRequiredWhen,
   getVisibleWhen,
   hasAnySpecloomMetadata,
@@ -59,9 +60,12 @@ import {
   isComputed,
   isCreateOnly,
   isHidden,
+  type ActionRefDef,
   type ActionDef,
   type FieldDef,
-  type IndexDef,
+  type ListFilterDef,
+  type ListViewDef,
+  type RecordViewDef,
   type RuleDef,
   type SectionDef,
 } from "./decorators.js";
@@ -95,6 +99,10 @@ export async function $onEmit(context: EmitContext<SpecloomEmitterOptions>) {
 function buildCompiledSpec(program: Program): CompiledSpec {
   const models: Model[] = [];
   const operations: Operation[] = [];
+  interface ActionSource {
+    operation: Operation;
+    def: ActionDef;
+  }
 
   navigateProgram(program, {
     model(model: Model) {
@@ -115,12 +123,10 @@ function buildCompiledSpec(program: Program): CompiledSpec {
 
   const actionInputModels = new Set<Model>();
   const referencedResourceNames = new Set<string>();
-  const actionsByResource = new Map<string, CompiledAction[]>();
+  const actionsByResource = new Map<string, ActionSource[]>();
 
   for (const operation of operations) {
-    const pageAction = getPageAction(program, operation);
-    const rowAction = getRowAction(program, operation);
-    const def = pageAction ?? rowAction;
+    const def = getAction(program, operation);
     if (!def) {
       continue;
     }
@@ -130,9 +136,8 @@ function buildCompiledSpec(program: Program): CompiledSpec {
       actionInputModels.add(def.inputModel);
     }
 
-    const compiled = buildAction(program, operation, def);
     const existing = actionsByResource.get(def.resource) ?? [];
-    existing.push(compiled);
+    existing.push({ operation, def });
     actionsByResource.set(def.resource, existing);
   }
 
@@ -144,17 +149,15 @@ function buildCompiledSpec(program: Program): CompiledSpec {
     if (!shouldCompileResource(program, model, referencedResourceNames)) {
       continue;
     }
-    resources[model.name] = buildResource(program, model);
+    resources[model.name] = buildResource(
+      program,
+      model,
+      actionsByResource.get(model.name) ?? [],
+    );
   }
 
   for (const resourceName of referencedResourceNames) {
     resources[resourceName] ??= createEmptyResource(resourceName);
-  }
-
-  for (const [resourceName, actions] of actionsByResource) {
-    const resource =
-      resources[resourceName] ?? createEmptyResource(resourceName);
-    resources[resourceName] = attachActions(resource, actions);
   }
 
   const inputs: Record<string, CompiledInput> = {};
@@ -187,10 +190,16 @@ function shouldCompileResource(
   return false;
 }
 
-function buildResource(program: Program, model: Model): CompiledResource {
+function buildResource(
+  program: Program,
+  model: Model,
+  actionSources: Array<{ operation: Operation; def: ActionDef }>,
+): CompiledResource {
   const meta = getEntity(program, model);
   const fields = buildFields(program, model);
-  const listMeta = getIndex(program, model);
+  const listMeta = getListView(program, model);
+  const showMeta = getShowView(program, model);
+  const formMeta = getFormView(program, model);
   const rules = buildRules(program, model);
 
   const ops = meta?.operations;
@@ -212,9 +221,23 @@ function buildResource(program: Program, model: Model): CompiledResource {
     },
     fields,
     views: {
-      list: buildListView(program, model, fields, listMeta),
-      form: buildRecordView(program, model, fields, "form"),
-      show: buildRecordView(program, model, fields, "show"),
+      list: buildListView(program, model, fields, listMeta, actionSources),
+      form: buildRecordView(
+        program,
+        model,
+        fields,
+        "form",
+        formMeta,
+        actionSources,
+      ),
+      show: buildRecordView(
+        program,
+        model,
+        fields,
+        "show",
+        showMeta,
+        actionSources,
+      ),
     },
     rules,
   };
@@ -305,9 +328,6 @@ function buildField(program: Program, prop: ModelProperty): CompiledField {
     ...(getOptionSource(program, prop)
       ? { optionsSource: getOptionSource(program, prop) }
       : {}),
-    ...(normalizeFilter(getFilter(program, prop))
-      ? { filter: normalizeFilter(getFilter(program, prop)) }
-      : {}),
     ...(relation
       ? {
           relation: {
@@ -355,14 +375,16 @@ function buildListView(
   program: Program,
   model: Model,
   fields: Record<string, CompiledField>,
-  listMeta: IndexDef | undefined,
+  listMeta: ListViewDef | undefined,
+  actionSources: Array<{ operation: Operation; def: ActionDef }>,
 ): CompiledListView {
   const entity = getEntity(program, model);
   return {
     columns: buildColumns(fields, listMeta),
-    ...(listMeta?.searchable && listMeta.searchable.length > 0
-      ? { search: { fields: listMeta.searchable } }
+    ...(listMeta?.search?.fields && listMeta.search.fields.length > 0
+      ? { search: { fields: listMeta.search.fields } }
       : {}),
+    filters: buildListFilters(fields, listMeta?.filters),
     sortable: listMeta?.sortable ?? [],
     defaultSort: listMeta?.defaultSort ?? entity?.defaultSort,
     selection: listMeta?.selection ?? "none",
@@ -374,8 +396,20 @@ function buildListView(
         ...(item.order !== undefined ? { order: item.order } : {}),
         conditions: normalizeFilterExpression(item.conditions),
       })) as CompiledNamedFilter[] | undefined) ?? [],
-    pageActions: [],
-    rowActions: [],
+    pageActions: resolveActionRefs(
+      program,
+      actionSources,
+      listMeta?.pageActions,
+      "page",
+      "list",
+    ),
+    rowActions: resolveActionRefs(
+      program,
+      actionSources,
+      listMeta?.rowActions,
+      "row",
+      "list",
+    ),
   };
 }
 
@@ -384,10 +418,18 @@ function buildRecordView(
   model: Model,
   fields: Record<string, CompiledField>,
   view: "form" | "show",
+  viewMeta: RecordViewDef | undefined,
+  actionSources: Array<{ operation: Operation; def: ActionDef }>,
 ): CompiledRecordView {
   return {
     sections: buildSections(program, model, fields, view),
-    pageActions: [],
+    pageActions: resolveActionRefs(
+      program,
+      actionSources,
+      viewMeta?.pageActions,
+      "page",
+      view,
+    ),
   };
 }
 
@@ -561,24 +603,34 @@ function buildAction(
   program: Program,
   operation: Operation,
   def: ActionDef,
+  placement: ActionRefDef,
+  kind: "page" | "row",
+  view: "list" | "show" | "form",
 ): CompiledAction {
-  const disabledWhen = def.disabledWhen ?? getDisabledWhen(program, operation);
+  const disabledWhen =
+    placement.disabledWhen ??
+    def.disabledWhen ??
+    getDisabledWhen(program, operation);
   const inputModelName = def.inputModel?.name;
   return {
     id: def.id,
-    kind: def.kind,
-    view: def.view,
+    kind,
+    view,
     resource: def.resource,
-    label: def.label ?? def.id,
-    placement: def.placement,
-    order: def.order,
-    icon: def.icon,
-    prominence: def.prominence,
-    confirmMessage: def.confirmMessage,
-    selection: def.selection,
-    args: def.args,
+    label: placement.label ?? def.label ?? def.id,
+    placement: placement.placement ?? def.placement,
+    order: placement.order ?? def.order,
+    icon: placement.icon ?? def.icon,
+    prominence: placement.prominence ?? def.prominence,
+    confirm: placement.confirm ?? def.confirm,
+    ...(kind === "page" && view === "list" && placement.selection
+      ? { selection: placement.selection }
+      : {}),
+    args: placement.args ?? def.args,
     ...(inputModelName ? { input: inputModelName } : {}),
-    ...(def.when ? { when: compileExpression(def.when) } : {}),
+    ...((placement.when ?? def.when)
+      ? { when: compileExpression((placement.when ?? def.when)!) }
+      : {}),
     ...(disabledWhen ? { disabledWhen: compileExpression(disabledWhen) } : {}),
     operation: {
       id: operation.name,
@@ -593,35 +645,39 @@ function buildAction(
           }
         : {}),
     },
-    ...(isRecord(def.client) ? { client: def.client } : {}),
+    ...(isRecord(placement.client ?? def.client)
+      ? { client: placement.client ?? def.client }
+      : {}),
   };
 }
 
-function attachActions(
-  resource: CompiledResource,
-  actions: CompiledAction[],
-): CompiledResource {
-  const next = structuredClone(resource);
-  for (const action of actions) {
-    if (action.kind === "row") {
-      next.views.list.rowActions.push(action);
-      continue;
-    }
-
-    if (action.view === "list") {
-      next.views.list.pageActions.push(action);
-    } else if (action.view === "form") {
-      next.views.form.pageActions.push(action);
-    } else {
-      next.views.show.pageActions.push(action);
-    }
+function resolveActionRefs(
+  program: Program,
+  actionSources: Array<{ operation: Operation; def: ActionDef }>,
+  refs: ActionRefDef[] | undefined,
+  kind: "page" | "row",
+  view: "list" | "show" | "form",
+): CompiledAction[] {
+  if (!refs || refs.length === 0) {
+    return [];
   }
-  return next;
+
+  const byId = new Map(
+    actionSources.map((source) => [source.def.id, source] as const),
+  );
+
+  return refs.map((ref) => {
+    const source = byId.get(ref.ref);
+    if (!source) {
+      throw new Error(`Action not found for ref "${ref.ref}"`);
+    }
+    return buildAction(program, source.operation, source.def, ref, kind, view);
+  });
 }
 
 function buildColumns(
   fields: Record<string, CompiledField>,
-  listMeta: IndexDef | undefined,
+  listMeta: ListViewDef | undefined,
 ): CompiledColumn[] {
   const sortable = new Set(listMeta?.sortable ?? []);
   if (Array.isArray(listMeta?.columns) && listMeta.columns.length > 0) {
@@ -695,21 +751,32 @@ function normalizeColumn(
   };
 }
 
-function normalizeFilter(
-  filter: ReturnType<typeof getFilter>,
-): CompiledField["filter"] | undefined {
-  if (!filter) {
-    return undefined;
+function buildListFilters(
+  fields: Record<string, CompiledField>,
+  filters: ListFilterDef[] | undefined,
+): CompiledListFilter[] {
+  if (!filters || filters.length === 0) {
+    return [];
   }
-  return {
-    operators: filter.operators ?? [],
-    ...(filter.widget ? { widget: filter.widget } : {}),
-    ...(filter.order !== undefined ? { order: filter.order } : {}),
-    ...(filter.placement ? { placement: filter.placement } : {}),
-    ...(filter.defaultValue !== undefined
-      ? { defaultValue: filter.defaultValue }
-      : {}),
-  };
+
+  return filters.map((filter) => {
+    const field = fields[filter.field];
+    if (!field) {
+      throw new Error(`List filter field not found: ${filter.field}`);
+    }
+
+    return {
+      field: filter.field,
+      label: field.ui.label ?? filter.field,
+      operators: filter.operators ?? [],
+      ...(filter.widget ? { widget: filter.widget } : {}),
+      ...(filter.order !== undefined ? { order: filter.order } : {}),
+      ...(filter.placement ? { placement: filter.placement } : {}),
+      ...(filter.defaultValue !== undefined
+        ? { defaultValue: filter.defaultValue }
+        : {}),
+    };
+  });
 }
 
 function normalizeFilterExpression(value: unknown): FilterExpression {
@@ -1062,6 +1129,7 @@ function createEmptyResource(name: string): CompiledResource {
     views: {
       list: {
         columns: [],
+        filters: [],
         sortable: [],
         selection: "none",
         clickAction: "none",

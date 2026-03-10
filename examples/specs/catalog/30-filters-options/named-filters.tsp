@@ -3,31 +3,40 @@ import "../shared/imports.tsp";
 using Specloom;
 
 @entity(#{ label: "Named Filters", pluralLabel: "Named Filters", titleField: "title" })
-@index(#{ columns: #["title", "ownerId", "status", "createdAt"], searchable: #["title"], sortable: #["title", "createdAt"] })
-@namedFilter("mine", #{
-  label: "Mine",
-  conditions: #{
-    field: "ownerId",
-    operator: "eq",
-    value: #{ context: "user.id" }
-  }
-})
-@namedFilter("recent", #{
-  label: "Recent",
-  conditions: #{
-    field: "createdAt",
-    operator: "gte",
-    value: #{ relative: "-7d" }
-  }
-})
-@namedFilter("publishedNews", #{
-  label: "Published News",
-  conditions: #{
-    and: #[
-      #{ field: "status", operator: "eq", value: "published" },
-      #{ field: "category", operator: "eq", value: "news" }
-    ]
-  }
+@listView(#{
+  columns: #["title", "ownerId", "status", "createdAt"],
+  search: #{ fields: #["title"] },
+  sortable: #["title", "createdAt"],
+  namedFilters: #[
+    #{
+      id: "mine",
+      label: "Mine",
+      conditions: #{
+        field: "ownerId",
+        operator: "eq",
+        value: #{ context: "user.id" }
+      }
+    },
+    #{
+      id: "recent",
+      label: "Recent",
+      conditions: #{
+        field: "createdAt",
+        operator: "gte",
+        value: #{ relative: "-7d" }
+      }
+    },
+    #{
+      id: "publishedNews",
+      label: "Published News",
+      conditions: #{
+        and: #[
+          #{ field: "status", operator: "eq", value: "published" },
+          #{ field: "category", operator: "eq", value: "news" }
+        ]
+      }
+    }
+  ]
 })
 model NamedFiltersExample {
   @key

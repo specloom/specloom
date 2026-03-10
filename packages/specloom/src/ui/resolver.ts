@@ -142,7 +142,7 @@ export function resolveActionPresentation(
     prominence: input.action.prominence,
     disabled: input.action.disabled,
     hidden: !input.action.visible,
-    confirmMessage: patch.confirmMessage ?? input.action.confirmMessage,
+    confirm: patch.confirm ?? input.action.confirm,
     props: patch.props ?? {},
     client: {
       ...input.resource.meta.client,
@@ -259,7 +259,7 @@ function mergeActionPatch(
 ): ActionPresentationPatch {
   return {
     ...mergePresentationPatch(base, override),
-    confirmMessage: override?.confirmMessage ?? base?.confirmMessage,
+    confirm: override?.confirm ?? base?.confirm,
   };
 }
 

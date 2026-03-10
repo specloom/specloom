@@ -1,8 +1,8 @@
 # Action
 
-action は operation に付けます。HTTP method / path / input / output は TypeSpec 側の operation から取ります。
+action は operation に付けます。view への配置は `@listView` / `@showView` / `@formView` 側に書き、HTTP method / path / input / output は operation から取ります。
 
-## `@pageAction`
+## `@action`
 
 ```typespec
 model ExportUsersInput {
@@ -10,25 +10,29 @@ model ExportUsersInput {
   format: string;
 }
 
-@pageAction(User, #{
+@listView(#{
+  pageActions: #[
+    #{ ref: "export", selection: "query" }
+  ],
+  rowActions: #["suspend"]
+})
+model User {}
+
+@action(User, #{
   id: "export",
-  view: "list",
   label: "Export",
-  selection: "query",
   prominence: "secondary",
   icon: "download",
   when: "role == 'admin'"
 }, ExportUsersInput)
 op exportUsers(): string;
-```
 
-## `@rowAction`
-
-```typespec
-@rowAction(User, #{
+@action(User, #{
   id: "suspend",
   label: "Suspend",
-  confirmMessage: "Are you sure?",
+  confirm: #{
+    message: "Are you sure?"
+  },
   when: "status == 'active'",
   disabledWhen: "locked == true",
   prominence: "danger"
@@ -39,22 +43,37 @@ op suspendUser(): string;
 ## Common Options
 
 - `id`
-- `view`
 - `label`
 - `placement`
 - `order`
 - `icon`
 - `prominence`
-- `confirmMessage`
+- `confirm`
 - `args`
 - `when`
 - `disabledWhen`
 - `client`
 
-`@pageAction` だけ:
+## Placement
+
+list page action だけ:
 
 - `selection`
-- optional input model
+
+view 側では action ref として次を上書きできます。
+
+- `ref`
+- `selection`
+- `label`
+- `placement`
+- `order`
+- `icon`
+- `prominence`
+- `confirm`
+- `args`
+- `when`
+- `disabledWhen`
+- `client`
 
 ## Runtime
 

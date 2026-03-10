@@ -3,7 +3,7 @@ import "../shared/imports.tsp";
 using Specloom;
 
 @entity(#{ label: "Field Validation", pluralLabel: "Field Validations", titleField: "name" })
-@index(#{ columns: #["name", "email", "age"], searchable: #["name", "email"], sortable: #["name", "age"] })
+@listView(#{ columns: #["name", "email", "age"], search: #{ fields: #["name", "email"], sortable: #["name", "age"] } })
 @section("basic", #{ label: "Basic", view: "form", order: 10 })
 model FieldValidationExample {
   @key

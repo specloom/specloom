@@ -4,7 +4,7 @@ import "../shared/common-resources.tsp";
 using Specloom;
 
 @entity(#{ label: "Belongs To Relation", pluralLabel: "Belongs To Relations", titleField: "name" })
-@index(#{ columns: #["name", "departmentId"], searchable: #["name"], sortable: #["name"] })
+@listView(#{ columns: #["name", "departmentId"], search: #{ fields: #["name"], sortable: #["name"] } })
 model BelongsToRelationExample {
   @key
   @field(#{ label: "ID", list: false, show: true, form: false, readonly: true })

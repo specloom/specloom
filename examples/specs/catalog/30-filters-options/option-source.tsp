@@ -4,7 +4,7 @@ import "../shared/common-resources.tsp";
 using Specloom;
 
 @entity(#{ label: "Option Source", pluralLabel: "Option Sources", titleField: "title" })
-@index(#{ columns: #["title", "departmentId", "reviewerId"], searchable: #["title"], sortable: #["title"] })
+@listView(#{ columns: #["title", "departmentId", "reviewerId"], search: #{ fields: #["title"], sortable: #["title"] } })
 model OptionSourceExample {
   @key
   @field(#{ label: "ID", list: false, show: true, form: false, readonly: true })

@@ -4,9 +4,9 @@
 
 ## TypeSpec Surface
 
-### `@filter`
+### `@listView.filters`
 
-field を filter 対象として公開します。
+field ごとの filter は list view 側で定義します。
 
 ```typespec
 import "@specloom/typespec";
@@ -14,8 +14,13 @@ import "@specloom/typespec";
 using Specloom;
 
 @entity(#{ label: "Post" })
-@index(#{
+@listView(#{
   columns: #["title", "status"],
+  search: #{ fields: #["title"] },
+  filters: #[
+    #{ field: "title", operators: #["contains", "startsWith"] },
+    #{ field: "status", operators: #["eq", "neq", "in"] }
+  ],
   namedFilters: #[
     #{ id: "published", label: "Published", conditions: #{
       field: "status", operator: "eq", value: "published"
@@ -28,21 +33,19 @@ model Post {
   id: string;
 
   @field(#{ label: "Title", list: true, show: true, form: true })
-  @filter(#["contains", "startsWith"])
   title: string;
 
   @field(#{ label: "Status", list: true, show: true, form: true })
-  @filter(#["eq", "neq", "in"])
   status: string;
 }
 ```
 
-### Named Filters (`@index` の `namedFilters`)
+### Named Filters (`@listView` の `namedFilters`)
 
-`@index` の `namedFilters` で preset filter を定義します。
+`@listView` の `namedFilters` で preset filter を定義します。
 
 ```typespec
-@index(#{
+@listView(#{
   columns: #["title", "status"],
   namedFilters: #[
     #{ id: "mine", label: "My Posts", conditions: #{

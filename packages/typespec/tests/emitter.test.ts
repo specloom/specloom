@@ -1,4 +1,5 @@
 import { execFileSync } from "node:child_process";
+import { createRequire } from "node:module";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, resolve } from "node:path";
@@ -6,9 +7,14 @@ import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const require = createRequire(import.meta.url);
 const fixturePath = resolve(packageRoot, "tests/sample.tsp");
 const expectedOutputRoot = resolve(packageRoot, "tests/output");
-const tspBin = resolve(packageRoot, "../../node_modules/.bin/tsp");
+const compilerRoot = resolve(
+  dirname(require.resolve("@typespec/compiler")),
+  "../..",
+);
+const tspBin = resolve(compilerRoot, "cmd/tsp.js");
 
 const tempDirs: string[] = [];
 
@@ -62,21 +68,25 @@ describe("typespec emitter", () => {
     });
   });
 
-  it("emits field validation and filter metadata", () => {
+  it("emits field validation and list filter metadata", () => {
     const { user } = compileSplitFixture();
 
     expect(user.resources.User.fields.name).toMatchObject({
       validation: {
         minLength: 1,
       },
-      filter: {
-        operators: ["eq", "contains"],
-      },
       ui: {
         section: "basic",
         order: 20,
       },
     });
+    expect(user.resources.User.views.list.filters).toEqual([
+      {
+        field: "name",
+        label: "Name",
+        operators: ["eq", "contains"],
+      },
+    ]);
   });
 
   it("emits numeric validation and model rules", () => {
@@ -149,6 +159,13 @@ model Profile {
     });
     expect(user.resources.User.views.list).toMatchObject({
       search: { fields: ["name", "email"] },
+      filters: [
+        {
+          field: "name",
+          label: "Name",
+          operators: ["eq", "contains"],
+        },
+      ],
       sortable: ["name", "email"],
       defaultSort: {
         field: "name",

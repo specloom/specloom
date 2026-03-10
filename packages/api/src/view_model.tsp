@@ -35,7 +35,13 @@ model NamedFilter {
   active: boolean;
 }
 
+model FieldFilter {
+  field: string;
+  label: string;
+}
+
 model Filters {
+  fields: FieldFilter[];
   named: NamedFilter[];
 }
 

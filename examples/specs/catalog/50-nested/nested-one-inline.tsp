@@ -4,7 +4,7 @@ import "../shared/common-models.tsp";
 using Specloom;
 
 @entity(#{ label: "Nested One", pluralLabel: "Nested Ones", titleField: "name" })
-@index(#{ columns: #["name", "shippingAddress"], searchable: #["name"], sortable: #["name"] })
+@listView(#{ columns: #["name", "shippingAddress"], search: #{ fields: #["name"], sortable: #["name"] } })
 @section("profile", #{ label: "Profile", view: "form", order: 10 })
 @section("shipping", #{ label: "Shipping", view: "form", order: 20 })
 model NestedOneInlineExample {

@@ -35,13 +35,14 @@ TypeSpec 側で定義するもの:
 
 - `@entity`
 - `@field`
-- `@index`
+- `@listView`
+- `@showView`
+- `@formView`
 - `@filter`
 - `@relation`
 - `@nested`
 - `@section`
-- `@pageAction`
-- `@rowAction`
+- `@action`
 - `@rule`
 
 ### Compiled Spec

@@ -5,7 +5,9 @@ resource 全体と一覧/詳細/フォームの骨格を定義します。
 ## Main Decorators
 
 - `@entity`
-- `@index`
+- `@listView`
+- `@showView`
+- `@formView`
 - `@section`
 - `@rule`
 
@@ -18,10 +20,12 @@ resource 全体と一覧/詳細/フォームの骨格を定義します。
   titleField: "name",
   pageSize: 50,
   defaultSort: #{ field: "name", direction: "asc" },
-  views: #{
-    list: #{ enabled: true },
-    form: #{ enabled: true },
-    show: #{ enabled: true }
+  operations: #{
+    list: true,
+    show: true,
+    create: true,
+    edit: true,
+    delete: true
   },
   client: #{
     analyticsKey: "user"
@@ -35,15 +39,15 @@ model User {}
 - resource label
 - default sort
 - page size
-- view enable/disable
+- operation enable/disable
 - resource-level client metadata
 
-## `@index`
+## `@listView`
 
 list view の設定です。
 
 ```typespec
-@index(#{
+@listView(#{
   columns: #[
     "id",
     #{
@@ -53,7 +57,7 @@ list view の設定です。
       placement: "primary"
     }
   ],
-  searchable: #["name", "email"],
+  search: #{ fields: #["name", "email"] },
   sortable: #["name", "email"],
   defaultSort: #{ field: "name", direction: "asc" },
   selection: "multi",
@@ -64,6 +68,16 @@ list view の設定です。
     }}
   ]
 })
+model User {}
+```
+
+## `@showView` / `@formView`
+
+record page の action 配置です。
+
+```typespec
+@showView(#{ pageActions: #["sync"] })
+@formView(#{ pageActions: #["duplicate"] })
 model User {}
 ```
 

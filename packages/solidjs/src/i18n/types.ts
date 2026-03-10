@@ -25,18 +25,28 @@ export interface SpecloomTranslations {
   "list.newButton": string;
   /** Search placeholder */
   "list.searchPlaceholder": string;
+  /** Inline loading label for list refresh */
+  "list.loading": string;
   /** Reset all filters button */
   "list.filterAll": string;
   /** Table column header for row action link */
   "list.openColumn": string;
+  /** Toggle all visible rows */
+  "list.selectAll": string;
+  /** Toggle a row selection */
+  "list.selectRow": string;
   /** Row link label for show action */
   "list.action.view": string;
   /** Row link label for edit action */
   "list.action.edit": string;
-  /** Selection mode display. Receives `{mode}` */
-  "list.selectionMode": string;
   /** Selected count. Receives `{count}` */
   "list.selectedCount": string;
+  /** Pagination previous button label */
+  "list.pagination.previous": string;
+  /** Pagination next button label */
+  "list.pagination.next": string;
+  /** Pagination summary. Receives `{from}`, `{to}`, `{total}` */
+  "list.pagination.summary": string;
 
   // Show page
   /** Page title for show view. Receives `{label}` and `{id}` */

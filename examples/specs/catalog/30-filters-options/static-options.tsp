@@ -3,7 +3,7 @@ import "../shared/imports.tsp";
 using Specloom;
 
 @entity(#{ label: "Static Options", pluralLabel: "Static Options", titleField: "title" })
-@index(#{ columns: #["title", "priority", "published"], searchable: #["title"], sortable: #["title", "priority"] })
+@listView(#{ columns: #["title", "priority", "published"], search: #{ fields: #["title"], sortable: #["title", "priority"] } })
 model StaticOptionsExample {
   @key
   @field(#{ label: "ID", list: false, show: true, form: false, readonly: true })

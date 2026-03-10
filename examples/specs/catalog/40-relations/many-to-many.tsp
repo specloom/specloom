@@ -4,7 +4,7 @@ import "../shared/common-resources.tsp";
 using Specloom;
 
 @entity(#{ label: "Many To Many Relation", pluralLabel: "Many To Many Relations", titleField: "title" })
-@index(#{ columns: #["title", "tagIds"], searchable: #["title"], sortable: #["title"] })
+@listView(#{ columns: #["title", "tagIds"], search: #{ fields: #["title"], sortable: #["title"] } })
 model ManyToManyRelationExample {
   @key
   @field(#{ label: "ID", list: false, show: true, form: false, readonly: true })

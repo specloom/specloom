@@ -6,6 +6,13 @@
       "meta": {
         "label": "Address"
       },
+      "operations": {
+        "list": true,
+        "show": true,
+        "create": true,
+        "edit": true,
+        "delete": true
+      },
       "fields": {
         "line1": {
           "name": "line1",
@@ -32,8 +39,8 @@
       },
       "views": {
         "list": {
-          "enabled": true,
           "columns": [],
+          "filters": [],
           "sortable": [],
           "selection": "none",
           "clickAction": "none",
@@ -42,7 +49,6 @@
           "rowActions": []
         },
         "form": {
-          "enabled": true,
           "sections": [
             {
               "id": "main",
@@ -56,7 +62,6 @@
           "pageActions": []
         },
         "show": {
-          "enabled": true,
           "sections": [
             {
               "id": "main",

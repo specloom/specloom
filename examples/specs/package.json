@@ -4,13 +4,13 @@
   "type": "module",
   "packageManager": "pnpm@9.15.0",
   "scripts": {
-    "compile:basic": "tsp compile ./entries/10-basic.tsp --emit @specloom/typespec --option @specloom/typespec.output-file=./generated/10-basic/spec.json",
-    "compile:validation": "tsp compile ./entries/20-validation.tsp --emit @specloom/typespec --option @specloom/typespec.output-file=./generated/20-validation/spec.json",
-    "compile:filters-options": "tsp compile ./entries/30-filters-options.tsp --emit @specloom/typespec --option @specloom/typespec.output-file=./generated/30-filters-options/spec.json",
-    "compile:relations": "tsp compile ./entries/40-relations.tsp --emit @specloom/typespec --option @specloom/typespec.output-file=./generated/40-relations/spec.json",
-    "compile:nested": "tsp compile ./entries/50-nested.tsp --emit @specloom/typespec --option @specloom/typespec.output-file=./generated/50-nested/spec.json",
-    "compile:actions": "tsp compile ./entries/60-actions.tsp --emit @specloom/typespec --option @specloom/typespec.output-file=./generated/60-actions/spec.json",
-    "compile:solid-app": "tsp compile ./entries/solid-app.tsp --emit @specloom/typespec --option @specloom/typespec.output-file=./generated/solid-app/spec.json"
+    "compile:basic": "node ../../packages/typespec/node_modules/@typespec/compiler/cmd/tsp.js compile ./entries/10-basic.tsp --emit @specloom/typespec --option @specloom/typespec.output-file=./generated/10-basic/spec.json",
+    "compile:validation": "node ../../packages/typespec/node_modules/@typespec/compiler/cmd/tsp.js compile ./entries/20-validation.tsp --emit @specloom/typespec --option @specloom/typespec.output-file=./generated/20-validation/spec.json",
+    "compile:filters-options": "node ../../packages/typespec/node_modules/@typespec/compiler/cmd/tsp.js compile ./entries/30-filters-options.tsp --emit @specloom/typespec --option @specloom/typespec.output-file=./generated/30-filters-options/spec.json",
+    "compile:relations": "node ../../packages/typespec/node_modules/@typespec/compiler/cmd/tsp.js compile ./entries/40-relations.tsp --emit @specloom/typespec --option @specloom/typespec.output-file=./generated/40-relations/spec.json",
+    "compile:nested": "node ../../packages/typespec/node_modules/@typespec/compiler/cmd/tsp.js compile ./entries/50-nested.tsp --emit @specloom/typespec --option @specloom/typespec.output-file=./generated/50-nested/spec.json",
+    "compile:actions": "node ../../packages/typespec/node_modules/@typespec/compiler/cmd/tsp.js compile ./entries/60-actions.tsp --emit @specloom/typespec --option @specloom/typespec.output-file=./generated/60-actions/spec.json",
+    "compile:solid-app": "node ../../packages/typespec/node_modules/@typespec/compiler/cmd/tsp.js compile ./entries/solid-app.tsp --emit @specloom/typespec --option @specloom/typespec.output-file=./generated/solid-app/spec.json"
   },
   "dependencies": {
     "@specloom/spec": "link:../../packages/spec",

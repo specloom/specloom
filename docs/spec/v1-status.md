@@ -9,9 +9,10 @@
 - UI library は core に同梱しない
 - TypeSpec 側は `using Specloom;`
 - resource 定義は `@entity`
-- list 設定は `@index`
+- list 設定は `@listView`
+- show/form 設定は `@showView` / `@formView`
 - cross-field rule は `@rule`
-- action は `@pageAction` / `@rowAction`
+- action は `@action`
 - 標準 validation は TypeSpec built-in を優先する
   `@minValue`, `@maxValue`, `@minLength`, `@maxLength`, `@pattern`, `@minItems`, `@maxItems`
 

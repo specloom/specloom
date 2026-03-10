@@ -22,6 +22,7 @@ export default function ResourceList() {
     (searchParams.order || defaultSort()?.direction || "asc") as "asc" | "desc";
   const perPage = () =>
     Number(searchParams.perPage) || resource()?.meta.pageSize || 25;
+  const currentPage = () => Number(searchParams.page) || 1;
 
   const filterExpr = () => {
     const raw = searchParams.filter;
@@ -35,7 +36,7 @@ export default function ResourceList() {
 
   const listParams = () => ({
     pagination: {
-      page: Number(searchParams.page) || 1,
+      page: currentPage(),
       perPage: perPage(),
     },
     sort: { field: sortField(), order: sortOrder() },
@@ -54,6 +55,8 @@ export default function ResourceList() {
         args.params,
       ),
   );
+  const resolvedResource = () => resource() ?? resource.latest;
+  const resolvedData = () => data() ?? data.latest;
 
   // Store is created once per resource, wrapped once with URL sync
   let wrappedStore: SolidListStore | undefined;
@@ -96,18 +99,25 @@ export default function ResourceList() {
 
   return (
     <Show
-      when={!resource.loading && !data.loading && getStore() && resource()}
+      when={resolvedResource() && getStore()}
       fallback={
         <div class="text-sm text-muted-foreground">
-          {resource.error ?? data.error
-            ? `Error: ${resource.error ?? data.error}`
-            : "Loading resource..."}
+          {resource.error ? `Error: ${resource.error}` : "Loading resource..."}
         </div>
       }
     >
       <ResourceListPage
         store={getStore()!}
-        resource={resource()!}
+        resource={resolvedResource()!}
+        loading={data.loading}
+        error={data.error ? String(data.error) : undefined}
+        pagination={{
+          page: currentPage(),
+          perPage: perPage(),
+          total: resolvedData()?.total ?? 0,
+          onPageChange: (page) =>
+            setSearchParams({ page: page === 1 ? undefined : String(page) }),
+        }}
       />
     </Show>
   );

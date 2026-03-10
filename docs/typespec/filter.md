@@ -2,30 +2,29 @@
 
 TypeSpec 側で filter surface を定義する方法です。
 
-## `@filter`
+## `@listView.filters`
 
-field を filter UI に公開します。
+field ごとの組み合わせ filter は `@listView.filters` に置きます。
 
 ```typespec
-@field(#{ label: "Title", list: true, form: true, show: true })
-@filter(#["contains", "startsWith"])
-title: string;
-
-@field(#{ label: "Created At", list: true, show: true })
-@filter(#{
-  operators: #["gte", "lte"],
-  widget: "date-range",
-  placement: "advanced"
+@listView(#{
+  columns: #["title", "status", "createdAt"],
+  search: #{ fields: #["title"] },
+  filters: #[
+    #{ field: "title", operators: #["contains", "startsWith"] },
+    #{ field: "status", operators: #["eq", "in"], widget: "select" },
+    #{ field: "createdAt", operators: #["gte", "lte"], widget: "date-range", placement: "advanced" }
+  ]
 })
-createdAt: utcDateTime;
+model Post {}
 ```
 
 ## Named Filters
 
-`@index` の `namedFilters` で preset filter を定義します。
+`@listView` の `namedFilters` で preset filter を定義します。
 
 ```typespec
-@index(#{
+@listView(#{
   columns: #["title", "status", "createdAt"],
   namedFilters: #[
     #{ id: "mine", label: "Mine", conditions: #{
@@ -42,7 +41,7 @@ model Post {}
 ## Filter Expression
 
 ```typespec
-@index(#{
+@listView(#{
   columns: #["title", "status"],
   namedFilters: #[
     #{ id: "publishedNews", label: "Published News", conditions: #{

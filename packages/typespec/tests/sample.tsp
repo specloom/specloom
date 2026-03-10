@@ -13,7 +13,7 @@ model ExportUsersInput {
   titleField: "name",
   defaultSort: #{ field: "name", direction: "asc" }
 })
-@index(#{
+@listView(#{
   columns: #[
     "id",
     #{
@@ -22,18 +22,28 @@ model ExportUsersInput {
       template: "{name} <{email}>"
     }
   ],
-  searchable: #["name", "email"],
+  search: #{ fields: #["name", "email"] },
+  filters: #[
+    #{ field: "name", operators: #["eq", "contains"] }
+  ],
   sortable: #["name", "email"],
   selection: "multi",
-  clickAction: "show"
-})
-@namedFilter("mine", #{
-  label: "Mine",
-  where: #{
-    field: "ownerId",
-    operator: "eq",
-    value: #{ context: "user.id" }
-  }
+  clickAction: "show",
+  namedFilters: #[
+    #{
+      id: "mine",
+      label: "Mine",
+      conditions: #{
+        field: "ownerId",
+        operator: "eq",
+        value: #{ context: "user.id" }
+      }
+    }
+  ],
+  pageActions: #[
+    #{ ref: "exportCsv", selection: "query" }
+  ],
+  rowActions: #["suspend"]
 })
 @section("basic", #{ label: "Basic", view: "form", order: 10 })
 model User {
@@ -56,7 +66,6 @@ model User {
     section: "basic",
     order: 20
   })
-  @filter(#["eq", "contains"])
   @minLength(1)
   name: string;
 
@@ -123,15 +132,13 @@ model Address {
   line1: string;
 }
 
-@pageAction(User, #{
+@action(User, #{
   id: "exportCsv",
-  view: "list",
-  label: "Export CSV",
-  selection: "query"
+  label: "Export CSV"
 }, ExportUsersInput)
 op exportCsv(): string;
 
-@rowAction(User, #{
+@action(User, #{
   id: "suspend",
   label: "Suspend",
   when: "status == 'active'"

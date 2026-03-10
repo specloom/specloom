@@ -11,6 +11,7 @@ import type {
   Context,
   FormFieldVM,
   FormViewModel,
+  ListFilterVM,
   ListColumnVM,
   ListRowVM,
   ListViewModel,
@@ -81,6 +82,15 @@ export function evaluateListView(options: EvaluateListOptions): ListViewModel {
     toListRow(record, columns, view.rowActions, context),
   );
   const actions = view.pageActions.map((action) => toAction(action, context));
+  const filters = (view.filters ?? [])
+    .map((filter) => {
+      const field = resource.fields[filter.field];
+      if (!field) {
+        return undefined;
+      }
+      return { ...filter, fieldSpec: field } as ListFilterVM;
+    })
+    .filter((filter): filter is ListFilterVM => filter !== undefined);
 
   return {
     type: "list",
@@ -88,6 +98,7 @@ export function evaluateListView(options: EvaluateListOptions): ListViewModel {
     label: resource.meta.pluralLabel ?? resource.meta.label,
     columns,
     rows,
+    filters,
     namedFilters: view.namedFilters.map((filter) => ({
       ...filter,
       active: filter.id === activeFilter,
@@ -428,7 +439,7 @@ function toAction(
     order: action.order,
     icon: action.icon,
     prominence: action.prominence,
-    confirmMessage: action.confirmMessage,
+    confirm: action.confirm,
     args: action.args,
     input: action.input,
     operation: action.operation,

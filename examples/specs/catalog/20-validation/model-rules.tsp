@@ -3,7 +3,7 @@ import "../shared/imports.tsp";
 using Specloom;
 
 @entity(#{ label: "Model Rules", pluralLabel: "Model Rules", titleField: "name" })
-@index(#{ columns: #["name", "email", "phone", "startDate", "endDate"], sortable: #["name", "startDate"] })
+@listView(#{ columns: #["name", "email", "phone", "startDate", "endDate"], sortable: #["name", "startDate"] })
 @rule(#{ kind: "requireOneOf", fields: #["email", "phone"], message: "Email or phone is required" })
 @rule(#{ kind: "requiredIf", field: "reason", when: "status == 'inactive'", message: "Reason is required for inactive records" })
 @rule(#{ kind: "mutuallyExclusive", fields: #["email", "slackId"], message: "Email and Slack ID cannot both be set" })

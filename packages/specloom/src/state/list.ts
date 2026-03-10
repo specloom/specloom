@@ -1,6 +1,7 @@
 import type { CompiledResource } from "@specloom/spec";
 import { applyNamedFilter } from "../filter/index.js";
 import { evaluateListView } from "../evaluator/index.js";
+import { resolvePathValues } from "../path/index.js";
 import type { Context, ListViewModel } from "../vm/types.js";
 
 export interface ListSort {
@@ -142,9 +143,11 @@ function filterBySearch(
 
   return data.filter((record) =>
     fields.some((field) =>
-      String(record[field] ?? "")
-        .toLowerCase()
-        .includes(trimmed),
+      resolvePathValues(record, field).some((value) =>
+        String(value ?? "")
+          .toLowerCase()
+          .includes(trimmed),
+      ),
     ),
   );
 }

@@ -7,13 +7,13 @@ TypeSpec 側の現行入口は [`packages/typespec/README.md`](/Volumes/SSD/proj
 - package: `@specloom/typespec`
 - namespace: `using Specloom;`
 - core decorators:
-  `@entity`, `@field`, `@index`, `@section`, `@rule`
+  `@entity`, `@field`, `@listView`, `@showView`, `@formView`, `@section`, `@rule`
 - relation and options:
   `@relation`, `@nested`, `@options`, `@optionSource`
 - conditional UI/runtime rules:
   `@visibleWhen`, `@requiredWhen`, `@readonlyWhen`, `@disabledWhen`
 - actions:
-  `@pageAction`, `@rowAction`
+  `@action`
 
 ## Pages
 
@@ -33,7 +33,7 @@ import "@specloom/typespec";
 using Specloom;
 
 @entity(#{ label: "User" })
-@index(#{ columns: #["name", "email"] })
+@listView(#{ columns: #["name", "email"] })
 model User {
   @key
   @field(#{ label: "ID", list: true, show: true, form: false, readonly: true })

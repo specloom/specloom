@@ -6,6 +6,13 @@
       "meta": {
         "label": "Department"
       },
+      "operations": {
+        "list": true,
+        "show": true,
+        "create": true,
+        "edit": true,
+        "delete": true
+      },
       "fields": {
         "name": {
           "name": "name",
@@ -32,7 +39,6 @@
       },
       "views": {
         "list": {
-          "enabled": true,
           "columns": [
             {
               "field": "name",
@@ -40,6 +46,7 @@
               "sortable": false
             }
           ],
+          "filters": [],
           "sortable": [],
           "selection": "none",
           "clickAction": "none",
@@ -48,7 +55,6 @@
           "rowActions": []
         },
         "form": {
-          "enabled": true,
           "sections": [
             {
               "id": "main",
@@ -62,7 +68,6 @@
           "pageActions": []
         },
         "show": {
-          "enabled": true,
           "sections": [
             {
               "id": "main",

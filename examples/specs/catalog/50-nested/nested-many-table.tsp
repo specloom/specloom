@@ -4,7 +4,7 @@ import "../shared/common-models.tsp";
 using Specloom;
 
 @entity(#{ label: "Nested Many Table", pluralLabel: "Nested Many Tables", titleField: "orderNumber" })
-@index(#{ columns: #["orderNumber", "lineItems"], searchable: #["orderNumber"], sortable: #["orderNumber"] })
+@listView(#{ columns: #["orderNumber", "lineItems"], search: #{ fields: #["orderNumber"], sortable: #["orderNumber"] } })
 @section("summary", #{ label: "Summary", view: "form", order: 10 })
 @section("lines", #{ label: "Lines", view: "form", order: 20 })
 model NestedManyTableExample {

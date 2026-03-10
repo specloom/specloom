@@ -4,6 +4,7 @@ import { createSignal, For, Show } from "solid-js";
 import { useFormStore, useI18n } from "@specloom/solidjs";
 import { generateMockData } from "~/admin/mock-data";
 import { FieldRenderer } from "~/admin/field-registry";
+import { ActionButton } from "~/components/vm/ActionButton";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
@@ -182,7 +183,9 @@ function ResourceFormInner(props: {
             type="submit"
             disabled={!vm().isValid && Boolean(vm().isDirty)}
           >
-            {props.mode === "create" ? t("form.submit.create") : t("form.submit.edit")}
+            {props.mode === "create"
+              ? t("form.submit.create")
+              : t("form.submit.edit")}
           </Button>
           <A href={`/resources/${props.resource.name}`}>
             <Button variant="outline" type="button">
@@ -203,18 +206,13 @@ function ResourceFormInner(props: {
           <For each={vm().actions ?? []}>
             {(action) => (
               <Show when={action.visible}>
-                <Button
-                  variant={
-                    action.prominence === "danger"
-                      ? "destructive"
-                      : "outline"
-                  }
+                <ActionButton
+                  action={action}
                   size="sm"
-                  disabled={action.disabled}
-                  onClick={() => alert(`Action: ${action.label}`)}
-                >
-                  {action.label}
-                </Button>
+                  onAction={(nextAction) =>
+                    alert(`Action: ${nextAction.label}`)
+                  }
+                />
               </Show>
             )}
           </For>

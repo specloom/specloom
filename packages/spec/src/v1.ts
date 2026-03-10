@@ -75,7 +75,6 @@ export interface CompiledField {
   rules?: CompiledFieldRules;
   options?: CompiledOption[];
   optionsSource?: CompiledOptionSource;
-  filter?: CompiledFieldFilter;
   relation?: CompiledRelation;
   nested?: CompiledNested;
   submit: CompiledFieldSubmit;
@@ -158,7 +157,9 @@ export interface CompiledOptionSource {
   searchFields?: string[];
 }
 
-export interface CompiledFieldFilter {
+export interface CompiledListFilter {
+  field: string;
+  label: string;
   operators: string[];
   widget?: string;
   order?: number;
@@ -207,6 +208,7 @@ export interface CompiledListView {
   search?: {
     fields: string[];
   };
+  filters: CompiledListFilter[];
   sortable: string[];
   defaultSort?: {
     field: string;
@@ -241,6 +243,13 @@ export interface CompiledRecordView {
   pageActions: CompiledAction[];
 }
 
+export interface CompiledActionConfirm {
+  title?: string;
+  message: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+}
+
 export interface CompiledSection {
   id: string;
   label: string;
@@ -262,7 +271,7 @@ export interface CompiledAction {
   order?: number;
   icon?: string;
   prominence?: "primary" | "secondary" | "subtle" | "danger";
-  confirmMessage?: string;
+  confirm?: CompiledActionConfirm;
   selection?: "none" | "selected" | "query";
   args?: Record<string, unknown>;
   input?: string;
@@ -374,6 +383,7 @@ export function normalizeSpec(spec: CompiledSpec): CompiledSpec {
             list: {
               ...resource.views.list,
               columns: sortByOptionalOrder(resource.views.list.columns),
+              filters: sortByOptionalOrder(resource.views.list.filters),
               namedFilters: sortByOptionalOrder(
                 resource.views.list.namedFilters,
               ),
@@ -545,7 +555,6 @@ function validateField(
       record.optionsSource,
       `${path}.optionsSource`,
     ),
-    filter: validateFieldFilter(record.filter, `${path}.filter`),
     relation: validateRelation(record.relation, `${path}.relation`),
     nested: validateNested(record.nested, `${path}.nested`),
     submit: validateFieldSubmit(
@@ -750,15 +759,11 @@ function validateOptionSource(
   };
 }
 
-function validateFieldFilter(
-  value: unknown,
-  path: string,
-): CompiledFieldFilter | undefined {
-  if (value === undefined) {
-    return undefined;
-  }
+function validateListFilter(value: unknown, path: string): CompiledListFilter {
   const record = expectRecord(value, path);
   return {
+    field: expectString(record.field, `${path}.field`),
+    label: expectString(record.label, `${path}.label`),
     operators: expectStringArray(record.operators, `${path}.operators`),
     widget: expectOptionalString(record.widget, `${path}.widget`),
     order: expectOptionalNumber(record.order, `${path}.order`),
@@ -862,10 +867,7 @@ function validateFieldSubmit(
   };
 }
 
-function validateOperations(
-  value: unknown,
-  path: string,
-): CompiledOperations {
+function validateOperations(value: unknown, path: string): CompiledOperations {
   if (value === undefined) {
     return { list: true, show: true, create: true, edit: true, delete: true };
   }
@@ -893,6 +895,7 @@ function validateListView(value: unknown, path: string): CompiledListView {
   return {
     columns: validateColumns(record.columns ?? [], `${path}.columns`),
     search: validateSearch(record.search, `${path}.search`),
+    filters: validateListFilters(record.filters ?? [], `${path}.filters`),
     sortable:
       expectOptionalStringArray(record.sortable, `${path}.sortable`) ?? [],
     defaultSort: validateDefaultSort(record.defaultSort, `${path}.defaultSort`),
@@ -922,6 +925,15 @@ function validateListView(value: unknown, path: string): CompiledListView {
     ),
     rowActions: validateActions(record.rowActions ?? [], `${path}.rowActions`),
   };
+}
+
+function validateListFilters(
+  value: unknown,
+  path: string,
+): CompiledListFilter[] {
+  return expectArray(value, path).map((entry, index) =>
+    validateListFilter(entry, `${path}[${index}]`),
+  );
 }
 
 function validateColumns(value: unknown, path: string): CompiledColumn[] {
@@ -1145,9 +1157,9 @@ function validateActions(value: unknown, path: string): CompiledAction[] {
         ["primary", "secondary", "subtle", "danger"],
         `${path}[${index}].prominence`,
       ),
-      confirmMessage: expectOptionalString(
-        record.confirmMessage,
-        `${path}[${index}].confirmMessage`,
+      confirm: validateActionConfirm(
+        record.confirm,
+        `${path}[${index}].confirm`,
       ),
       selection: expectOptionalOneOf(
         record.selection,
@@ -1180,6 +1192,29 @@ function validateActions(value: unknown, path: string): CompiledAction[] {
       client: expectOptionalRecord(record.client, `${path}[${index}].client`),
     };
   });
+}
+
+function validateActionConfirm(
+  value: unknown,
+  path: string,
+): CompiledActionConfirm | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  const record = expectRecord(value, path);
+  return {
+    title: expectOptionalString(record.title, `${path}.title`),
+    message: expectString(record.message, `${path}.message`),
+    confirmLabel: expectOptionalString(
+      record.confirmLabel,
+      `${path}.confirmLabel`,
+    ),
+    cancelLabel: expectOptionalString(
+      record.cancelLabel,
+      `${path}.cancelLabel`,
+    ),
+  };
 }
 
 function validateRules(value: unknown, path: string): CompiledRule[] {

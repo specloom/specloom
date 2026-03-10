@@ -4,19 +4,21 @@ import "./input-models.tsp";
 
 using Specloom;
 
-@rowAction(PageActionCatalog, #{
+@action(PageActionCatalog, #{
   id: "suspendCatalog",
   label: "Suspend",
   placement: "menu",
   order: 20,
   prominence: "danger",
-  confirmMessage: "Suspend this record?",
+  confirm: #{
+    message: "Suspend this record?"
+  },
   when: "status == 'active'",
   disabledWhen: "locked == true"
 }, SuspendCatalogInput)
 op suspendCatalog(): string;
 
-@rowAction(PageActionCatalog, #{
+@action(PageActionCatalog, #{
   id: "reopenCatalog",
   label: "Reopen",
   placement: "menu",

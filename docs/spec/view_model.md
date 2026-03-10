@@ -11,6 +11,7 @@ type ListViewModel = {
   label: string;
   columns: ListColumnVM[];
   rows: ListRowVM[];
+  filters: ListFilterVM[];
   namedFilters: NamedFilterVM[];
   search: {
     fields: string[];

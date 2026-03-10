@@ -51,17 +51,42 @@ export interface FieldDef {
   client?: Record<string, unknown>;
 }
 
-export interface IndexDef {
+export interface ActionRefDef {
+  ref: string;
+  label?: string;
+  placement?: string;
+  order?: number;
+  icon?: string;
+  prominence?: "primary" | "secondary" | "subtle" | "danger";
+  confirm?: ActionConfirmDef;
+  selection?: "none" | "selected" | "query";
+  args?: Record<string, unknown>;
+  when?: string;
+  disabledWhen?: string;
+  client?: Record<string, unknown>;
+}
+
+export interface ListViewDef {
   columns?: unknown[];
-  searchable?: string[];
+  search?: {
+    fields: string[];
+  };
+  filters?: ListFilterDef[];
   sortable?: string[];
   defaultSort?: { field: string; direction: "asc" | "desc" };
   selection?: "none" | "single" | "multi";
   clickAction?: "none" | "show" | "edit";
   namedFilters?: NamedFilterDef[];
+  pageActions?: ActionRefDef[];
+  rowActions?: ActionRefDef[];
 }
 
-export interface FilterDef {
+export interface RecordViewDef {
+  pageActions?: ActionRefDef[];
+}
+
+export interface ListFilterDef {
+  field: string;
   operators?: string[];
   widget?: string;
   order?: number;
@@ -124,21 +149,25 @@ export interface OptionSourceDef {
 
 export interface ActionDef {
   resource: string;
-  kind: "page" | "row";
   id: string;
-  view: "list" | "show" | "form";
   label?: string;
   placement?: string;
   order?: number;
   icon?: string;
   prominence?: "primary" | "secondary" | "subtle" | "danger";
-  confirmMessage?: string;
-  selection?: "none" | "selected" | "query";
+  confirm?: ActionConfirmDef;
   args?: Record<string, unknown>;
   when?: string;
   disabledWhen?: string;
   client?: Record<string, unknown>;
   inputModel?: Model;
+}
+
+export interface ActionConfirmDef {
+  title?: string;
+  message: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
 }
 
 export interface RuleDef {
@@ -238,6 +267,100 @@ function extractRecord(val: unknown): Record<string, unknown> | undefined {
     : undefined;
 }
 
+function normalizeActionRefs(value: unknown): ActionRefDef[] | undefined {
+  if (!Array.isArray(value)) {
+    return undefined;
+  }
+
+  const refs: ActionRefDef[] = [];
+  for (const item of value) {
+    if (typeof item === "string") {
+      refs.push({ ref: item });
+      continue;
+    }
+
+    if (!item || typeof item !== "object") {
+      continue;
+    }
+
+    const rec = item as Record<string, unknown>;
+    const ref = extractString(rec.ref) ?? extractString(rec.id);
+    if (!ref) {
+      continue;
+    }
+
+    refs.push({
+      ref,
+      label: extractString(rec.label),
+      placement: extractString(rec.placement),
+      order: extractNumber(rec.order),
+      icon: extractString(rec.icon),
+      prominence: extractString(rec.prominence) as
+        | ActionRefDef["prominence"]
+        | undefined,
+      confirm: normalizeActionConfirm(rec.confirm),
+      selection: extractString(rec.selection) as
+        | ActionRefDef["selection"]
+        | undefined,
+      args: extractRecord(rec.args),
+      when: extractString(rec.when),
+      disabledWhen: extractString(rec.disabledWhen),
+      client: extractRecord(rec.client),
+    });
+  }
+
+  return refs;
+}
+
+function normalizeActionConfirm(value: unknown): ActionConfirmDef | undefined {
+  const record = extractRecord(value);
+  const message = extractString(record?.message);
+  if (!message) {
+    return undefined;
+  }
+
+  return {
+    message,
+    title: extractString(record?.title),
+    confirmLabel: extractString(record?.confirmLabel),
+    cancelLabel: extractString(record?.cancelLabel),
+  };
+}
+
+function normalizeSearch(value: unknown): ListViewDef["search"] | undefined {
+  const record = extractRecord(value);
+  const fields = extractStringArray(record?.fields);
+  return fields && fields.length > 0 ? { fields } : undefined;
+}
+
+function normalizeListFilters(value: unknown): ListFilterDef[] | undefined {
+  if (!Array.isArray(value)) {
+    return undefined;
+  }
+
+  const filters: ListFilterDef[] = [];
+  for (const item of value) {
+    const rec = extractRecord(item);
+    const field = extractString(rec?.field);
+    if (!field) {
+      continue;
+    }
+
+    filters.push({
+      field,
+      operators: extractStringArray(rec?.operators),
+      widget: extractString(rec?.widget),
+      order: extractNumber(rec?.order),
+      placement: extractString(rec?.placement) as
+        | ListFilterDef["placement"]
+        | undefined,
+      defaultValue: rec?.defaultValue,
+    });
+  }
+
+  return filters;
+}
+
 function mergeState<T extends Model | ModelProperty | Operation>(
   context: DecoratorContext,
   key: symbol,
@@ -280,14 +403,16 @@ export function $field(
   mergeState(context, StateKeys.field, target, extracted);
 }
 
-export function $index(
+export function $listView(
   context: DecoratorContext,
   target: Model,
   options?: unknown,
 ) {
   const extracted = extractRecord(options) ?? {};
+  extracted.search = normalizeSearch(extracted.search);
+  extracted.filters = normalizeListFilters(extracted.filters);
 
-  // Extract namedFilters from index options
+  // Extract namedFilters from listView options
   if (Array.isArray(extracted.namedFilters)) {
     const namedFilters: NamedFilterDef[] = [];
     for (const item of extracted.namedFilters) {
@@ -308,26 +433,31 @@ export function $index(
     extracted.namedFilters = namedFilters;
   }
 
-  mergeState(context, StateKeys.index, target, extracted);
+  extracted.pageActions = normalizeActionRefs(extracted.pageActions);
+  extracted.rowActions = normalizeActionRefs(extracted.rowActions);
+
+  mergeState(context, StateKeys.listView, target, extracted);
 }
 
-export function $filter(
+export function $showView(
   context: DecoratorContext,
-  target: ModelProperty,
+  target: Model,
   options?: unknown,
 ) {
-  const extractedArray = extractStringArray(options);
-  if (extractedArray) {
-    context.program.stateMap(StateKeys.filter).set(target, {
-      operators: extractedArray,
-    } satisfies FilterDef);
-    return;
-  }
-
   const extracted = extractRecord(options) ?? {};
-  context.program.stateMap(StateKeys.filter).set(target, extracted);
+  extracted.pageActions = normalizeActionRefs(extracted.pageActions);
+  mergeState(context, StateKeys.showView, target, extracted);
 }
 
+export function $formView(
+  context: DecoratorContext,
+  target: Model,
+  options?: unknown,
+) {
+  const extracted = extractRecord(options) ?? {};
+  extracted.pageActions = normalizeActionRefs(extracted.pageActions);
+  mergeState(context, StateKeys.formView, target, extracted);
+}
 
 export function $relation(
   context: DecoratorContext,
@@ -446,7 +576,7 @@ export function $optionSource(
   }
 }
 
-export function $pageAction(
+export function $action(
   context: DecoratorContext,
   target: Operation,
   resource: Model,
@@ -455,34 +585,11 @@ export function $pageAction(
 ) {
   const extracted = extractRecord(options) ?? {};
   const id = extractString(extracted.id) ?? target.name;
-  context.program.stateMap(StateKeys.pageAction).set(target, {
+  context.program.stateMap(StateKeys.action).set(target, {
     ...extracted,
+    confirm: normalizeActionConfirm(extracted.confirm),
     resource: resource.name,
-    kind: "page",
     id,
-    view:
-      extracted.view === "show" || extracted.view === "form"
-        ? extracted.view
-        : "list",
-    inputModel,
-  } satisfies ActionDef);
-}
-
-export function $rowAction(
-  context: DecoratorContext,
-  target: Operation,
-  resource: Model,
-  options?: unknown,
-  inputModel?: Model,
-) {
-  const extracted = extractRecord(options) ?? {};
-  const id = extractString(extracted.id) ?? target.name;
-  context.program.stateMap(StateKeys.rowAction).set(target, {
-    ...extracted,
-    resource: resource.name,
-    kind: "row",
-    id,
-    view: "list",
     inputModel,
   } satisfies ActionDef);
 }
@@ -583,25 +690,32 @@ export function getField(
   return program.stateMap(StateKeys.field).get(target);
 }
 
-export function getIndex(
+export function getListView(
   program: DecoratorContext["program"],
   target: Model,
-): IndexDef | undefined {
-  return program.stateMap(StateKeys.index).get(target);
+): ListViewDef | undefined {
+  return program.stateMap(StateKeys.listView).get(target);
 }
 
-export function getFilter(
+export function getShowView(
   program: DecoratorContext["program"],
-  target: ModelProperty,
-): FilterDef | undefined {
-  return program.stateMap(StateKeys.filter).get(target);
+  target: Model,
+): RecordViewDef | undefined {
+  return program.stateMap(StateKeys.showView).get(target);
+}
+
+export function getFormView(
+  program: DecoratorContext["program"],
+  target: Model,
+): RecordViewDef | undefined {
+  return program.stateMap(StateKeys.formView).get(target);
 }
 
 export function getNamedFilters(
   program: DecoratorContext["program"],
   target: Model,
 ): NamedFilterDef[] | undefined {
-  return getIndex(program, target)?.namedFilters;
+  return getListView(program, target)?.namedFilters;
 }
 
 export function getRelation(
@@ -660,18 +774,11 @@ export function getOptionSource(
   return program.stateMap(StateKeys.optionSource).get(target);
 }
 
-export function getPageAction(
+export function getAction(
   program: DecoratorContext["program"],
   target: Operation,
 ): ActionDef | undefined {
-  return program.stateMap(StateKeys.pageAction).get(target);
-}
-
-export function getRowAction(
-  program: DecoratorContext["program"],
-  target: Operation,
-): ActionDef | undefined {
-  return program.stateMap(StateKeys.rowAction).get(target);
+  return program.stateMap(StateKeys.action).get(target);
 }
 
 export function getVisibleWhen(
@@ -736,7 +843,6 @@ export function hasAnySpecloomMetadata(
 ): boolean {
   return (
     hasField(program, target) ||
-    program.stateMap(StateKeys.filter).has(target) ||
     program.stateMap(StateKeys.relation).has(target) ||
     program.stateMap(StateKeys.nested).has(target) ||
     program.stateMap(StateKeys.options).has(target) ||

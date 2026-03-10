@@ -54,9 +54,12 @@ extern dec field(target: ModelProperty, options?: valueof {
   client?: unknown
 });
 
-extern dec index(target: Model, options?: valueof {
+extern dec listView(target: Model, options?: valueof {
   columns?: unknown[],
-  searchable?: string[],
+  search?: {
+    fields: string[]
+  },
+  filters?: unknown[],
   sortable?: string[],
   defaultSort?: {
     field: string,
@@ -64,10 +67,18 @@ extern dec index(target: Model, options?: valueof {
   },
   selection?: "none" | "single" | "multi",
   clickAction?: "none" | "show" | "edit",
-  namedFilters?: unknown[]
+  namedFilters?: unknown[],
+  pageActions?: unknown[],
+  rowActions?: unknown[]
 });
 
-extern dec filter(target: ModelProperty, options?: valueof unknown);
+extern dec showView(target: Model, options?: valueof {
+  pageActions?: unknown[]
+});
+
+extern dec formView(target: Model, options?: valueof {
+  pageActions?: unknown[]
+});
 
 extern dec relation(target: ModelProperty, resource: Model, options?: valueof {
   kind?: "belongsTo" | "hasOne" | "hasMany" | "manyToMany",
@@ -115,39 +126,22 @@ extern dec optionSource(target: ModelProperty, options: valueof {
   searchFields?: string[]
 });
 
-extern dec pageAction(
+extern dec action(
   target: Operation,
   resource: Model,
   options: valueof {
     id?: string,
-    view?: "list" | "show" | "form",
     label?: string,
     placement?: string,
     order?: int32,
     icon?: string,
     prominence?: "primary" | "secondary" | "subtle" | "danger",
-    confirmMessage?: string,
-    selection?: "none" | "selected" | "query",
-    args?: unknown,
-    when?: string,
-    disabledWhen?: string,
-    client?: unknown
-  },
-  input?: Model
-);
-
-extern dec rowAction(
-  target: Operation,
-  resource: Model,
-  options: valueof {
-    id?: string,
-    view?: "list",
-    label?: string,
-    placement?: string,
-    order?: int32,
-    icon?: string,
-    prominence?: "primary" | "secondary" | "subtle" | "danger",
-    confirmMessage?: string,
+    confirm?: {
+      title?: string,
+      message: string,
+      confirmLabel?: string,
+      cancelLabel?: string
+    },
     args?: unknown,
     when?: string,
     disabledWhen?: string,

@@ -69,7 +69,6 @@ type CompiledField = {
   rules?: CompiledFieldRules;
   options?: CompiledOption[];
   optionsSource?: CompiledOptionSource;
-  filter?: CompiledFieldFilter;
   relation?: CompiledRelation;
   nested?: CompiledNested;
   submit: CompiledFieldSubmit;
@@ -106,9 +105,9 @@ type CompiledFieldRules = {
 
 ```ts
 type CompiledListView = {
-  enabled: boolean;
   columns: CompiledColumn[];
   search?: { fields: string[] };
+  filters: CompiledListFilter[];
   sortable: string[];
   defaultSort?: { field: string; direction: "asc" | "desc" };
   selection: "none" | "single" | "multi";
@@ -116,6 +115,18 @@ type CompiledListView = {
   namedFilters: CompiledNamedFilter[];
   pageActions: CompiledAction[];
   rowActions: CompiledAction[];
+};
+```
+
+```ts
+type CompiledListFilter = {
+  field: string;
+  label: string;
+  operators: string[];
+  widget?: string;
+  order?: number;
+  placement?: "toolbar" | "advanced";
+  defaultValue?: unknown;
 };
 ```
 
@@ -142,7 +153,12 @@ type CompiledAction = {
   order?: number;
   icon?: string;
   prominence?: "primary" | "secondary" | "subtle" | "danger";
-  confirmMessage?: string;
+  confirm?: {
+    title?: string;
+    message: string;
+    confirmLabel?: string;
+    cancelLabel?: string;
+  };
   selection?: "none" | "selected" | "query";
   args?: Record<string, unknown>;
   input?: string;

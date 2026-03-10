@@ -4,7 +4,7 @@ import "../shared/common-models.tsp";
 using Specloom;
 
 @entity(#{ label: "Nested Many Cards", pluralLabel: "Nested Many Cards", titleField: "title" })
-@index(#{ columns: #["title", "attachments"], searchable: #["title"], sortable: #["title"] })
+@listView(#{ columns: #["title", "attachments"], search: #{ fields: #["title"], sortable: #["title"] } })
 @section("content", #{ label: "Content", view: "form", order: 10 })
 @section("attachments", #{ label: "Attachments", view: "form", order: 20 })
 model NestedManyCardsExample {

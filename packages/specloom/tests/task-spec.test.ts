@@ -31,12 +31,33 @@ describe("Task spec", () => {
       const vm = createListVM(task, {
         context: {},
         data: [
-          { id: "1", title: "Buy milk", priority: "low", done: false, dueDate: null, createdAt: "2026-01-01T00:00:00Z" },
-          { id: "2", title: "Write tests", priority: "high", done: true, dueDate: "2026-02-01T00:00:00Z", createdAt: "2026-01-02T00:00:00Z" },
+          {
+            id: "1",
+            title: "Buy milk",
+            priority: "low",
+            done: false,
+            dueDate: null,
+            createdAt: "2026-01-01T00:00:00Z",
+          },
+          {
+            id: "2",
+            title: "Write tests",
+            priority: "high",
+            done: true,
+            dueDate: "2026-02-01T00:00:00Z",
+            createdAt: "2026-01-02T00:00:00Z",
+          },
         ],
       });
 
-      expect(vm.columns.map((c) => c.field)).toEqual(["id", "title", "priority", "done", "dueDate", "createdAt"]);
+      expect(vm.columns.map((c) => c.field)).toEqual([
+        "id",
+        "title",
+        "priority",
+        "done",
+        "dueDate",
+        "createdAt",
+      ]);
       expect(vm.rows).toHaveLength(2);
       expect(vm.rows[0].values.title).toBe("Buy milk");
       expect(vm.rows[1].values.done).toBe(true);
@@ -51,6 +72,21 @@ describe("Task spec", () => {
 
       expect(vm.search.fields).toEqual(["title", "description"]);
       expect(vm.search.query).toBe("milk");
+    });
+
+    it("exposes list filters from listView", () => {
+      const vm = createListVM(task, { context: {}, data: [] });
+
+      expect(vm.filters.map((filter) => filter.field)).toEqual([
+        "title",
+        "priority",
+        "done",
+        "dueDate",
+        "createdAt",
+      ]);
+      expect(
+        vm.filters.find((filter) => filter.field === "priority")?.widget,
+      ).toBe("select");
     });
 
     it("has defaultSort on id desc", () => {
@@ -80,6 +116,27 @@ describe("Task spec", () => {
         "期限切れ",
       ]);
     });
+
+    it("has list pageActions and selectionActions", () => {
+      const vm = createListVM(task, { context: {}, data: [] });
+
+      expect(vm.pageActions.map((action) => action.id)).toEqual([
+        "exportCsv",
+        "reviewOverdue",
+        "archiveCompleted",
+      ]);
+      expect(vm.pageActions.map((action) => action.label)).toEqual([
+        "CSVエクスポート",
+        "期限切れを再確認",
+        "完了済みをアーカイブ",
+      ]);
+      expect(vm.pageActions[1]?.confirm).toMatchObject({
+        message: "現在の条件で期限切れタスクを再確認しますか？",
+      });
+      expect(vm.selectionActions.map((action) => action.id)).toEqual([
+        "markSelectedDone",
+      ]);
+    });
   });
 
   describe("form view (create)", () => {
@@ -91,16 +148,25 @@ describe("Task spec", () => {
 
     it("main section has title, priority, done, dueDate", () => {
       const vm = createFormVM(task, { context: {}, mode: "create" });
-      const mainFields = vm.sections.find((s) => s.id === "main")?.fields.map((f) => f.name);
+      const mainFields = vm.sections
+        .find((s) => s.id === "main")
+        ?.fields.map((f) => f.name);
 
       expect(mainFields).toEqual(["title", "priority", "done", "dueDate"]);
     });
 
     it("detail section has description, estimatedHours, tags, memo", () => {
       const vm = createFormVM(task, { context: {}, mode: "create" });
-      const detailFields = vm.sections.find((s) => s.id === "detail")?.fields.map((f) => f.name);
+      const detailFields = vm.sections
+        .find((s) => s.id === "detail")
+        ?.fields.map((f) => f.name);
 
-      expect(detailFields).toEqual(["description", "estimatedHours", "tags", "memo"]);
+      expect(detailFields).toEqual([
+        "description",
+        "estimatedHours",
+        "tags",
+        "memo",
+      ]);
     });
 
     it("title is required with minLength 1 and maxLength 200", () => {
@@ -115,29 +181,43 @@ describe("Task spec", () => {
       const priority = vm.fields.find((f) => f.name === "priority");
 
       expect(priority?.ui.widget).toBe("select");
-      expect(priority?.options?.map((o) => o.value)).toEqual(["low", "medium", "high"]);
+      expect(priority?.options?.map((o) => o.value)).toEqual([
+        "low",
+        "medium",
+        "high",
+      ]);
     });
 
     it("done uses switch widget", () => {
       const vm = createFormVM(task, { context: {}, mode: "create" });
-      expect(vm.fields.find((f) => f.name === "done")?.ui.widget).toBe("switch");
+      expect(vm.fields.find((f) => f.name === "done")?.ui.widget).toBe(
+        "switch",
+      );
     });
 
     it("description uses textarea widget", () => {
       const vm = createFormVM(task, { context: {}, mode: "create" });
-      expect(vm.fields.find((f) => f.name === "description")?.ui.widget).toBe("textarea");
+      expect(vm.fields.find((f) => f.name === "description")?.ui.widget).toBe(
+        "textarea",
+      );
     });
 
     it("estimatedHours uses number-input widget", () => {
       const vm = createFormVM(task, { context: {}, mode: "create" });
-      expect(vm.fields.find((f) => f.name === "estimatedHours")?.ui.widget).toBe("number-input");
+      expect(
+        vm.fields.find((f) => f.name === "estimatedHours")?.ui.widget,
+      ).toBe("number-input");
     });
 
     it("optional fields are not required", () => {
       const vm = createFormVM(task, { context: {}, mode: "create" });
 
-      expect(vm.fields.find((f) => f.name === "description")?.required).toBe(false);
-      expect(vm.fields.find((f) => f.name === "estimatedHours")?.required).toBe(false);
+      expect(vm.fields.find((f) => f.name === "description")?.required).toBe(
+        false,
+      );
+      expect(vm.fields.find((f) => f.name === "estimatedHours")?.required).toBe(
+        false,
+      );
       expect(vm.fields.find((f) => f.name === "dueDate")?.required).toBe(false);
       expect(vm.fields.find((f) => f.name === "memo")?.required).toBe(false);
     });
@@ -146,7 +226,12 @@ describe("Task spec", () => {
       const vm = createFormVM(task, {
         context: {},
         mode: "create",
-        record: { title: "Test task", priority: "medium", done: false, tags: ["dev"] },
+        record: {
+          title: "Test task",
+          priority: "medium",
+          done: false,
+          tags: ["dev"],
+        },
       });
 
       expect(serializeForm(vm)).toMatchObject({
@@ -164,8 +249,14 @@ describe("Task spec", () => {
         context: {},
         mode: "edit",
         record: {
-          id: "1", title: "Existing", priority: "high", done: true,
-          estimatedHours: 3, tags: ["bug"], createdAt: "2026-01-01T00:00:00Z", updatedAt: "2026-01-01T00:00:00Z",
+          id: "1",
+          title: "Existing",
+          priority: "high",
+          done: true,
+          estimatedHours: 3,
+          tags: ["bug"],
+          createdAt: "2026-01-01T00:00:00Z",
+          updatedAt: "2026-01-01T00:00:00Z",
         },
       });
 
@@ -181,9 +272,16 @@ describe("Task spec", () => {
       const vm = createShowVM(task, {
         context: {},
         record: {
-          id: "1", title: "Test", description: "desc", priority: "low",
-          done: false, estimatedHours: 2, dueDate: null, tags: [],
-          createdAt: "2026-01-01T00:00:00Z", updatedAt: "2026-01-02T00:00:00Z",
+          id: "1",
+          title: "Test",
+          description: "desc",
+          priority: "low",
+          done: false,
+          estimatedHours: 2,
+          dueDate: null,
+          tags: [],
+          createdAt: "2026-01-01T00:00:00Z",
+          updatedAt: "2026-01-02T00:00:00Z",
         },
       });
 
@@ -203,13 +301,22 @@ describe("Task spec", () => {
       const vm = createShowVM(task, {
         context: {},
         record: {
-          id: "1", title: "Test", priority: "low", done: false, tags: [],
-          createdAt: "2026-01-01T00:00:00Z", updatedAt: "2026-01-02T00:00:00Z",
+          id: "1",
+          title: "Test",
+          priority: "low",
+          done: false,
+          tags: [],
+          createdAt: "2026-01-01T00:00:00Z",
+          updatedAt: "2026-01-02T00:00:00Z",
         },
       });
 
-      expect(vm.fields.find((f) => f.name === "createdAt")?.ui.format).toBe("datetime");
-      expect(vm.fields.find((f) => f.name === "updatedAt")?.ui.format).toBe("relative");
+      expect(vm.fields.find((f) => f.name === "createdAt")?.ui.format).toBe(
+        "datetime",
+      );
+      expect(vm.fields.find((f) => f.name === "updatedAt")?.ui.format).toBe(
+        "relative",
+      );
     });
   });
 
@@ -232,7 +339,12 @@ describe("Task spec", () => {
       const form = createFormState({
         resource: task,
         mode: "create",
-        values: { title: "x".repeat(201), priority: "low", done: false, tags: [] },
+        values: {
+          title: "x".repeat(201),
+          priority: "low",
+          done: false,
+          tags: [],
+        },
       });
 
       const { result } = form.validate();
@@ -243,14 +355,26 @@ describe("Task spec", () => {
       const formNeg = createFormState({
         resource: task,
         mode: "create",
-        values: { title: "T", priority: "low", done: false, tags: [], estimatedHours: -1 },
+        values: {
+          title: "T",
+          priority: "low",
+          done: false,
+          tags: [],
+          estimatedHours: -1,
+        },
       });
       expect(formNeg.validate().result.valid).toBe(false);
 
       const formOver = createFormState({
         resource: task,
         mode: "create",
-        values: { title: "T", priority: "low", done: false, tags: [], estimatedHours: 1000 },
+        values: {
+          title: "T",
+          priority: "low",
+          done: false,
+          tags: [],
+          estimatedHours: 1000,
+        },
       });
       expect(formOver.validate().result.valid).toBe(false);
     });
@@ -260,7 +384,9 @@ describe("Task spec", () => {
         resource: task,
         mode: "create",
         values: {
-          title: "T", priority: "low", done: false,
+          title: "T",
+          priority: "low",
+          done: false,
           tags: Array.from({ length: 11 }, (_, i) => `tag${i}`),
         },
       });
@@ -273,7 +399,13 @@ describe("Task spec", () => {
       const form = createFormState({
         resource: task,
         mode: "create",
-        values: { title: "T", priority: "low", done: false, tags: [], memo: "<script>alert(1)</script>" },
+        values: {
+          title: "T",
+          priority: "low",
+          done: false,
+          tags: [],
+          memo: "<script>alert(1)</script>",
+        },
       });
 
       const { result } = form.validate();

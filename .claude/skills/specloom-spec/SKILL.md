@@ -17,7 +17,7 @@ description: Use this skill when creating or modifying admin UI specifications w
 使わないもの:
 
 - `@S.` プレフィックス
-- `@resource`, `@label`, `@kind`, `@view`, `@action`
+- `@resource`, `@label`, `@kind`, `@view`
 - `createAdmin`
 - class-based `FormVM`
 
@@ -98,7 +98,7 @@ using Specloom;
 ```typespec
 @entity(...)
 @field(...)
-@index(...)
+@listView(...)
 ```
 
 `@S.resource` のような旧記法は使いません。
@@ -109,13 +109,10 @@ decorator option や filter の object / array literal は TypeSpec の value li
 
 ```typespec
 @entity(#{
-  label: "User",
-  views: #{
-    list: #{ enabled: true }
-  }
+  label: "User"
 })
 
-@index(#{
+@listView(#{
   columns: #["name", "email"],
   namedFilters: #[
     #{ id: "mine", label: "Mine", conditions: #{
@@ -157,7 +154,7 @@ model User {
 ### 2. List View
 
 ```typespec
-@index(#{
+@listView(#{
   columns: #[
     "name",
     "email",
@@ -167,7 +164,7 @@ model User {
       sortable: true
     }
   ],
-  searchable: #["name", "email"],
+  search: #{ fields: #["name", "email"] },
   sortable: #["name", "email", "status"],
   selection: "multi",
   clickAction: "show",
@@ -303,21 +300,29 @@ model ExportUsersInput {
   format: string;
 }
 
-@pageAction(User, #{
+@listView(#{
+  pageActions: #[
+    #{ ref: "export", selection: "query" }
+  ],
+  rowActions: #["suspend"]
+})
+model User {}
+
+@action(User, #{
   id: "export",
-  view: "list",
   label: "Export",
-  selection: "query",
   prominence: "secondary",
   icon: "download",
   when: "role == 'admin'"
 }, ExportUsersInput)
 op exportUsers(): string;
 
-@rowAction(User, #{
+@action(User, #{
   id: "suspend",
   label: "Suspend",
-  confirmMessage: "Are you sure?",
+  confirm: #{
+    message: "Are you sure?"
+  },
   when: "status == 'active'",
   disabledWhen: "locked == true",
   prominence: "danger"
@@ -349,7 +354,9 @@ model User {}
 | Decorator | Target | Purpose |
 |-----------|--------|---------|
 | `@entity(#{ ... })` | Model | resource metadata |
-| `@index(#{ ... })` | Model | list config |
+| `@listView(#{ ... })` | Model | list config |
+| `@showView(#{ ... })` | Model | show page config |
+| `@formView(#{ ... })` | Model | form page config |
 | `@section(id, #{ ... })` | Model | form/show section |
 | `@rule(#{ ... })` | Model | cross-field validation |
 
@@ -362,7 +369,6 @@ model User {}
 | `@nested(Model, #{ ... })` | Property | nested child config |
 | `@options(#[])` | Property | static options |
 | `@optionSource(#{ ... })` | Property | remote options |
-| `@filter(...)` | Property | filter exposure |
 | `@hidden` | Property | always hidden |
 | `@computed` | Property | computed field |
 | `@createOnly` | Property | create-only editable |
@@ -376,8 +382,7 @@ model User {}
 
 | Decorator | Target | Purpose |
 |-----------|--------|---------|
-| `@pageAction(Resource, #{ ... }, Input?)` | Operation | page action |
-| `@rowAction(Resource, #{ ... }, Input?)` | Operation | row action |
+| `@action(Resource, #{ ... }, Input?)` | Operation | reusable action definition |
 
 ### Validation
 
@@ -413,27 +418,20 @@ field rules と action rules では文字列 expression を使います。
 単純 filter:
 
 ```typespec
-@field(#{ label: "Title", list: true, show: true, form: true })
-@filter(#["contains", "startsWith"])
-title: string;
-```
-
-詳細 filter:
-
-```typespec
-@field(#{ label: "Created At", list: true, show: true })
-@filter(#{
-  operators: #["gte", "lte"],
-  widget: "date-range",
-  placement: "advanced"
+@listView(#{
+  search: #{ fields: #["title"] },
+  filters: #[
+    #{ field: "title", operators: #["contains", "startsWith"] },
+    #{ field: "createdAt", operators: #["gte", "lte"], widget: "date-range", placement: "advanced" }
+  ]
 })
-createdAt: utcDateTime;
+model Post {}
 ```
 
-named filter (`@index` の `namedFilters`):
+named filter (`@listView` の `namedFilters`):
 
 ```typespec
-@index(#{
+@listView(#{
   columns: #["title", "status"],
   namedFilters: #[
     #{ id: "mine", label: "Mine", conditions: #{
@@ -529,16 +527,16 @@ const ui = createUiResolver();
 - `@S.` や `@resource` など旧 DSL を使っていない
 - resource には `@entity`
 - 描画する field には `@field`
-- list 設定は `@index`
-- named filter は `@index` の `namedFilters`
+- list 設定は `@listView`
+- named filter は `@listView` の `namedFilters`
 - relation は `@relation`
 - nested child は `@nested`
 - static options は `@options`
 - remote options は `@optionSource`
 - field 条件は `@visibleWhen` / `@requiredWhen` / `@readonlyWhen` / `@disabledWhen`
 - cross-field rule は `@rule`
-- page action は `@pageAction`
-- row action は `@rowAction`
+- action 定義は `@action`
+- view への配置は `@listView` / `@showView` / `@formView`
 - validation は TypeSpec built-ins を優先
 - runtime 側は `createFormState` / `createListState` / `validateForm` に接続する
 

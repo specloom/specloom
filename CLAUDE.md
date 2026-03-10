@@ -93,10 +93,10 @@ Three main elements define an admin UI:
 ### TypeSpec Decorators
 
 The `@specloom/typespec` package provides decorators:
-- `@entity`, `@field`, `@index`, `@section`
+- `@entity`, `@field`, `@listView`, `@showView`, `@formView`, `@section`
 - `@filter`, `@options`, `@optionSource`
 - `@relation`, `@nested`
-- `@pageAction`, `@rowAction`, `@rule`
+- `@action`, `@rule`
 - `@visibleWhen`, `@requiredWhen`, `@readonlyWhen`, `@disabledWhen`, `@match`
 - TypeSpec built-ins: `@minValue`, `@maxValue`, `@minLength`, `@maxLength`, `@pattern`, `@minItems`, `@maxItems`
 

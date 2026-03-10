@@ -3,7 +3,7 @@ import "../shared/imports.tsp";
 using Specloom;
 
 @entity(#{ label: "Conditional Validation", pluralLabel: "Conditional Validations", titleField: "status" })
-@index(#{ columns: #["status", "reason", "adminNote"], sortable: #["status"] })
+@listView(#{ columns: #["status", "reason", "adminNote"], sortable: #["status"] })
 @section("status", #{ label: "Status", view: "form", order: 10 })
 @section("security", #{ label: "Security", view: "form", order: 20 })
 model ConditionalValidationExample {

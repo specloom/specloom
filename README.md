@@ -40,9 +40,9 @@ using Specloom;
   pluralLabel: "Users",
   titleField: "name"
 })
-@index(#{
+@listView(#{
   columns: #["name", "email"],
-  searchable: #["name", "email"],
+  search: #{ fields: #["name", "email"] },
   sortable: #["name"],
   selection: "multi",
   clickAction: "show"

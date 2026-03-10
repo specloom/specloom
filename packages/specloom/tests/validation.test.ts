@@ -407,7 +407,6 @@ function createScalarField(
     rules: overrides.rules,
     options: overrides.options,
     optionsSource: overrides.optionsSource,
-    filter: overrides.filter,
     relation: overrides.relation,
     nested: overrides.nested,
     submit: overrides.submit ?? {

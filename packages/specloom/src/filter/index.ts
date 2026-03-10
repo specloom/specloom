@@ -1,5 +1,10 @@
-import type { CompiledNamedFilter, FilterExpression, FilterValue } from "@specloom/spec";
+import type {
+  CompiledNamedFilter,
+  FilterExpression,
+  FilterValue,
+} from "@specloom/spec";
 import { buildEnvironment } from "../expression/index.js";
+import { resolvePathValues } from "../path/index.js";
 import type { Context } from "../vm/types.js";
 
 export interface ResolveFilterValueArgs {
@@ -34,7 +39,7 @@ export function resolveFilterValue(args: ResolveFilterValueArgs): unknown {
 
   if (value && typeof value === "object" && !Array.isArray(value)) {
     if ("context" in value && typeof value.context === "string") {
-      return resolvePath(buildEnvironment(context, {}), value.context);
+      return resolvePathValues(buildEnvironment(context, {}), value.context)[0];
     }
 
     if ("relative" in value && typeof value.relative === "string") {
@@ -68,17 +73,25 @@ export function evaluateFilter(args: EvaluateFilterArgs): boolean {
     return !evaluateFilter({ filter: filter.not, record, context, now });
   }
 
-  const left = resolvePath(record, filter.field);
   const right = resolveFilterValue({
     value: filter.value,
     context,
     now,
   });
 
-  return compareFilterValues(left, right, filter.operator);
+  const leftValues = resolvePathValues(record, filter.field);
+  if (leftValues.length === 0) {
+    return compareFilterValues(undefined, right, filter.operator);
+  }
+
+  return leftValues.some((left) =>
+    compareFilterValues(left, right, filter.operator),
+  );
 }
 
-export function filterRecords(args: FilterRecordsArgs): Record<string, unknown>[] {
+export function filterRecords(
+  args: FilterRecordsArgs,
+): Record<string, unknown>[] {
   const { data, filter, context, now } = args;
   return data.filter((record) =>
     evaluateFilter({
@@ -90,7 +103,9 @@ export function filterRecords(args: FilterRecordsArgs): Record<string, unknown>[
   );
 }
 
-export function applyNamedFilter(args: ApplyNamedFilterArgs): Record<string, unknown>[] {
+export function applyNamedFilter(
+  args: ApplyNamedFilterArgs,
+): Record<string, unknown>[] {
   const { data, namedFilter, context, now } = args;
   return filterRecords({
     data,
@@ -100,7 +115,11 @@ export function applyNamedFilter(args: ApplyNamedFilterArgs): Record<string, unk
   });
 }
 
-function compareFilterValues(left: unknown, right: unknown, operator: string): boolean {
+function compareFilterValues(
+  left: unknown,
+  right: unknown,
+  operator: string,
+): boolean {
   switch (operator) {
     case "eq":
     case "==":
@@ -184,17 +203,13 @@ function toTimestamp(value: unknown): number | undefined {
   return undefined;
 }
 
-function resolvePath(record: Record<string, unknown>, path: string): unknown {
-  return path.split(".").reduce<unknown>((value, segment) => {
-    if (typeof value !== "object" || value === null) {
-      return undefined;
-    }
-    return (value as Record<string, unknown>)[segment];
-  }, record);
-}
-
 function isEmptyFilter(filter: FilterExpression): boolean {
-  return !("field" in filter || "and" in filter || "or" in filter || "not" in filter);
+  return !(
+    "field" in filter ||
+    "and" in filter ||
+    "or" in filter ||
+    "not" in filter
+  );
 }
 
 function toRelativeIso(now: Date, expression: string): string {

@@ -51,7 +51,7 @@ export interface PresentationPatch {
 }
 
 export interface ActionPresentationPatch extends PresentationPatch {
-  confirmMessage?: string;
+  confirm?: ActionVM["confirm"];
 }
 
 export interface SectionPresentationPatch {
@@ -151,7 +151,7 @@ export interface ResolvedActionPresentation {
   prominence?: ActionVM["prominence"];
   disabled: boolean;
   hidden: boolean;
-  confirmMessage?: string;
+  confirm?: ActionVM["confirm"];
   props: Record<string, unknown>;
   client: Record<string, unknown>;
 }

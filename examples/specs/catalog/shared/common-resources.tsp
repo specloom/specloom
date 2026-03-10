@@ -3,7 +3,7 @@ import "./imports.tsp";
 using Specloom;
 
 @entity(#{ label: "Department", pluralLabel: "Departments", titleField: "name" })
-@index(#{ columns: #["id", "name"], searchable: #["name"], sortable: #["name"], clickAction: "show" })
+@listView(#{ columns: #["id", "name"], search: #{ fields: #["name"], sortable: #["name"] }, clickAction: "show" })
 model Department {
   @key
   @field(#{ label: "ID", list: true, show: true, form: false, readonly: true, order: 10 })
@@ -15,7 +15,7 @@ model Department {
 }
 
 @entity(#{ label: "Tag", pluralLabel: "Tags", titleField: "name" })
-@index(#{ columns: #["id", "name", "color"], searchable: #["name"], sortable: #["name"] })
+@listView(#{ columns: #["id", "name", "color"], search: #{ fields: #["name"], sortable: #["name"] } })
 model Tag {
   @key
   @field(#{ label: "ID", list: true, show: true, form: false, readonly: true })
@@ -29,7 +29,7 @@ model Tag {
 }
 
 @entity(#{ label: "Member", pluralLabel: "Members", titleField: "name" })
-@index(#{ columns: #["id", "name", "email"], searchable: #["name", "email"], sortable: #["name", "email"] })
+@listView(#{ columns: #["id", "name", "email"], search: #{ fields: #["name", "email"], sortable: #["name", "email"] } })
 model Member {
   @key
   @field(#{ label: "ID", list: true, show: true, form: false, readonly: true })

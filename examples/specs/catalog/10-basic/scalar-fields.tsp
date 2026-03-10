@@ -9,9 +9,9 @@ using Specloom;
   pageSize: 25,
   defaultSort: #{ field: "title", direction: "asc" }
 })
-@index(#{
+@listView(#{
   columns: #["id", "title", "count", "enabled", "createdAt"],
-  searchable: #["title"],
+  search: #{ fields: #["title"] },
   sortable: #["title", "count", "createdAt"],
   selection: "single",
   clickAction: "show"

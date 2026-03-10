@@ -8,6 +8,13 @@
         "pluralLabel": "Users",
         "titleField": "name"
       },
+      "operations": {
+        "list": true,
+        "show": true,
+        "create": true,
+        "edit": true,
+        "delete": true
+      },
       "fields": {
         "id": {
           "name": "id",
@@ -54,12 +61,6 @@
           },
           "validation": {
             "minLength": 1
-          },
-          "filter": {
-            "operators": [
-              "eq",
-              "contains"
-            ]
           },
           "submit": {
             "field": "name",
@@ -182,7 +183,6 @@
       },
       "views": {
         "list": {
-          "enabled": true,
           "columns": [
             {
               "field": "id",
@@ -203,6 +203,16 @@
               "email"
             ]
           },
+          "filters": [
+            {
+              "field": "name",
+              "label": "Name",
+              "operators": [
+                "eq",
+                "contains"
+              ]
+            }
+          ],
           "sortable": [
             "name",
             "email"
@@ -213,7 +223,19 @@
           },
           "selection": "multi",
           "clickAction": "show",
-          "namedFilters": [],
+          "namedFilters": [
+            {
+              "id": "mine",
+              "label": "Mine",
+              "conditions": {
+                "field": "ownerId",
+                "operator": "eq",
+                "value": {
+                  "context": "user.id"
+                }
+              }
+            }
+          ],
           "pageActions": [
             {
               "id": "exportCsv",
@@ -259,7 +281,6 @@
           ]
         },
         "form": {
-          "enabled": true,
           "sections": [
             {
               "id": "basic",
@@ -283,7 +304,6 @@
           "pageActions": []
         },
         "show": {
-          "enabled": true,
           "sections": [
             {
               "id": "main",
@@ -316,6 +336,13 @@
       "meta": {
         "label": "Address"
       },
+      "operations": {
+        "list": true,
+        "show": true,
+        "create": true,
+        "edit": true,
+        "delete": true
+      },
       "fields": {
         "line1": {
           "name": "line1",
@@ -342,8 +369,8 @@
       },
       "views": {
         "list": {
-          "enabled": true,
           "columns": [],
+          "filters": [],
           "sortable": [],
           "selection": "none",
           "clickAction": "none",
@@ -352,7 +379,6 @@
           "rowActions": []
         },
         "form": {
-          "enabled": true,
           "sections": [
             {
               "id": "main",
@@ -366,7 +392,6 @@
           "pageActions": []
         },
         "show": {
-          "enabled": true,
           "sections": [
             {
               "id": "main",
@@ -386,6 +411,13 @@
       "name": "Department",
       "meta": {
         "label": "Department"
+      },
+      "operations": {
+        "list": true,
+        "show": true,
+        "create": true,
+        "edit": true,
+        "delete": true
       },
       "fields": {
         "name": {
@@ -413,7 +445,6 @@
       },
       "views": {
         "list": {
-          "enabled": true,
           "columns": [
             {
               "field": "name",
@@ -421,6 +452,7 @@
               "sortable": false
             }
           ],
+          "filters": [],
           "sortable": [],
           "selection": "none",
           "clickAction": "none",
@@ -429,7 +461,6 @@
           "rowActions": []
         },
         "form": {
-          "enabled": true,
           "sections": [
             {
               "id": "main",
@@ -443,7 +474,6 @@
           "pageActions": []
         },
         "show": {
-          "enabled": true,
           "sections": [
             {
               "id": "main",

@@ -3,7 +3,7 @@ import "../shared/imports.tsp";
 using Specloom;
 
 @entity(#{ label: "Lifecycle Flags", pluralLabel: "Lifecycle Flags", titleField: "email" })
-@index(#{ columns: #["id", "email", "displayName"], searchable: #["email"], sortable: #["email"] })
+@listView(#{ columns: #["id", "email", "displayName"], search: #{ fields: #["email"], sortable: #["email"] } })
 @section("account", #{ label: "Account", view: "form", order: 10 })
 @section("internal", #{ label: "Internal", view: "show", order: 20 })
 model LifecycleFlagsExample {

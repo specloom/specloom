@@ -6,7 +6,7 @@
 
 ## How Inputs Are Produced
 
-`@pageAction` / `@rowAction` の第3引数に model を渡すと、その model が input として emit されます。
+`@action` の第3引数に model を渡すと、その model が input として emit されます。
 
 ```typespec
 model ExportUsersInput {
@@ -14,11 +14,16 @@ model ExportUsersInput {
   format: string;
 }
 
-@pageAction(User, #{
+@listView(#{
+  pageActions: #[
+    #{ ref: "export", selection: "query" }
+  ]
+})
+model User {}
+
+@action(User, #{
   id: "export",
-  view: "list",
   label: "Export",
-  selection: "query"
 }, ExportUsersInput)
 op exportUsers(): string;
 ```

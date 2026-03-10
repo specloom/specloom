@@ -3,6 +3,7 @@ import { A } from "@solidjs/router";
 import { useI18n } from "@specloom/solidjs";
 import { For, Show } from "solid-js";
 import { formatColumnValue } from "specloom";
+import { Checkbox } from "~/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -19,8 +20,13 @@ export function ListTable(props: {
   rows: ListRowVM[];
   currentSort?: { field: string; direction: "asc" | "desc" };
   clickAction: "none" | "show" | "edit";
+  selectionMode: "none" | "single" | "multi";
   selectedIds: string[];
+  allVisibleSelected: boolean;
+  someVisibleSelected: boolean;
   onSort: (field: string, direction: "asc" | "desc") => void;
+  onToggleRow: (id: string) => void;
+  onToggleAll: (checked: boolean) => void;
 }) {
   const { t, locale } = useI18n();
 
@@ -29,6 +35,26 @@ export function ListTable(props: {
       <Table>
         <TableHeader>
           <TableRow>
+            <Show when={props.selectionMode !== "none"}>
+              <TableHead class="w-12">
+                <Show when={props.selectionMode === "multi"}>
+                  <div class="flex items-center justify-center">
+                    <Checkbox
+                      aria-label={t("list.selectAll")}
+                      checked={props.allVisibleSelected}
+                      indeterminate={props.someVisibleSelected}
+                      disabled={props.rows.length === 0}
+                      onChange={() =>
+                        props.onToggleAll(!props.allVisibleSelected)
+                      }
+                    />
+                  </div>
+                </Show>
+                <Show when={props.selectionMode !== "multi"}>
+                  <span class="sr-only">{t("list.selectRow")}</span>
+                </Show>
+              </TableHead>
+            </Show>
             <For each={props.columns}>
               {(col) => (
                 <TableHead
@@ -63,10 +89,19 @@ export function ListTable(props: {
           <For each={props.rows}>
             {(row) => (
               <TableRow
-                class={
-                  props.selectedIds.includes(row.id) ? "bg-muted/50" : ""
-                }
+                class={props.selectedIds.includes(row.id) ? "bg-muted/50" : ""}
               >
+                <Show when={props.selectionMode !== "none"}>
+                  <TableCell class="w-12">
+                    <div class="flex items-center justify-center">
+                      <Checkbox
+                        aria-label={t("list.selectRow")}
+                        checked={props.selectedIds.includes(row.id)}
+                        onChange={() => props.onToggleRow(row.id)}
+                      />
+                    </div>
+                  </TableCell>
+                </Show>
                 <For each={props.columns}>
                   {(col) => (
                     <TableCell>

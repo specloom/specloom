@@ -129,7 +129,7 @@ semantic default 例:
 
 同じ考え方で:
 
-- action -> renderer, confirmMessage, props, client
+- action -> renderer, confirm, props, client
 - section -> renderer, layout, props, client
 - column -> renderer, placement, props, client
 

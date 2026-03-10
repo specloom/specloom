@@ -21,9 +21,12 @@ using Specloom;
   titleField: "name",
   defaultSort: #{ field: "name", direction: "asc" }
 })
-@index(#{
+@listView(#{
   columns: #["id", "name", "email"],
-  searchable: #["name", "email"],
+  search: #{ fields: #["name", "email"] },
+  filters: #[
+    #{ field: "name", operators: #["eq", "contains"] }
+  ],
   sortable: #["name", "email"],
   selection: "multi",
   clickAction: "show"
@@ -34,7 +37,6 @@ model User {
   id: string;
 
   @field(#{ label: "Name", list: true, show: true, form: true })
-  @filter(#["eq", "contains"])
   @minLength(1)
   name: string;
 }

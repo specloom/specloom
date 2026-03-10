@@ -15,7 +15,7 @@ using Specloom;
     analyticsKey: "ui-metadata"
   }
 })
-@index(#{
+@listView(#{
   columns: #[
     #{
       field: "headline",
@@ -27,7 +27,7 @@ using Specloom;
     "slug",
     "status"
   ],
-  searchable: #["headline", "slug"],
+  search: #{ fields: #["headline", "slug"] },
   sortable: #["headline", "status"],
   clickAction: "edit"
 })

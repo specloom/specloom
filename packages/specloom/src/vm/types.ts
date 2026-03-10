@@ -5,6 +5,7 @@ import type {
   CompiledFieldSubmit,
   CompiledFieldType,
   CompiledFieldUi,
+  CompiledListFilter,
   CompiledFieldValidation,
   CompiledNamedFilter,
   CompiledNested,
@@ -39,7 +40,7 @@ export interface ActionVM {
   order?: number;
   icon?: string;
   prominence?: CompiledAction["prominence"];
-  confirmMessage?: string;
+  confirm?: CompiledAction["confirm"];
   args?: Record<string, unknown>;
   input?: string;
   operation: CompiledAction["operation"];
@@ -52,6 +53,10 @@ export interface ListColumnVM extends CompiledColumn {
 
 export interface NamedFilterVM extends CompiledNamedFilter {
   active: boolean;
+}
+
+export interface ListFilterVM extends CompiledListFilter {
+  fieldSpec: CompiledField;
 }
 
 export interface ListRowVM {
@@ -67,6 +72,7 @@ export interface ListViewModel {
   label: string;
   columns: ListColumnVM[];
   rows: ListRowVM[];
+  filters: ListFilterVM[];
   namedFilters: NamedFilterVM[];
   search: {
     fields: string[];

@@ -4,7 +4,7 @@ import "../shared/common-resources.tsp";
 using Specloom;
 
 @entity(#{ label: "Has Many Relation", pluralLabel: "Has Many Relations", titleField: "name" })
-@index(#{ columns: #["name", "memberIds"], searchable: #["name"], sortable: #["name"] })
+@listView(#{ columns: #["name", "memberIds"], search: #{ fields: #["name"], sortable: #["name"] } })
 model HasManyRelationExample {
   @key
   @field(#{ label: "ID", list: false, show: true, form: false, readonly: true })

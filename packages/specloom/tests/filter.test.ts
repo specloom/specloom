@@ -53,4 +53,34 @@ describe("filter helpers", () => {
       }),
     ).toBe("2026-03-01T00:00:00.000Z");
   });
+
+  it("supports dotted paths and nested arrays in filter evaluation", () => {
+    const record = {
+      orderNumber: "SO-1",
+      shippingAddress: { city: "Tokyo" },
+      lineItems: [{ sku: "ABC-001" }, { sku: "XYZ-002" }],
+    };
+
+    expect(
+      evaluateFilter({
+        filter: {
+          field: "shippingAddress.city",
+          operator: "eq",
+          value: "Tokyo",
+        },
+        record,
+      }),
+    ).toBe(true);
+
+    expect(
+      evaluateFilter({
+        filter: {
+          field: "lineItems.sku",
+          operator: "contains",
+          value: "XYZ",
+        },
+        record,
+      }),
+    ).toBe(true);
+  });
 });

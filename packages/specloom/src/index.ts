@@ -16,6 +16,7 @@ export * from "./format/index.js";
 export * from "./loader/index.js";
 export * from "./normalize/index.js";
 export * from "./options/index.js";
+export * from "./path/index.js";
 export * from "./resolver/index.js";
 export * from "./serialize/index.js";
 export * from "./state/index.js";

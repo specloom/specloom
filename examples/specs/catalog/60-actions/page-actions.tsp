@@ -4,7 +4,23 @@ import "./input-models.tsp";
 using Specloom;
 
 @entity(#{ label: "Page Action Catalog", pluralLabel: "Page Action Catalog", titleField: "name" })
-@index(#{ columns: #["name", "status"], searchable: #["name"], sortable: #["name"], selection: "multi", clickAction: "show" })
+@listView(#{
+  columns: #["name", "status"],
+  search: #{ fields: #["name"] },
+  sortable: #["name"],
+  selection: "multi",
+  clickAction: "show",
+  pageActions: #[
+    #{ ref: "exportCatalog", selection: "query" }
+  ],
+  rowActions: #[
+    "suspendCatalog",
+    "reopenCatalog"
+  ]
+})
+@showView(#{
+  pageActions: #["syncCatalog"]
+})
 model PageActionCatalog {
   @key
   @field(#{ label: "ID", list: false, show: true, form: false, readonly: true })
@@ -17,22 +33,21 @@ model PageActionCatalog {
   status: string;
 }
 
-@pageAction(PageActionCatalog, #{
+@action(PageActionCatalog, #{
   id: "exportCatalog",
-  view: "list",
   label: "Export Catalog",
-  selection: "query",
   prominence: "secondary",
   icon: "download",
   when: "role == 'admin'"
 }, ExportCatalogInput)
 op exportCatalog(): string;
 
-@pageAction(PageActionCatalog, #{
+@action(PageActionCatalog, #{
   id: "syncCatalog",
-  view: "show",
   label: "Sync",
   prominence: "primary",
-  confirmMessage: "Sync this record now?"
+  confirm: #{
+    message: "Sync this record now?"
+  }
 })
 op syncCatalog(): string;
