@@ -17,6 +17,7 @@ export const jaTranslations: SpecloomTranslations = {
   "list.loading": "一覧を更新中...",
   "list.filterAll": "すべて",
   "list.openColumn": "操作",
+  "list.actionsColumn": "アクション",
   "list.selectAll": "表示中の行をすべて選択",
   "list.selectRow": "行を選択",
   "list.action.view": "表示",
@@ -24,6 +25,7 @@ export const jaTranslations: SpecloomTranslations = {
   "list.selectedCount": "({count}件選択中)",
   "list.pagination.previous": "前へ",
   "list.pagination.next": "次へ",
+  "list.pagination.pageSize": "表示件数",
   "list.pagination.summary": "{from}-{to} / {total}件",
 
   "show.title": "{label}: {id}",

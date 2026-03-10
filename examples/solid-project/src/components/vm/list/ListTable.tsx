@@ -1,9 +1,10 @@
-import type { ListColumnVM, ListRowVM } from "specloom";
+import type { ActionVM, ListColumnVM, ListRowVM } from "specloom";
 import { A } from "@solidjs/router";
 import { useI18n } from "@specloom/solidjs";
 import { For, Show } from "solid-js";
 import { formatColumnValue } from "specloom";
 import { Checkbox } from "~/components/ui/checkbox";
+import { ActionButton } from "~/components/vm/ActionButton";
 import {
   Table,
   TableBody,
@@ -21,10 +22,12 @@ export function ListTable(props: {
   currentSort?: { field: string; direction: "asc" | "desc" };
   clickAction: "none" | "show" | "edit";
   selectionMode: "none" | "single" | "multi";
+  showRowActionsColumn: boolean;
   selectedIds: string[];
   allVisibleSelected: boolean;
   someVisibleSelected: boolean;
   onSort: (field: string, direction: "asc" | "desc") => void;
+  onRowAction: (action: ActionVM, row: ListRowVM) => void;
   onToggleRow: (id: string) => void;
   onToggleAll: (checked: boolean) => void;
 }) {
@@ -80,6 +83,9 @@ export function ListTable(props: {
                 </TableHead>
               )}
             </For>
+            <Show when={props.showRowActionsColumn}>
+              <TableHead>{t("list.actionsColumn")}</TableHead>
+            </Show>
             <Show when={props.clickAction !== "none"}>
               <TableHead class="w-16">{t("list.openColumn")}</TableHead>
             </Show>
@@ -113,6 +119,30 @@ export function ListTable(props: {
                     </TableCell>
                   )}
                 </For>
+                <Show when={props.showRowActionsColumn}>
+                  <TableCell>
+                    <div class="flex flex-wrap gap-1">
+                      <For
+                        each={row.actions.filter((action) => action.visible)}
+                      >
+                        {(action) => (
+                          <ActionButton
+                            action={action}
+                            size="sm"
+                            onAction={(nextAction) =>
+                              props.onRowAction(nextAction, row)
+                            }
+                          />
+                        )}
+                      </For>
+                      <Show
+                        when={row.actions.every((action) => !action.visible)}
+                      >
+                        <span class="text-xs text-muted-foreground">-</span>
+                      </Show>
+                    </div>
+                  </TableCell>
+                </Show>
                 <Show
                   when={rowHref(props.resourceName, props.clickAction, row.id)}
                 >

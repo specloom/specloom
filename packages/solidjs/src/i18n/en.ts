@@ -17,6 +17,7 @@ export const enTranslations: SpecloomTranslations = {
   "list.loading": "Updating list...",
   "list.filterAll": "All",
   "list.openColumn": "Open",
+  "list.actionsColumn": "Actions",
   "list.selectAll": "Select all visible rows",
   "list.selectRow": "Select row",
   "list.action.view": "View",
@@ -24,6 +25,7 @@ export const enTranslations: SpecloomTranslations = {
   "list.selectedCount": "({count} selected)",
   "list.pagination.previous": "Previous",
   "list.pagination.next": "Next",
+  "list.pagination.pageSize": "Rows per page",
   "list.pagination.summary": "{from}-{to} of {total}",
 
   "show.title": "{label}: {id}",

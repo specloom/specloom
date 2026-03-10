@@ -20,6 +20,7 @@ using Specloom;
     #{ field: "createdAt", operators: #["gte", "lte"], widget: "date-range" }
   ],
   sortable: #["id", "title", "priority", "dueDate", "createdAt"],
+  pageSizeOptions: #[5, 10, 20],
   selection: "multi",
   clickAction: "show",
   namedFilters: #[
@@ -41,6 +42,9 @@ using Specloom;
     #{ ref: "reviewOverdue", selection: "query", order: 20 },
     #{ ref: "archiveCompleted", selection: "query", order: 30 },
     #{ ref: "markSelectedDone", selection: "selected", order: 40 }
+  ],
+  rowActions: #[
+    #{ ref: "markDone", order: 10 }
   ]
 })
 @section("main", #{ label: "基本情報", view: "form", order: 10 })
@@ -137,3 +141,16 @@ op archiveCompletedTasks(): string;
   }
 })
 op markSelectedTasksDone(): string;
+
+@action(Task, #{
+  id: "markDone",
+  label: "完了にする",
+  prominence: "secondary",
+  icon: "check",
+  when: "done == false",
+  confirm: #{
+    message: "このタスクを完了にしますか？",
+    confirmLabel: "完了にする"
+  }
+})
+op markTaskDone(): string;

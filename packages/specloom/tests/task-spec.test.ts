@@ -94,6 +94,10 @@ describe("Task spec", () => {
       expect(vm.defaultSort).toEqual({ field: "id", direction: "desc" });
     });
 
+    it("has pageSizeOptions on list view", () => {
+      expect(task.views.list.pageSizeOptions).toEqual([5, 10, 20]);
+    });
+
     it("clickAction is show", () => {
       const vm = createListVM(task, { context: {}, data: [] });
       expect(vm.clickAction).toBe("show");
@@ -136,6 +140,25 @@ describe("Task spec", () => {
       expect(vm.selectionActions.map((action) => action.id)).toEqual([
         "markSelectedDone",
       ]);
+    });
+
+    it("exposes rowActions and evaluates visibility per record", () => {
+      const vm = createListVM(task, {
+        context: {},
+        data: [
+          { id: "1", title: "Buy milk", done: false },
+          { id: "2", title: "Write tests", done: true },
+        ],
+      });
+
+      expect(vm.rows[0]?.actions.map((action) => action.id)).toEqual([
+        "markDone",
+      ]);
+      expect(vm.rows[0]?.actions[0]?.visible).toBe(true);
+      expect(vm.rows[0]?.actions[0]?.confirm).toMatchObject({
+        message: "このタスクを完了にしますか？",
+      });
+      expect(vm.rows[1]?.actions[0]?.visible).toBe(false);
     });
   });
 

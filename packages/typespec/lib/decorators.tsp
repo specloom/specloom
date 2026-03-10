@@ -61,6 +61,7 @@ extern dec listView(target: Model, options?: valueof {
   },
   filters?: unknown[],
   sortable?: string[],
+  pageSizeOptions?: int32[],
   defaultSort?: {
     field: string,
     direction: "asc" | "desc"

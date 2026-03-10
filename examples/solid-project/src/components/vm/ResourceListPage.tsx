@@ -24,7 +24,9 @@ export function ResourceListPage(props: {
     page: number;
     perPage: number;
     total: number;
+    pageSizeOptions: number[];
     onPageChange: (page: number) => void;
+    onPerPageChange: (perPage: number) => void;
   };
 }) {
   const store = props.store;
@@ -146,10 +148,14 @@ export function ResourceListPage(props: {
         currentSort={vm().currentSort}
         clickAction={vm().clickAction}
         selectionMode={vm().selection.mode}
+        showRowActionsColumn={props.resource.views.list.rowActions.length > 0}
         selectedIds={vm().selection.selected}
         allVisibleSelected={allVisibleSelected()}
         someVisibleSelected={someVisibleSelected()}
         onSort={(field, dir) => store.setSort(field, dir)}
+        onRowAction={(action, row) =>
+          alert(`Action: ${action.label} (${row.id})`)
+        }
         onToggleRow={toggleRowSelection}
         onToggleAll={toggleAllVisible}
       />
@@ -174,7 +180,9 @@ export function ResourceListPage(props: {
         page={props.pagination.page}
         perPage={props.pagination.perPage}
         total={props.pagination.total}
+        pageSizeOptions={props.pagination.pageSizeOptions}
         onPageChange={props.pagination.onPageChange}
+        onPerPageChange={props.pagination.onPerPageChange}
       />
     </div>
   );

@@ -73,6 +73,7 @@ export interface ListViewDef {
   };
   filters?: ListFilterDef[];
   sortable?: string[];
+  pageSizeOptions?: number[];
   defaultSort?: { field: string; direction: "asc" | "desc" };
   selection?: "none" | "single" | "multi";
   clickAction?: "none" | "show" | "edit";
@@ -260,6 +261,14 @@ function extractNumber(val: unknown): number | undefined {
   return typeof extracted === "number" ? extracted : undefined;
 }
 
+function extractNumberArray(val: unknown): number[] | undefined {
+  const extracted = extractValue(val);
+  if (!Array.isArray(extracted)) {
+    return undefined;
+  }
+  return extracted.filter((item): item is number => typeof item === "number");
+}
+
 function extractRecord(val: unknown): Record<string, unknown> | undefined {
   const extracted = extractValue(val);
   return extracted && typeof extracted === "object" && !Array.isArray(extracted)
@@ -411,6 +420,7 @@ export function $listView(
   const extracted = extractRecord(options) ?? {};
   extracted.search = normalizeSearch(extracted.search);
   extracted.filters = normalizeListFilters(extracted.filters);
+  extracted.pageSizeOptions = extractNumberArray(extracted.pageSizeOptions);
 
   // Extract namedFilters from listView options
   if (Array.isArray(extracted.namedFilters)) {

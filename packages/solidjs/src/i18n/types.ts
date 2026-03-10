@@ -31,6 +31,8 @@ export interface SpecloomTranslations {
   "list.filterAll": string;
   /** Table column header for row action link */
   "list.openColumn": string;
+  /** Table column header for row actions */
+  "list.actionsColumn": string;
   /** Toggle all visible rows */
   "list.selectAll": string;
   /** Toggle a row selection */
@@ -45,6 +47,8 @@ export interface SpecloomTranslations {
   "list.pagination.previous": string;
   /** Pagination next button label */
   "list.pagination.next": string;
+  /** Page size selector label */
+  "list.pagination.pageSize": string;
   /** Pagination summary. Receives `{from}`, `{to}`, `{total}` */
   "list.pagination.summary": string;
 

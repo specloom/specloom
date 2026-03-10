@@ -386,6 +386,9 @@ function buildListView(
       : {}),
     filters: buildListFilters(fields, listMeta?.filters),
     sortable: listMeta?.sortable ?? [],
+    ...(listMeta?.pageSizeOptions && listMeta.pageSizeOptions.length > 0
+      ? { pageSizeOptions: listMeta.pageSizeOptions }
+      : {}),
     defaultSort: listMeta?.defaultSort ?? entity?.defaultSort,
     selection: listMeta?.selection ?? "none",
     clickAction: listMeta?.clickAction ?? "none",

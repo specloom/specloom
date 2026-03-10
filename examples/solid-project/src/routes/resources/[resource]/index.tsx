@@ -23,6 +23,12 @@ export default function ResourceList() {
   const perPage = () =>
     Number(searchParams.perPage) || resource()?.meta.pageSize || 25;
   const currentPage = () => Number(searchParams.page) || 1;
+  const pageSizeOptions = () => {
+    const configured = resource()?.views.list.pageSizeOptions ?? [];
+    return [...new Set([...configured, perPage()])].sort(
+      (left, right) => left - right,
+    );
+  };
 
   const filterExpr = () => {
     const raw = searchParams.filter;
@@ -115,8 +121,14 @@ export default function ResourceList() {
           page: currentPage(),
           perPage: perPage(),
           total: resolvedData()?.total ?? 0,
+          pageSizeOptions: pageSizeOptions(),
           onPageChange: (page) =>
             setSearchParams({ page: page === 1 ? undefined : String(page) }),
+          onPerPageChange: (nextPerPage) =>
+            setSearchParams({
+              perPage: String(nextPerPage),
+              page: undefined,
+            }),
         }}
       />
     </Show>
