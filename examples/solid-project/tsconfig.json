@@ -15,6 +15,11 @@
     "isolatedModules": true,
     "paths": {
       "~/*": ["./src/*"],
+      "specloom": ["../../packages/specloom/src/index.ts"],
+      "@specloom/solidjs": ["../../packages/solidjs/src/index.ts"],
+      "@specloom/spec": ["../../packages/spec/src/index.ts"],
+      "@specloom/data-provider": ["../../packages/data-provider/src/index.ts"],
+      "@specloom/auth-provider": ["../../packages/auth-provider/src/index.ts"],
     },
   },
   "exclude": ["prisma", "prisma.config.ts", "src/lib/db.ts", "vite.config.ts"],
