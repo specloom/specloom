@@ -21,9 +21,9 @@
     "@specloom/spec": "workspace:*"
   },
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
-    "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch",
+    "typecheck": "tsc --noEmit -p tsconfig.build.json",
     "test": "../../node_modules/.bin/vitest run"
   },
   "keywords": [
