@@ -108,7 +108,7 @@ export function ResourceListPage(props: {
   }
 
   return (
-    <div>
+    <div class="min-w-0">
       <ListHeader
         resourceName={props.resource.name}
         label={props.resource.meta.label}

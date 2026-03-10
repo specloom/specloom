@@ -34,8 +34,8 @@ export function ListTable(props: {
   const { t, locale } = useI18n();
 
   return (
-    <div class="rounded-md border">
-      <Table>
+    <div class="min-w-0 max-w-full rounded-md border">
+      <Table class="min-w-max whitespace-nowrap">
         <TableHeader>
           <TableRow>
             <Show when={props.selectionMode !== "none"}>
