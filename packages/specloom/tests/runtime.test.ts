@@ -28,7 +28,7 @@ describe("specloom runtime", () => {
       searchQuery: "alice",
     });
 
-    expect(vm.columns.map((column) => column.field)).toEqual(["id", "name"]);
+    expect(vm.fields.map((field) => field.name)).toEqual(["id", "name"]);
     expect(vm.pageActions[0]?.id).toBe("exportCsv");
     expect(vm.rows[0]?.actions[0]?.allowed).toBe(true);
     expect(vm.search.query).toBe("alice");

@@ -1,5 +1,5 @@
 import type { CompiledField } from "@specloom/spec";
-import type { ListColumnVM } from "../vm/types.js";
+import type { ListFieldVM } from "../vm/types.js";
 
 export interface FormatValueOptions {
   locale?: string;
@@ -79,7 +79,7 @@ export function formatValue(
 }
 
 export function formatColumnValue(
-  column: ListColumnVM,
+  column: ListFieldVM,
   record: Record<string, unknown>,
   options: FormatValueOptions = {},
 ): string {
@@ -87,7 +87,7 @@ export function formatColumnValue(
     return formatTemplate(column.template, record);
   }
 
-  return formatValue(column.fieldSpec, record[column.field], options);
+  return formatValue(column.fieldSpec, record[column.name], options);
 }
 
 function inferFormat(field: Pick<CompiledField, "type" | "ui" | "relation">): string | undefined {

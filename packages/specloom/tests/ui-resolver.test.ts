@@ -9,7 +9,7 @@ import {
   validateSpec,
   type CompiledSpec,
   type FormFieldVM,
-  type ListColumnVM,
+  type ListFieldVM,
   type UiConfig,
 } from "../src/index.js";
 
@@ -262,7 +262,7 @@ describe("ui resolver", () => {
     });
     const columnPresentation = ui.column({
       resource: spec.resources.User,
-      column: getListColumn(listVm.columns, "name"),
+      field: getListColumn(listVm.fields, "name"),
     });
 
     expect(actionPresentation.renderer).toBe("view-action");
@@ -298,10 +298,10 @@ function getFormField(spec: CompiledSpec, fieldName: string): FormFieldVM {
 }
 
 function getListColumn(
-  columns: ListColumnVM[],
+  columns: ListFieldVM[],
   fieldName: string,
-): ListColumnVM {
-  const column = columns.find((entry) => entry.field === fieldName);
+): ListFieldVM {
+  const column = columns.find((entry) => entry.name === fieldName);
   if (!column) {
     throw new Error(`Column not found: ${fieldName}`);
   }

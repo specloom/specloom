@@ -12,7 +12,7 @@ import type {
   FormFieldVM,
   FormViewModel,
   ListFilterVM,
-  ListColumnVM,
+  ListFieldVM,
   ListRowVM,
   ListViewModel,
   RecordSectionVM,
@@ -68,18 +68,32 @@ export function evaluateListView(options: EvaluateListOptions): ListViewModel {
     );
   }
 
-  const columns = view.columns
+  const fields = view.columns
     .map((column) => {
       const field = resource.fields[column.field];
       if (!field || field.hidden || !field.ui.visibleIn.list) {
         return undefined;
       }
-      return { ...column, fieldSpec: field } as ListColumnVM;
+      return {
+        name: column.field,
+        label: column.label,
+        kind: field.type,
+        sortable: column.sortable,
+        template: column.template,
+        order: column.order,
+        placement: column.placement,
+        options: field.options,
+        optionsSource: field.optionsSource,
+        ui: field.ui,
+        relation: field.relation,
+        fieldSpec: field,
+        columnSpec: column,
+      } as ListFieldVM;
     })
-    .filter((column): column is ListColumnVM => column !== undefined);
+    .filter((column): column is ListFieldVM => column !== undefined);
 
   const rows = data.map((record) =>
-    toListRow(record, columns, view.rowActions, context),
+    toListRow(record, fields, view.rowActions, context),
   );
   const actions = view.pageActions.map((action) => toAction(action, context));
   const filters = (view.filters ?? [])
@@ -96,7 +110,7 @@ export function evaluateListView(options: EvaluateListOptions): ListViewModel {
     type: "list",
     resource: resource.name,
     label: resource.meta.pluralLabel ?? resource.meta.label,
-    columns,
+    fields,
     rows,
     filters,
     namedFilters: view.namedFilters.map((filter) => ({
@@ -231,14 +245,14 @@ export function evaluateInputForm(
 
 function toListRow(
   record: Record<string, unknown>,
-  columns: ListColumnVM[],
+  fields: ListFieldVM[],
   rowActions: CompiledAction[],
   context: Context,
 ): ListRowVM {
   const values: Record<string, unknown> = {};
 
-  for (const column of columns) {
-    values[column.field] = record[column.field];
+  for (const field of fields) {
+    values[field.name] = record[field.name];
   }
 
   return {

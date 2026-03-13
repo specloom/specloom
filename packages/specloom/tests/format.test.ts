@@ -45,10 +45,14 @@ describe("format helpers", () => {
     expect(
       formatColumnValue(
         {
-          field: "amount",
+          name: "amount",
           label: "Amount",
+          kind: field.type,
           sortable: true,
+          ui: field.ui,
+          options: field.options,
           fieldSpec: field,
+          columnSpec: { field: "amount", label: "Amount", sortable: true },
         },
         { amount: 1200 },
         { locale: "ja-JP" },

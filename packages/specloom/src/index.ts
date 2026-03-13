@@ -5,7 +5,16 @@ export {
   normalizeSpec,
   parseExpression,
 } from "@specloom/spec";
-export type { CompiledField, CompiledSpec } from "@specloom/spec";
+export type {
+  CompiledField,
+  CompiledSpec,
+  CompiledResource,
+  CompiledListView,
+  CompiledRecordView,
+  CompiledOption,
+  CompiledActionConfirm,
+  FilterExpression,
+} from "@specloom/spec";
 export * from "./action/index.js";
 export * from "./errors.js";
 export * from "./evaluator/index.js";
@@ -23,3 +32,6 @@ export * from "./state/index.js";
 export * from "./ui/index.js";
 export * from "./validation/index.js";
 export * from "./vm/types.js";
+export { ListVM } from "./vm/list-vm.js";
+export { ShowVM } from "./vm/show-vm.js";
+export { FormVM } from "./vm/form-vm.js";

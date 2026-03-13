@@ -47,8 +47,23 @@ export interface ActionVM {
   client?: Record<string, unknown>;
 }
 
-export interface ListColumnVM extends CompiledColumn {
+export interface ListFieldVM {
+  /** Field name (from CompiledColumn.field) */
+  name: string;
+  label: string;
+  kind: CompiledFieldType;
+  sortable: boolean;
+  template?: string;
+  order?: number;
+  placement?: string;
+  options?: CompiledOption[];
+  optionsSource?: CompiledOptionSource;
+  ui: CompiledFieldUi;
+  relation?: CompiledRelation;
+  /** Original CompiledField for advanced use */
   fieldSpec: CompiledField;
+  /** Original CompiledColumn for advanced use */
+  columnSpec: CompiledColumn;
 }
 
 export interface NamedFilterVM extends CompiledNamedFilter {
@@ -70,7 +85,7 @@ export interface ListViewModel {
   type: "list";
   resource: string;
   label: string;
-  columns: ListColumnVM[];
+  fields: ListFieldVM[];
   rows: ListRowVM[];
   filters: ListFilterVM[];
   namedFilters: NamedFilterVM[];

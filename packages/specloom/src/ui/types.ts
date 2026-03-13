@@ -3,7 +3,7 @@ import type {
   ActionVM,
   Context,
   FormFieldVM,
-  ListColumnVM,
+  ListFieldVM,
   RecordSectionVM,
   ShowFieldVM,
 } from "../vm/types.js";
@@ -97,7 +97,7 @@ export interface ResolveSectionPresentationInput<TField = PresentableFieldVM> {
 
 export interface ResolveColumnPresentationInput {
   resource: CompiledResource;
-  column: ListColumnVM;
+  field: ListFieldVM;
   ui?: UiConfig;
 }
 

@@ -50,7 +50,7 @@ describe("Task spec", () => {
         ],
       });
 
-      expect(vm.columns.map((c) => c.field)).toEqual([
+      expect(vm.fields.map((c) => c.name)).toEqual([
         "id",
         "title",
         "priority",

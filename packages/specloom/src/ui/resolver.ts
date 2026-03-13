@@ -193,8 +193,8 @@ export function resolveColumnPresentation(
   const ui = createUiConfig(input.ui);
   const resourceConfig = getResourceUiConfig(ui, input.resource);
   const viewConfig = getViewUiConfig(resourceConfig, "list");
-  const resourcePatch = resourceConfig?.columns?.[input.column.field];
-  const viewPatch = viewConfig?.columns?.[input.column.field];
+  const resourcePatch = resourceConfig?.columns?.[input.field.name];
+  const viewPatch = viewConfig?.columns?.[input.field.name];
   const patch = mergeColumnPatch(resourcePatch, viewPatch);
 
   return {
@@ -202,16 +202,16 @@ export function resolveColumnPresentation(
       viewPatch?.renderer ??
       resourcePatch?.renderer ??
       ui.defaults?.columnRenderer ??
-      (input.column.template ? "template-column" : "text-column"),
-    label: input.column.label,
-    sortable: input.column.sortable,
-    placement: patch.placement ?? input.column.placement,
+      (input.field.template ? "template-column" : "text-column"),
+    label: input.field.label,
+    sortable: input.field.sortable,
+    placement: patch.placement ?? input.field.placement,
     props: patch.props ?? {},
     client: {
       ...input.resource.meta.client,
       ...resourceConfig?.client,
       ...viewConfig?.client,
-      ...input.column.fieldSpec.ui.client,
+      ...input.field.ui.client,
       ...patch.client,
     },
   };
