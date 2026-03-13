@@ -1,4 +1,4 @@
-import type { ActionVM, ListColumnVM, ListRowVM } from "specloom";
+import type { ActionVM, ListFieldVM, ListRowVM } from "specloom";
 import { A } from "@solidjs/router";
 import { useI18n } from "@specloom/solidjs";
 import { For, Show } from "solid-js";
@@ -17,7 +17,7 @@ import { presentTextValue } from "~/components/vm/SpecValue";
 
 export function ListTable(props: {
   resourceName: string;
-  columns: ListColumnVM[];
+  columns: ListFieldVM[];
   rows: ListRowVM[];
   currentSort?: { field: string; direction: "asc" | "desc" };
   clickAction: "none" | "show" | "edit";
@@ -65,16 +65,16 @@ export function ListTable(props: {
                   onClick={() => {
                     if (!col.sortable) return;
                     const dir =
-                      props.currentSort?.field === col.field &&
+                      props.currentSort?.field === col.name &&
                       props.currentSort.direction === "asc"
                         ? "desc"
                         : "asc";
-                    props.onSort(col.field, dir);
+                    props.onSort(col.name, dir);
                   }}
                 >
                   <span class="flex items-center gap-1">
                     {col.label}
-                    <Show when={props.currentSort?.field === col.field}>
+                    <Show when={props.currentSort?.field === col.name}>
                       <span class="text-xs">
                         {props.currentSort?.direction === "asc" ? "↑" : "↓"}
                       </span>
@@ -114,7 +114,7 @@ export function ListTable(props: {
                       {presentTextValue(
                         formatColumnValue(col, row.record, { locale }),
                         col.fieldSpec.ui.appearance,
-                        row.record[col.field],
+                        row.record[col.name],
                       )}
                     </TableCell>
                   )}

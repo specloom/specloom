@@ -143,7 +143,7 @@ export function ResourceListPage(props: {
       />
       <ListTable
         resourceName={props.resource.name}
-        columns={vm().columns}
+        columns={vm().fields}
         rows={filteredRows()}
         currentSort={vm().currentSort}
         clickAction={vm().clickAction}
